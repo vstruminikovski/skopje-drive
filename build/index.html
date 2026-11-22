@@ -65,6 +65,10 @@
       #project details.more { margin-top: 6px; }
       #project details.more summary { cursor: pointer; color: #aab2bd; }
       #project .row { margin: 6px 0; }
+      #gate .gate-card { max-width: 420px; width: calc(100vw - 32px); }
+      #gate .gate-card p { color: #aab2bd; }
+      #gate .gate-card input { width: 100%; margin: 4px 0; }
+      #gate button:disabled { opacity: .45; cursor: not-allowed; }
     </style>
   </head>
   <body>
@@ -99,12 +103,6 @@
         <div class="cloud" id="cloud">
           <b>Облак</b>
           <div id="cWho" class="status">Не си најавен</div>
-          <div id="cAuth">
-            <div class="row"><input id="cUser" placeholder="корисничко име" autocomplete="username"></div>
-            <div class="row"><input id="cPass" type="password" placeholder="лозинка (мин. 8)" autocomplete="current-password"></div>
-            <div id="cTurnstile"></div>
-            <div class="row"><button id="cLogin">Најави се</button><button id="cRegister">Регистрирај се</button></div>
-          </div>
           <div id="cWork" hidden>
             <div class="row"><input id="cName" placeholder="име на работата"><button id="cLoad">Вчитај</button></div>
             <div class="row"><button id="cSave" class="primary">Зачувај во облакот</button><button id="cLogout">Одјави се</button></div>
@@ -166,12 +164,17 @@
       <div class="panel" id="info"></div>
       <div id="crosshair"></div>
       <div id="msg"></div>
-      <div id="gate"><div>
-        <b>Градител: играта со слободна камера</b>
-        <p>This is the same map, the same models and the same rendering as the game. The camera moves freely, so you can walk, fly and look from any angle while you place signs, lights and markings.</p>
-        <p style="color:#aab2bd">Press C to look around. <b>WASD</b> move · <b>Space / Shift</b> up / down · <b>Ctrl</b> fast · <b>Wheel</b> speed · <b>Left click</b> place · <b>Right click</b> remove · <b>1–9</b> pick an item · <b>[ ]</b> turn a sign · <b>F</b> select the item you aim at · <b>Del</b> remove selected · <b>X</b> cancel a line · the top-bar mouse button frees or locks the mouse.</p>
-        <p style="color:#aab2bd;font-size:12px">Save versions as you go. <b>Export mod</b> writes active.json: copy it to public/mods/active.json and the game applies your signs, lights, lines, zebras, trees and lamps on its next start. Existing signs, lights and markings from the survey file and the map are shown exactly as the game shows them. They are read-only here; you add new ones.</p>
-        <button id="startBtn">Почни</button>
+      <div id="gate"><div class="gate-card">
+        <b>Градител</b>
+        <p>Најави се за да градиш. Секој има свој профил, а твоите знаци се зачувуваат на твоето име.</p>
+          <div id="cAuth">
+          <div class="row"><input id="cUser" placeholder="корисничко име" autocomplete="username"></div>
+          <div class="row"><input id="cPass" type="password" placeholder="лозинка (мин. 8)" autocomplete="current-password"></div>
+          <div id="cTurnstile"></div>
+          <div class="row"><button id="cLogin">Најави се</button><button id="cRegister">Регистрирај се</button></div>
+        </div>
+        <p class="hint">Играта не бара најава. Градителот бара.</p>
+        <button id="startBtn" disabled>Почни</button>
       </div></div>
     </div>
 

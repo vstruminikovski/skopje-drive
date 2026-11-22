@@ -19,6 +19,7 @@ export function initCloudPanel(o: Options) {
     const a = cloud.account();
     $('cWho').textContent = a ? `Најавен си како ${a.username}` : 'Не си најавен';
     $('cAuth').hidden = !!a;
+    ($('startBtn') as HTMLButtonElement).disabled = !a; // no building without a sign-in
     $('cWork').hidden = !a;
     if (a && !$<HTMLInputElement>('cName').value) $<HTMLInputElement>('cName').value = a.username;
   };
