@@ -39,11 +39,11 @@ const auth = (): Record<string, string> => {
   return a ? { Authorization: `Bearer ${a.token}` } : {};
 };
 
-export function register(username: string, password: string) {
-  return call<{ username: string; token: string }>('/api/register', { method: 'POST', body: JSON.stringify({ username, password }) });
+export function register(username: string, password: string, turnstile?: string) {
+  return call<{ username: string; token: string }>('/api/register', { method: 'POST', body: JSON.stringify({ username, password, turnstile }) });
 }
-export function login(username: string, password: string) {
-  return call<{ username: string; token: string }>('/api/login', { method: 'POST', body: JSON.stringify({ username, password }) });
+export function login(username: string, password: string, turnstile?: string) {
+  return call<{ username: string; token: string }>('/api/login', { method: 'POST', body: JSON.stringify({ username, password, turnstile }) });
 }
 export function loadWorkspace(name: string) {
   return call<Workspace>(`/api/ws/${encodeURIComponent(name)}`);

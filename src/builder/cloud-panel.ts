@@ -28,16 +28,41 @@ export function initCloudPanel(o: Options) {
   };
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
 
+  // Turnstile (optional): when a site key is set, signing in or up needs a quick check that you are a person
+  const siteKey = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '';
+  let widget: string | null = null;
+  if (siteKey) {
+    const s2 = document.createElement('script');
+    s2.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    s2.async = true;
+    s2.onload = () => {
+      const t = (window as unknown as { turnstile?: { render: (el: string, o: object) => string } }).turnstile;
+      if (t) widget = t.render('#cTurnstile', { sitekey: siteKey });
+    };
+    document.head.appendChild(s2);
+  }
+  const check = () => {
+    if (!siteKey) return '';
+    const t = (window as unknown as { turnstile?: { getResponse: (id: string) => string } }).turnstile;
+    return widget && t ? t.getResponse(widget) : '';
+  };
+  const resetCheck = () => {
+    const t = (window as unknown as { turnstile?: { reset: (id: string) => void } }).turnstile;
+    if (widget && t) t.reset(widget);
+  };
+
   async function signIn(register: boolean) {
     const username = $<HTMLInputElement>('cUser').value.trim().toLowerCase();
     const password = $<HTMLInputElement>('cPass').value;
+    const token = check();
+    if (siteKey && !token) { o.msg('Потврди дека си човек, па обиди се.'); return; }
     try {
-      const r = register ? await cloud.register(username, password) : await cloud.login(username, password);
+      const r = register ? await cloud.register(username, password, token) : await cloud.login(username, password, token);
       cloud.setAccount({ username: r.username, token: r.token });
       $<HTMLInputElement>('cPass').value = '';
       who();
       o.msg(register ? `Добредојде, ${r.username}!` : `Добредојде назад, ${r.username}.`);
-    } catch (e) { fail(e); }
+    } catch (e) { resetCheck(); fail(e); }
   }
   $('cLogin').addEventListener('click', () => void signIn(false));
   $('cRegister').addEventListener('click', () => void signIn(true));

@@ -2,10 +2,22 @@ name = "skopje-drive-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
-# one KV namespace holds the accounts and the workspaces
-[[kv_namespaces]]
-binding = "SAVES"
-id = "ab459869abdb47e4be64228afb6b9145"
+# Durable Objects hold the accounts, the workspaces and the rate limits
+[[durable_objects.bindings]]
+name = "ACCOUNTS"
+class_name = "Account"
+
+[[durable_objects.bindings]]
+name = "WORKSPACES"
+class_name = "Workspace"
+
+[[durable_objects.bindings]]
+name = "LIMITS"
+class_name = "Limiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Account", "Workspace", "Limiter"]
 
 [vars]
 ALLOWED_ORIGIN = "https://vstruminikovski.github.io"
