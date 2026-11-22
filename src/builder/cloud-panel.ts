@@ -39,7 +39,7 @@ export function initCloudPanel(o: Options) {
     s2.async = true;
     s2.onload = () => {
       const t = (window as unknown as { turnstile?: { render: (el: string, o: object) => string } }).turnstile;
-      if (t) widget = t.render('#cTurnstile', { sitekey: siteKey, size: 'flexible', appearance: 'interaction-only' });
+      if (t) widget = t.render('#cTurnstile', { sitekey: siteKey, theme: 'dark', size: 'flexible' });
     };
     document.head.appendChild(s2);
   }
@@ -57,7 +57,7 @@ export function initCloudPanel(o: Options) {
     const username = $<HTMLInputElement>('cUser').value.trim().toLowerCase();
     const password = $<HTMLInputElement>('cPass').value;
     const token = check();
-    if (siteKey && !token) { o.msg('Потврди дека си човек, па обиди се.'); return; }
+    if (siteKey && !token) { o.msg('Потврди дека си човек (кутијата над копчињата), па пробај пак.'); return; }
     try {
       const r = register ? await cloud.register(username, password, token) : await cloud.login(username, password, token);
       cloud.setAccount({ username: r.username, token: r.token });
