@@ -258,3 +258,6 @@ body {
 #pick .pick-card > .pick-btn:not(:first-of-type) { margin-top: 10px; }
 #pick.phone #build, #pick.phone #load, #pick.phone #signin, #pick.phone .pick-sub { display: none; }
 #pick #signin[hidden] { display: none; }
+#pick .pick-back { display: block; width: 100%; margin-top: 14px; background: none; border: 0; color: #777; font: inherit; font-size: 14px; text-align: center; text-decoration: none; cursor: pointer; }
+#pick .pick-back:hover { color: #fff; }
+#pick.phone .pick-back { display: none; }

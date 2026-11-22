@@ -29,6 +29,7 @@ async function start() {
     $('signin').hidden = false;
     $('load').hidden = true;
   });
+  $('pBack').addEventListener('click', () => { $('signin').hidden = true; $('load').hidden = false; $('pErr').textContent = ''; });
   // the bot check (when a site key is set) is shown on this screen too
   const siteKey = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '';
   type TS = { render: (el: string, o: object) => string; getResponse: (id: string) => string; reset: (id: string) => void };
