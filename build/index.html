@@ -60,6 +60,15 @@
       #top .spacer { flex: 1; }
       #top .exit { color: #fff; text-decoration: none; font-weight: 700; border: 1px solid #fff; padding: 4px 10px; white-space: nowrap; }
       #top .exit:hover { background: #fff; color: #000; }
+      #leaveDlg { position: fixed; inset: 0; background: rgba(0,0,0,.8); display: grid; place-items: center; z-index: 60; }
+      #leaveDlg[hidden] { display: none; }
+      #leaveDlg .dlg-card { width: min(420px, calc(100vw - 32px)); background: #000; border: 1px solid #333; padding: 26px 24px; color: #fff; }
+      #leaveDlg .dlg-title { display: block; font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+      #leaveDlg p { color: #bbb; margin: 0 0 18px; }
+      #leaveDlg button { display: block; width: 100%; margin-top: 8px; min-height: 42px; border: 1px solid #fff; background: #000; color: #fff; font: inherit; font-weight: 600; border-radius: 0; cursor: pointer; }
+      #leaveDlg button.dlg-primary { background: #fff; color: #000; }
+      #leaveDlg button:hover { background: #161616; }
+      #leaveDlg button.dlg-primary:hover { background: #d6d6d6; }
       #top .primary { background: #d9622b; border-color: #d9622b; color: #fff; font-weight: 600; }
       #top .pill { padding: 4px 10px; border: 1px solid #111; border-radius: 999px; background: #323841; font-weight: 600; white-space: nowrap; }
       #project .status { font-size: 12px; margin: 4px 0 6px; color: #9fd8a8; }
@@ -172,7 +181,16 @@
       </div>
       <div class="panel" id="info"></div>
       <div id="crosshair"></div>
-      <div id="msg"></div>
+        <div id="leaveDlg" hidden>
+        <div class="dlg-card">
+          <b class="dlg-title">Имаш незачувани промени</b>
+          <p>Работата е уште на овој компјутер. Ако зачуваш на профилот, ќе ја имаш на секој уред.</p>
+          <button id="dlgSave" class="dlg-primary">Зачувај на профилот и излези</button>
+          <button id="dlgLeave">Излези без зачувување</button>
+          <button id="dlgStay">Остани</button>
+        </div>
+      </div>
+    <div id="msg"></div>
       <div id="gate"><div class="gate-card">
         <b class="gate-title">Градител</b>
         <p class="lead">Направи акаунт или најави се за да додаваш сообраќајни знаци.</p>

@@ -815,40 +815,80 @@ document.getElementById('openProj')!.addEventListener('change', async (e) => {
 });
 document.getElementById('surveyor')!.addEventListener('input', () => persistSoon());
 document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
-document.getElementById('saveGame')!.addEventListener('click', async () => {
+/** Saves the work to your account (admin: publishes it for everyone). Returns true when it is saved. */
+async function saveToAccount(): Promise<boolean> {
   const a = cloud.account();
-  if (!a) { msg('Најави се за да зачуваш.'); return; }
+  if (!a) { msg('Најави се за да зачуваш.'); return false; }
   let admin = false;
   try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
-  if (!admin) {
-    // everyone else: a copy on this computer, and a copy on your own profile (for your other devices).
-    // Neither changes the map other players have.
-    await persistNow();
-    try {
-      const current = await cloud.loadWorkspace(a.username).catch(() => null);
-      const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
-      await cloud.saveWorkspace(a.username, data, current?.version ?? 0);
-      msg('Зачувано на овој компјутер и на твојот профил. Играј од кој било уред со твоето име.');
-    } catch (e) {
-      if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш на профилот.');
-      else if (e instanceof cloud.CloudError && e.status === 409) msg('Зачувано на овој компјутер. На профилот има понова верзија, вчитај ја прво.');
-      else msg('Зачувано на овој компјутер. Профилот не е достапен сега.');
-    }
-    return;
-  }
-  // the admin: the map everyone plays
-  if (!confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return;
+  const target = admin ? 'published' : a.username;
+  if (admin && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return false;
   try {
-    const current = await cloud.loadWorkspace('published').catch(() => null);
+    await persistNow();
+    const current = await cloud.loadWorkspace(target).catch(() => null);
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
-    await cloud.saveWorkspace('published', data, current?.version ?? 0);
-    msg(`Објавено за сите играчи · ${recs.length} ставки.`);
+    await cloud.saveWorkspace(target, data, current?.version ?? 0);
+    unsaved = false;
+    msg(admin ? `Објавено за сите играчи · ${recs.length} ставки.` : `Зачувано на твојот профил. Играј од кој било уред со твоето име.`);
+    return true;
   } catch (e) {
-    if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да објавиш.');
-    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој објавил меѓувреме. Вчитај ја најновата верзија и пробај повторно.');
-    else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да објавам.');
+    if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
+    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој зачувал меѓувреме. Вчитај ја најновата верзија и пробај повторно.');
+    else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да зачувам.');
+    return false;
   }
+}
+document.getElementById('saveGame')!.addEventListener('click', () => { void saveToAccount(); });
+
+// ---------- leaving: unsaved work asks first (buttons, the exit link, the back button, closing the tab) ----------
+const leaveDlg = document.getElementById('leaveDlg')!;
+let leaveTo: string | null = null;
+function askLeave(to: string) {
+  leaveTo = to;
+  leaveDlg.hidden = false;
+}
+function goNow(to: string) {
+  unsaved = false; // the copy on this computer is already kept
+  location.replace(to);
+}
+document.getElementById('dlgStay')!.addEventListener('click', () => { leaveDlg.hidden = true; leaveTo = null; });
+document.getElementById('dlgLeave')!.addEventListener('click', () => { if (leaveTo) goNow(leaveTo); });
+document.getElementById('dlgSave')!.addEventListener('click', async () => {
+  const ok = await saveToAccount();
+  if (ok && leaveTo) goNow(leaveTo);
 });
+// links out of the builder
+window.addEventListener('click', (e) => {
+  const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-go]');
+  if (!link || !unsaved) return;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  askLeave(link.href);
+}, true);
+// closing the tab, reloading or the power going off: the browser shows its own prompt
+window.addEventListener('beforeunload', (e) => { if (unsaved) { e.preventDefault(); e.returnValue = ''; } });
+// the browser back button: keep this page, and ask first
+history.pushState({ builder: true }, '');
+window.addEventListener('popstate', () => {
+  if (!unsaved) return;
+  history.pushState({ builder: true }, '');
+  askLeave(`${import.meta.env.BASE_URL}play/`);
+});
+
+// autosave: every change is already kept on this computer; every 10 minutes a snapshot goes into Versions
+setInterval(() => {
+  if (!restored || !recs.length) return;
+  const snap = JSON.stringify(recs);
+  if (snap === lastSnapshot) return;
+  lastSnapshot = snap;
+  const v: Version = { id: Date.now(), name: `автозачувување ${new Date().toLocaleTimeString()}`, savedAt: new Date().toISOString(), recs: JSON.parse(snap), nextId };
+  const auto = versionList.filter((q) => q.name.startsWith('автозачувување '));
+  let list = [...versionList, v];
+  if (auto.length >= 6) { const drop = new Set(auto.slice(0, auto.length - 5).map((q) => q.id)); list = list.filter((q) => !drop.has(q.id)); }
+  setVersions(list);
+}, 10 * 60 * 1000);
+let lastSnapshot = '';
+
 document.getElementById('loadGame')!.addEventListener('click', async () => {
   const f = await loadItems();
   if (!f) { msg('Играта нема ставки за вчитување.'); return; }
@@ -871,9 +911,11 @@ document.getElementById('modBtn')!.addEventListener('click', () => {
 const SESSION_FORMAT = 'krug-builder-session';
 let persistTimer: number | undefined;
 let restored = false; // nothing is written until the saved session has been read: an empty start must never overwrite it
+let unsaved = false; // changed since the last save to your account
 function save() {
   const cur = JSON.stringify({ recs, nextId });
   if (lastState && cur !== lastState) {
+    unsaved = true;
     undoStack.push(lastState);
     if (undoStack.length > HISTORY_MAX) undoStack.shift();
     redoStack = [];
