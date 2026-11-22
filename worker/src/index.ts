@@ -12,20 +12,23 @@ export interface Env {
 interface User { salt: string; hash: string; created: string }
 interface Workspace { owner: string; members: string[]; version: number; savedAt: string; savedBy: string; data: unknown }
 
-const ITERATIONS = 100_000; // the most Workers allow for PBKDF2
 const TOKEN_DAYS = 30;
 const MAX_BODY = 2_000_000; // bytes
 const USER_RE = /^[a-z0-9_]{3,20}$/;
-const WS_RE = /^[a-z0-9-]{3,32}$/;
+const WS_RE = /^[a-z0-9_-]{3,32}$/;
 const enc = new TextEncoder();
 
 const b64 = (buf: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...(buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf)));
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
-async function derive(password: string, salt: Uint8Array): Promise<string> {
-  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: ITERATIONS, hash: 'SHA-256' }, key, 256);
-  return b64(bits);
+/**
+ * Password hash: HMAC-SHA256 keyed with the server's SECRET, over the salt and the password.
+ * Stored hashes cannot be checked offline without SECRET (which only the Worker has), and it is fast enough
+ * for the free plan's CPU limit (slow hashes such as PBKDF2 at 100k rounds exceed it).
+ */
+async function derive(env: Env, password: string, salt: Uint8Array): Promise<string> {
+  const sig = await crypto.subtle.sign('HMAC', await hmacKey(env), enc.encode(`${b64(salt)}|${password}`));
+  return b64(sig);
 }
 
 async function hmacKey(env: Env): Promise<CryptoKey> {
@@ -81,7 +84,7 @@ async function register(env: Env, body: any): Promise<Response> {
   if (password.length < 8) throw new HttpError(400, 'Лозинката мора да има најмалку 8 знаци.');
   if (await env.SAVES.get(`user:${username}`)) throw new HttpError(409, 'Ова корисничко име е зафатено.');
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const user: User = { salt: b64(salt), hash: await derive(password, salt), created: new Date().toISOString() };
+  const user: User = { salt: b64(salt), hash: await derive(env, password, salt), created: new Date().toISOString() };
   await env.SAVES.put(`user:${username}`, JSON.stringify(user));
   return json(env, { username, token: await issueToken(env, username) }, 201);
 }
@@ -93,7 +96,7 @@ async function login(env: Env, body: any): Promise<Response> {
   // the same message for a wrong name and a wrong password
   if (!raw) throw new HttpError(401, 'Погрешно корисничко име или лозинка.');
   const user = JSON.parse(raw) as User;
-  if ((await derive(password, unb64(user.salt))) !== user.hash) throw new HttpError(401, 'Погрешно корисничко име или лозинка.');
+  if ((await derive(env, password, unb64(user.salt))) !== user.hash) throw new HttpError(401, 'Погрешно корисничко име или лозинка.');
   return json(env, { username, token: await issueToken(env, username) });
 }
 
@@ -111,7 +114,7 @@ async function saveWorkspace(env: Env, req: Request, name: string): Promise<Resp
   const raw = await env.SAVES.get(`ws:${name}`);
   const ws: Workspace = raw ? JSON.parse(raw) : { owner: user, members: [], version: 0, savedAt: '', savedBy: '', data: null };
   if (raw && ws.owner !== user && !ws.members.includes(user)) throw new HttpError(403, 'Немаш пристап до оваа работа.');
-  if (!raw && !WS_RE.test(name)) throw new HttpError(400, 'Името на работата: 3–32 мали букви, цифри или црта.');
+  if (!raw && !WS_RE.test(name)) throw new HttpError(400, 'Името на работата: 3–32 мали букви, цифри, _ или -.');
   // a new workspace takes your own username as its name, so nobody can take a name first; admins may use any name (e.g. player)
   const admins = env.ADMINS.split(',').map((x) => x.trim().toLowerCase());
   if (!raw && name !== user && !admins.includes(user)) throw new HttpError(403, 'Новата работа се создава со твоето корисничко име.');
