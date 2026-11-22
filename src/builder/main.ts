@@ -1060,7 +1060,8 @@ document.addEventListener('keydown', (e) => {
 
 // ---------- start ----------
 const gate = document.getElementById('gate')!;
-document.getElementById('startBtn')!.addEventListener('click', () => { gate.style.display = 'none'; lockView(); });
+// start with the mouse free, so the top bar and the exit button can always be clicked (C locks the view)
+document.getElementById('startBtn')!.addEventListener('click', () => { gate.style.display = 'none'; });
 function lockView() {
   // Browsers refuse the mouse lock for a moment after Esc, and need a click after that: say so instead of failing silently
   const c = canvas();
