@@ -20,6 +20,7 @@ export function initCloudPanel(o: Options) {
     $('cWho').textContent = a ? `Најавен си како ${a.username}` : 'Не си најавен';
     $('cAuth').hidden = !!a;
     ($('startBtn') as HTMLButtonElement).disabled = !a; // no building without a sign-in
+    ($('gateOpen') as HTMLButtonElement).disabled = !a;
     $('cWork').hidden = !a;
     if (a && !$<HTMLInputElement>('cName').value) $<HTMLInputElement>('cName').value = a.username;
   };
@@ -71,6 +72,7 @@ export function initCloudPanel(o: Options) {
       } else fail(e);
     }
   }
+  $('gateOpen').addEventListener('click', () => $('openProj').click());
   $('cLogin').addEventListener('click', () => void signIn(false));
   $('cRegister').addEventListener('click', () => void signIn(true));
   $('cLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си.'); });

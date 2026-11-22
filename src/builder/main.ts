@@ -12,6 +12,7 @@ import { initCloudPanel } from './cloud-panel';
 import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoints, lampOf, surfaceOnScene, type UserItem } from '../game/render/userItems';
 import type { Lamp } from '../game/traffic/signals';
 import { writeSession, readSession, type Session } from './store';
+import { kvDel } from '../shared/db';
 
 // ---------- desktop only ----------
 // A mouse-and-keyboard screen at least 900 px wide. Phones and touch tablets never get the builder.
@@ -816,12 +817,23 @@ document.getElementById('openProj')!.addEventListener('change', async (e) => {
 document.getElementById('surveyor')!.addEventListener('input', () => persistSoon());
 document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
 /** Saves the work to your account (admin: publishes it for everyone). Returns true when it is saved. */
+/** Saves a project file to this computer (everyone except the admin). The browser keeps only an emergency copy. */
+function saveFileLocally(who: string) {
+  const data = { format: 'krug-builder-session', version: 1, savedAt: new Date().toISOString(), surveyor: who, nextId, recs: JSON.parse(JSON.stringify(recs)), versions: JSON.parse(JSON.stringify(versionList)) };
+  download(`skopje_${who || 'work'}_${new Date().toISOString().slice(0, 10)}.json`, data);
+  unsaved = false;
+}
 async function saveToAccount(): Promise<boolean> {
   const a = cloud.account();
   if (!a) { msg('Најави се за да зачуваш.'); return false; }
   let admin = false;
   try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
-  const target = admin ? 'published' : a.username;
+  if (!admin) {
+    saveFileLocally(a.username);
+    msg('Датотеката е зачувана на твојот компјутер. Вчитај ја со „Отвори датотека“.');
+    return true;
+  }
+  const target = 'published';
   if (admin && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return false;
   try {
     await persistNow();
@@ -839,6 +851,10 @@ async function saveToAccount(): Promise<boolean> {
   }
 }
 document.getElementById('saveGame')!.addEventListener('click', () => { void saveToAccount(); });
+// the save button says what it does for this account
+if (cloud.account()) {
+  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај датотека'; }).catch(() => {});
+}
 
 // ---------- leaving: unsaved work asks first (buttons, the exit link, the back button, closing the tab) ----------
 const leaveDlg = document.getElementById('leaveDlg')!;
@@ -982,6 +998,11 @@ async function restoreSession() {
     return;
   }
   restored = true;
+  // an emergency copy from a session that did not close properly: offer it back, do not load it silently
+  if (s && s.recs.length && !confirm(`Пронајдена е незачувана работа од прекинатa сесија (${s.recs.length} ставки). Да ја вратам?`)) {
+    s = null;
+    await kvDel('session').catch(() => undefined);
+  }
   if (!s) {
     const f = await loadItems();
     if (f) s = gameSession(f);
