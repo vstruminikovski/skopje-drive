@@ -1,0 +1,3663 @@
+{
+ "level": "prviot_krug",
+ "source": "levels/prviot_krug",
+ "sourceTreeSha256": "12a199896d88c2c97cd0edb993122131a1aa17f085c24eb653522662db9835f0",
+ "importedAt": "2026-11-21T18:49:35.064Z",
+ "tally": {
+  "unreadable": 113,
+  "not-needed": 52,
+  "copied": 34,
+  "converted": 379
+ },
+ "outputs": [
+  {
+   "file": "level.json",
+   "bytes": 5672
+  },
+  {
+   "file": "models/buildings/bld_-1_-1.dae",
+   "bytes": 2623195
+  },
+  {
+   "file": "models/buildings/bld_-1_-2.dae",
+   "bytes": 3108943
+  },
+  {
+   "file": "models/buildings/bld_-1_0.dae",
+   "bytes": 4303430
+  },
+  {
+   "file": "models/buildings/bld_-1_1.dae",
+   "bytes": 2154129
+  },
+  {
+   "file": "models/buildings/bld_-2_-1.dae",
+   "bytes": 2596620
+  },
+  {
+   "file": "models/buildings/bld_-2_-2.dae",
+   "bytes": 3461047
+  },
+  {
+   "file": "models/buildings/bld_-2_0.dae",
+   "bytes": 1844455
+  },
+  {
+   "file": "models/buildings/bld_-2_1.dae",
+   "bytes": 1908569
+  },
+  {
+   "file": "models/buildings/bld_0_-1.dae",
+   "bytes": 3697117
+  },
+  {
+   "file": "models/buildings/bld_0_-2.dae",
+   "bytes": 3198556
+  },
+  {
+   "file": "models/buildings/bld_0_0.dae",
+   "bytes": 2993931
+  },
+  {
+   "file": "models/buildings/bld_0_1.dae",
+   "bytes": 1961545
+  },
+  {
+   "file": "models/buildings/bld_1_-1.dae",
+   "bytes": 6573888
+  },
+  {
+   "file": "models/buildings/bld_1_-2.dae",
+   "bytes": 5472012
+  },
+  {
+   "file": "models/buildings/bld_1_0.dae",
+   "bytes": 2827508
+  },
+  {
+   "file": "models/buildings/bld_1_1.dae",
+   "bytes": 474322
+  },
+  {
+   "file": "models/flag/flagng.dae",
+   "bytes": 145778
+  },
+  {
+   "file": "models/sidewalks/sidewalks_0_0.dae",
+   "bytes": 1349379
+  },
+  {
+   "file": "models/sidewalks/sidewalks_0_1.dae",
+   "bytes": 1748629
+  },
+  {
+   "file": "models/sidewalks/sidewalks_0_m1.dae",
+   "bytes": 1460808
+  },
+  {
+   "file": "models/sidewalks/sidewalks_0_m2.dae",
+   "bytes": 1965308
+  },
+  {
+   "file": "models/sidewalks/sidewalks_1_0.dae",
+   "bytes": 1951943
+  },
+  {
+   "file": "models/sidewalks/sidewalks_1_1.dae",
+   "bytes": 1783990
+  },
+  {
+   "file": "models/sidewalks/sidewalks_1_m1.dae",
+   "bytes": 1372934
+  },
+  {
+   "file": "models/sidewalks/sidewalks_1_m2.dae",
+   "bytes": 2265268
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m1_0.dae",
+   "bytes": 1777521
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m1_1.dae",
+   "bytes": 1865091
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m1_m1.dae",
+   "bytes": 2231552
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m1_m2.dae",
+   "bytes": 1947563
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m2_0.dae",
+   "bytes": 1964140
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m2_1.dae",
+   "bytes": 1690750
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m2_m1.dae",
+   "bytes": 2253012
+  },
+  {
+   "file": "models/sidewalks/sidewalks_m2_m2.dae",
+   "bytes": 1109225
+  },
+  {
+   "file": "names.json",
+   "bytes": 49014
+  },
+  {
+   "file": "network.json",
+   "bytes": 378951
+  },
+  {
+   "file": "objects.json",
+   "bytes": 341463
+  },
+  {
+   "file": "roads.json",
+   "bytes": 1229184
+  },
+  {
+   "file": "route.json",
+   "bytes": 2425
+  },
+  {
+   "file": "streets.json",
+   "bytes": 50973
+  },
+  {
+   "file": "terrain_base.jpg",
+   "bytes": 2219665
+  },
+  {
+   "file": "terrain_height.u16",
+   "bytes": 2097152
+  }
+ ],
+ "entries": [
+  {
+   "source": "levels/prviot_krug/art/cubemaps/Universal_cubemap_reflection/cubemap/skybox0.hdr.dds",
+   "status": "unreadable",
+   "kind": "DDS cubemap face (DX10 dxgi=95)",
+   "note": "HDR float DDS; three.js DDSLoader only reads DXT/BC block formats. Sky is drawn procedurally instead"
+  },
+  {
+   "source": "levels/prviot_krug/art/cubemaps/Universal_cubemap_reflection/cubemap/skybox1.hdr.dds",
+   "status": "unreadable",
+   "kind": "DDS cubemap face (DX10 dxgi=95)",
+   "note": "HDR float DDS; three.js DDSLoader only reads DXT/BC block formats. Sky is drawn procedurally instead"
+  },
+  {
+   "source": "levels/prviot_krug/art/cubemaps/Universal_cubemap_reflection/cubemap/skybox2.hdr.dds",
+   "status": "unreadable",
+   "kind": "DDS cubemap face (DX10 dxgi=95)",
+   "note": "HDR float DDS; three.js DDSLoader only reads DXT/BC block formats. Sky is drawn procedurally instead"
+  },
+  {
+   "source": "levels/prviot_krug/art/cubemaps/Universal_cubemap_reflection/cubemap/skybox3.hdr.dds",
+   "status": "unreadable",
+   "kind": "DDS cubemap face (DX10 dxgi=95)",
+   "note": "HDR float DDS; three.js DDSLoader only reads DXT/BC block formats. Sky is drawn procedurally instead"
+  },
+  {
+   "source": "levels/prviot_krug/art/cubemaps/Universal_cubemap_reflection/cubemap/skybox4.hdr.dds",
+   "status": "unreadable",
+   "kind": "DDS cubemap face (DX10 dxgi=95)",
+   "note": "HDR float DDS; three.js DDSLoader only reads DXT/BC block formats. Sky is drawn procedurally instead"
+  },
+  {
+   "source": "levels/prviot_krug/art/cubemaps/Universal_cubemap_reflection/cubemap/skybox5.hdr.dds",
+   "status": "unreadable",
+   "kind": "DDS cubemap face (DX10 dxgi=95)",
+   "note": "HDR float DDS; three.js DDSLoader only reads DXT/BC block formats. Sky is drawn procedurally instead"
+  },
+  {
+   "source": "levels/prviot_krug/art/cubemaps/Universal_cubemap_reflection/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/art/decals/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/art/decals/managedDecalData.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/art/forest/managedItemData.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/art/roads/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/shared_ao_sm.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/shared_ao.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/shared_nm_sm.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/shared_nm.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/shared_r_sm.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/shared_r.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/terrain.png",
+   "status": "copied",
+   "kind": "terrain colour texture (2048², hybrid imagery)",
+   "output": "terrain_base.png"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/terrain.ter",
+   "status": "converted",
+   "kind": "terrain heightmap v9",
+   "output": "terrain_height.u16"
+  },
+  {
+   "source": "levels/prviot_krug/art/terrains/terrain.terrainheightmap.png",
+   "status": "not-needed",
+   "kind": "16-bit heightmap PNG",
+   "note": "same data as terrain.ter; browsers decode PNGs to 8 bits, so the .ter is used"
+  },
+  {
+   "source": "levels/prviot_krug/city.sites.json",
+   "status": "converted",
+   "kind": "parking spots",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/export_report.md",
+   "status": "not-needed",
+   "kind": "other"
+  },
+  {
+   "source": "levels/prviot_krug/facilities/facilities.facilities.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/forest/holm_oak_city_small.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_prop_bin_round.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_aspen_forest_b.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_aspen_small_a.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_aspen_small_c.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_beech_forest_a.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_beech_large_b.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_beech_large_c.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_beech_small_c.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_oak_forest_a.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_oak_forest_b.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_oak_large_a.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_oak_large_b.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_oak_large_c.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_oak_sml_a.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tree_oak_sml_b.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tro_bush_2_small.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tro_bush_huge.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tro_tree_1_filler.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tro_tree_1_huge.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/forest/mapng_tree_tro_tree_2_filler.forest4.json",
+   "status": "converted",
+   "kind": "tree placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/groundModels/mapng_groundmodels.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/info.json",
+   "status": "converted",
+   "kind": "level info",
+   "output": "level.json"
+  },
+  {
+   "source": "levels/prviot_krug/main.decals.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main.forestbrushes4.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main/items.level.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/AIDecalWaypointsGroup/items.level.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/AIWaypointsGroup/items.level.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/barriers/items.level.json",
+   "status": "converted",
+   "kind": "barriers placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/CameraBookmarks/items.level.json",
+   "status": "converted",
+   "kind": "CameraBookmarks placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/corner_paving/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/cycleway_1569543352_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/cycleway_1569543353_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/cycleway_1569543354_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/cycleway_1569543355_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/cycleway_1569543358_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/cycleway_1569543361_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_1390396772_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_539974141_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_547074227_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_588691652_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_588691652_seg_1/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_588691656_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_588691659_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/footway_588691661_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/gutters/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/ja/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/junction_markings/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/parking_markings/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_174750207_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_174750236_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_174750237_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_174750240_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_174750252_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_175520259_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_27594957_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_32671788_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_32705435_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_355940332_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_375523601_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_375523606_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_375523610_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_375527589_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_412445997_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_543794155_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/pedestrian_664064791_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/r_20/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1029114898_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1029114899_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1029114900_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1029114900_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1032595646_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1032595647_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1032596037_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1032596037_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1033054995_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1033054997_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1374411102_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1486453176_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1511156777_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_1511156778_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_16537262_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_16537262_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_16663099_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174144800_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174144800_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174144800_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174144800_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174144803_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174144813_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174273483_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174273483_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174273483_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174273483_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750210_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750230_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750239_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750246_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750246_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750246_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750249_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750249_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174750249_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174751537_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174786615_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_174786643_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080705_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080705_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080707_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080709_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080709_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080709_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080712_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080712_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080716_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080721_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175080727_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175520257_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175520257_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175520260_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175520260_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175520260_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_175520260_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511713_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511713_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511713_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511713_seg_0_6/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511720_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511720_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511720_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511720_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176511720_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_176713867_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_177634449_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_177634449_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_189939446_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_189939448_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_189939449_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_189939451_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229556382_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229556382_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229556382_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229556382_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229556382_seg_0_6/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229556382_seg_0_7/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229556382_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229986882_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_229986884_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_230983135_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_230983136_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_230983138_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233023068_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233023068_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233023076_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032119_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032119_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032128_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032128_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032128_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032128_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032128_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032130_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233032141_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233082416_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233082416_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233082416_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233082418_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233082419_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233082420_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_233643118_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_253457566_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_253457567_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251487_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251487_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251487_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251487_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251487_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251488_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251539_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251540_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251540_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251540_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251543_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_26251548_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_277372561_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_279444980_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_279444980_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_279711808_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_315543138_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_316864133_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_316865358_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_316865358_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_316865358_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32530470_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32530470_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32530473_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32530473_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32530479_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32530479_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32560427_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32560427_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32560427_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32560427_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32560461_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32671566_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_32671566_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_375523598_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_375523603_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_375523609_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_375523609_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_375523609_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_375523611_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_375523611_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_37586876_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_37586876_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_37586876_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_37586876_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_37586876_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_39297499_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_411437304_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_411437305_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_444711464_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_444711464_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_444711464_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_444711464_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_444711464_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_457625773_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_457625774_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_542271517_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_6/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_7/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_8/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0_9/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_546687301_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_547103826_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_548428764_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_548428764_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_549535257_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_549535257_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_549535257_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_549535258_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_549535258_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_549535258_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_549535258_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_3/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_4/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_5/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_6/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_7/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_8/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0_9/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_550745704_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_648584430_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_648584436_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_664709416_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_664709417_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_669010521_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_669017944_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_669017945_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_669243770_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_669243771_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670095351_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670523044_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670523046_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670526700_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670526710_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670526710_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670555019_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_670555020_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_671387109_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_671596935_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_671697757_seg_0_2/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_671697757_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_671706794_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/road_mouths/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_1290517984_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_1363566801_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_174750206_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_174750212_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_279715045_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_375526473_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_544160414_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_552605190_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_680785087_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_driveway_906891315_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1029114902_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1312826824_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1312826826_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1356043354_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1356920224_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1356920225_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1363566797_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1363566798_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1389397064_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1389397065_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1389397066_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_1389397067_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_174273493_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_174750217_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_174750235_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_174750250_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_175520258_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_175520263_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_176714632_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_176714634_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_177017633_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_189939122_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_189939124_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_254343739_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_32671519_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_375523608_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_398443276_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_411030161_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_413673135_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_413968836_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_539929398_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_540254570_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_540835321_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_543207478_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_543207480_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_543794143_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_543794146_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_544160419_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_547918673_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_547918677_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_547918679_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_548019578_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_548019736_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_548021564_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_577785785_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_585626232_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_662969331_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_668341106_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_668343400_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_670520595_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_parking_aisle_670520596_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_1029114897_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_1038885238_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_1230751285_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_1315312290_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_1320400921_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_1323883138_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_1356043353_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_173074805_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_173074810_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_174750216_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_174750220_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_176152969_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_176713866_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_189939102_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_250964116_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_250964117_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_26251550_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_32463026_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_32463032_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_355941439_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_375526472_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_37626711_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_444712223_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_547447734_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_547923104_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_547923114_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_548019580_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_664064788_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_669010524_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_669213287_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Decal_Roads/service_road_909320215_seg_0/items.level.json",
+   "status": "converted",
+   "kind": "DecalRoad group",
+   "output": "roads.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/gasStations/items.level.json",
+   "status": "converted",
+   "kind": "gasStations placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/items.level.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/level_objects/items.level.json",
+   "status": "converted",
+   "kind": "terrain block + model placements",
+   "output": "level.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/PlayerDropPoints/items.level.json",
+   "status": "converted",
+   "kind": "spawn point",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/signs/items.level.json",
+   "status": "converted",
+   "kind": "signs placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/sky_and_sun/items.level.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/street_furniture/items.level.json",
+   "status": "converted",
+   "kind": "street_furniture placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/traffic_signals/items.level.json",
+   "status": "converted",
+   "kind": "traffic_signals placements",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/vegetation/items.level.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/main/MissionGroup/Water/items.level.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/mainLevel.lua",
+   "status": "unreadable",
+   "kind": "BeamNG Lua level script",
+   "note": "engine-specific game logic, not data"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/lamp_glow/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/lamp_glow/mapng_flood_glow.dae",
+   "status": "not-needed",
+   "kind": "Collada model",
+   "note": "not on the drivable map (lamp glow / backdrop mesh)"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/lamp_glow/mapng_lamp_glow.dae",
+   "status": "not-needed",
+   "kind": "Collada model",
+   "note": "not on the drivable map (lamp glow / backdrop mesh)"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/mapng_flag/flagng.dae",
+   "status": "copied",
+   "kind": "Collada flag tile (three.js export, with collision mesh)",
+   "output": "models/flag/flagng.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/mapng_flag/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/mapng_flag/mapng_flag_d.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/beamng_facade_e.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-1_-1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-1_-1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-1_-2.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-1_-2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-1_0.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-1_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-1_1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-1_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-2_-1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-2_-1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-2_-2.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-2_-2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-2_0.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-2_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_-2_1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_-2_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_0_-1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_0_-1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_0_-2.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_0_-2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_0_0.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_0_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_0_1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_0_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_1_-1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_1_-1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_1_-2.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_1_-2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_1_0.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_1_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/buildings/bld_1_1.dae",
+   "status": "copied",
+   "kind": "Collada buildings tile (three.js export, with collision mesh)",
+   "output": "models/buildings/bld_1_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/osm_objects/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_0_0.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_0_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_0_1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_0_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_0_m1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_0_m1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_0_m2.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_0_m2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_1_0.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_1_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_1_1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_1_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_1_m1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_1_m1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_1_m2.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_1_m2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m1_0.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m1_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m1_1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m1_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m1_m1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m1_m1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m1_m2.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m1_m2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m2_0.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m2_0.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m2_1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m2_1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m2_m1.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m2_m1.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/sidewalks/sidewalks_m2_m2.dae",
+   "status": "copied",
+   "kind": "Collada sidewalks tile (three.js export, with collision mesh)",
+   "output": "models/sidewalks/sidewalks_m2_m2.dae"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/terrain_backdrop.dae",
+   "status": "not-needed",
+   "kind": "Collada model",
+   "note": "not on the drivable map (lamp glow / backdrop mesh)"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_E.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_N.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_NE.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_NW.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_S.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_SE.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_SW.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/custom_assets/terrain_backdrop/Textures/backdrop_W.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/biome_materials/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/driver_training_assets/levels/driver_training/art/shapes/buildings/hr_stadium_lights.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/driver_training/art/shapes/buildings/hr_stadium_lights.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/buildings/eca_charging_station.DAE.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/buildings/eca_charging_station.DAE inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/buildings/eca_comsign_cafe.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/buildings/eca_comsign_cafe.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/buildings/eca_lamppost.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/clutter/clutter_city_bench_wood.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/clutter/clutter_city_bench_wood.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/clutter/clutter_city_bike_stand.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/clutter/clutter_city_bike_stand.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_forest_b.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_a.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_aspen/tree_aspen_small_c.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_forest_a.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_b.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_large_c.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_beech/tree_beech_small_c.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_a.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_forest_b.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_a.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_b.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_large_c.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_a.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/east_coast_usa_assets/levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/east_coast_usa/art/shapes/trees/trees_oak/tree_oak_sml_b.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/fuelstation_materials/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/hirochi_raceway_assets/levels/hirochi_raceway/art/shapes/objects/billboard_10x5.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/hirochi_raceway/art/shapes/objects/billboard_10x5.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/hirochi_raceway_assets/levels/hirochi_raceway/art/shapes/objects/farm_gate_metal1.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/hirochi_raceway/art/shapes/objects/farm_gate_metal1.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/hirochi_raceway_assets/levels/hirochi_raceway/art/shapes/objects/farm_gate_wood1.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/hirochi_raceway/art/shapes/objects/farm_gate_wood1.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/hirochi_raceway_assets/levels/hirochi_raceway/art/shapes/objects/fence_pedestrian.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/hirochi_raceway/art/shapes/objects/fence_pedestrian.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/hirochi_raceway_assets/levels/hirochi_raceway/art/shapes/objects/toilet.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/hirochi_raceway/art/shapes/objects/toilet.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/Industrial_assets/levels/Industrial/art/shapes/buildings/ind_mesh_fence_gate_3m.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/Industrial/art/shapes/buildings/ind_mesh_fence_gate_3m.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_billboard_hotel_big.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_billboard_hotel_big.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_bld_boomgate_4.5m.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_bld_boomgate_4.5m.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_bld_boomgate_6.5m.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_bld_boomgate_6.5m.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_castle_statue.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_castle_statue.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_city_busstop.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_city_busstop.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_clutter_sorting_bin.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_clutter_sorting_bin.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_wall_concrete.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_wall_concrete.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/buildings/italy_wall_stone.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/buildings/italy_wall_stone.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/italy_assets/levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/italy/art/shapes/trees/trees_italy/holm_oak_city_small.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/buildings/jri_observatory_statue.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/buildings/jri_observatory_statue.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_1/tro_bush_huge.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/bush_tropical_2/tro_bush_2_small.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_filler.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_1/tro_tree_1_huge.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae.asset.json.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae.asset.json inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae.imposter_normals.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae.imposter_normals.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae.imposter.dds.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae.imposter.dds inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/jungle_rock_island_assets/levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/jungle_rock_island/art/shapes/trees/trees_tropical_2/tro_tree_2_filler.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/shape_materials/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/signs_materials/main.materials.json",
+   "status": "not-needed",
+   "kind": "BeamNG material definitions",
+   "note": "materials map to BeamNG shaders; colours are rebuilt in the browser"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/west_coast_usa_assets/levels/west_coast_usa/art/shapes/objects/pole_light_single.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/west_coast_usa/art/shapes/objects/pole_light_single.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map_assets/official_assets/west_coast_usa_assets/levels/west_coast_usa/art/shapes/objects/pole_traffic1.dae.link",
+   "status": "unreadable",
+   "kind": "BeamNG asset link",
+   "note": "points to /levels/west_coast_usa/art/shapes/objects/pole_traffic1.dae inside the BeamNG game install; the file itself is not in the archive"
+  },
+  {
+   "source": "levels/prviot_krug/map.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/mapng_probes.json",
+   "status": "not-needed",
+   "kind": "BeamNG scene/editor data",
+   "note": "not used by the first route"
+  },
+  {
+   "source": "levels/prviot_krug/mapng_source/export_report.json",
+   "status": "converted",
+   "kind": "MapNG report with bundled OSM (2225 features)",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/mapng_source/LICENSE.txt",
+   "status": "not-needed",
+   "kind": "other"
+  },
+  {
+   "source": "levels/prviot_krug/mapng.json",
+   "status": "converted",
+   "kind": "MapNG export meta (bounds, spawn)",
+   "output": "level.json"
+  },
+  {
+   "source": "levels/prviot_krug/preview.png",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/signals.json",
+   "status": "converted",
+   "kind": "traffic light controllers + sequences",
+   "output": "objects.json"
+  },
+  {
+   "source": "levels/prviot_krug/spawn_cyagj4.jpg",
+   "status": "not-needed",
+   "kind": "image",
+   "note": "preview / BeamNG material texture not used by the browser renderer"
+  },
+  {
+   "source": "levels/prviot_krug/terrain.terrain.json",
+   "status": "converted",
+   "kind": "terrain descriptor",
+   "output": "level.json"
+  }
+ ],
+ "log": [
+  "terrain: 1024x1024, 1 m/sample, 10 m height range",
+  "roads: 1715 DecalRoads (352 other, 31 path, 516 gutter, 215 carriageway, 28 zebra, 496 marking, 77 service)",
+  "one-way service roads restored from OSM: 15",
+  "OSM street centre lines vs DecalRoads: median 0.50 m over 1403 road vertices",
+  "road graph: 366 nodes, 449 edges, 79 junctions",
+  "zoo: Zoo Skopje at 392,262; parking lot \"Parking Zone C\" (OSM 32530498) at 435,205",
+  "route: 142 m, 7 graph edges, junction node 334 at 349,218",
+  "streets: 57 streets from 141 named ways",
+  "names: 141 named roads, 119 named places",
+  "objects: 264 parking spots, 83 OSM parking areas, 31 traffic lights, 116 signs, 641 lamps, 731 trees, 1966 barriers",
+  "models: 16 building tiles, 16 sidewalk tiles"
+ ]
+}

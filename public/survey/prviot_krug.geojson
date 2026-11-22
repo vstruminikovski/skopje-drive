@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "L-001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.41692,
+          42.005622
+        ]
+      },
+      "properties": {
+        "kind": "light",
+        "code": "VI-4.1",
+        "facing": 35.9,
+        "roadSide": "right",
+        "source": "user draft (facing from nearest road, not verified on site)",
+        "surveyor": "unknown",
+        "surveyDate": "2026-11-21",
+        "verified": false,
+        "note": "nearest road 8.2 m away"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "S-001",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          21.41692,
+          42.005622
+        ]
+      },
+      "properties": {
+        "kind": "sign",
+        "code": "II-1",
+        "facing": 35.9,
+        "roadSide": "right",
+        "source": "user draft (facing from nearest road, not verified on site)",
+        "surveyor": "unknown",
+        "surveyDate": "2026-11-21",
+        "verified": false,
+        "note": "nearest road 8.2 m away"
+      }
+    }
+  ]
+}

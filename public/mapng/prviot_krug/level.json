@@ -1,0 +1,364 @@
+{
+ "name": "prviot-krug",
+ "center": {
+  "lat": 42.00347442049409,
+  "lng": 21.412621736526493
+ },
+ "bounds": {
+  "north": 42.0081198283681,
+  "south": 41.998828670911365,
+  "west": 21.406403607562424,
+  "east": 21.41886132316271
+ },
+ "sizeMeters": 1024,
+ "terrain": {
+  "file": "terrain_height.u16",
+  "size": 1024,
+  "squareSize": 1,
+  "maxHeight": 10,
+  "origin": [
+   -512,
+   -512
+  ],
+  "baseTexture": "terrain_base.jpg",
+  "layout": "row-major-south-up-uint16"
+ },
+ "models": [
+  {
+   "name": "buildings_1_-2",
+   "file": "models/buildings/bld_1_-2.dae",
+   "position": [
+    384,
+    -384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-2_0",
+   "file": "models/buildings/bld_-2_0.dae",
+   "position": [
+    -384,
+    128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-1_0",
+   "file": "models/buildings/bld_-1_0.dae",
+   "position": [
+    -128,
+    128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-2_1",
+   "file": "models/buildings/bld_-2_1.dae",
+   "position": [
+    -384,
+    384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_1_1",
+   "file": "models/buildings/bld_1_1.dae",
+   "position": [
+    384,
+    384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_1_0",
+   "file": "models/buildings/bld_1_0.dae",
+   "position": [
+    384,
+    128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_0_0",
+   "file": "models/buildings/bld_0_0.dae",
+   "position": [
+    128,
+    128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-2_-2",
+   "file": "models/buildings/bld_-2_-2.dae",
+   "position": [
+    -384,
+    -384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_0_-2",
+   "file": "models/buildings/bld_0_-2.dae",
+   "position": [
+    128,
+    -384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-2_-1",
+   "file": "models/buildings/bld_-2_-1.dae",
+   "position": [
+    -384,
+    -128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-1_-2",
+   "file": "models/buildings/bld_-1_-2.dae",
+   "position": [
+    -128,
+    -384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-1_-1",
+   "file": "models/buildings/bld_-1_-1.dae",
+   "position": [
+    -128,
+    -128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_0_1",
+   "file": "models/buildings/bld_0_1.dae",
+   "position": [
+    128,
+    384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_-1_1",
+   "file": "models/buildings/bld_-1_1.dae",
+   "position": [
+    -128,
+    384,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_0_-1",
+   "file": "models/buildings/bld_0_-1.dae",
+   "position": [
+    128,
+    -128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "buildings_1_-1",
+   "file": "models/buildings/bld_1_-1.dae",
+   "position": [
+    384,
+    -128,
+    0
+   ],
+   "role": "buildings"
+  },
+  {
+   "name": "sidewalks_0_0",
+   "file": "models/sidewalks/sidewalks_0_0.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_0_1",
+   "file": "models/sidewalks/sidewalks_0_1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_0_m1",
+   "file": "models/sidewalks/sidewalks_0_m1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_0_m2",
+   "file": "models/sidewalks/sidewalks_0_m2.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_1_0",
+   "file": "models/sidewalks/sidewalks_1_0.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_1_1",
+   "file": "models/sidewalks/sidewalks_1_1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_1_m1",
+   "file": "models/sidewalks/sidewalks_1_m1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_1_m2",
+   "file": "models/sidewalks/sidewalks_1_m2.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m1_0",
+   "file": "models/sidewalks/sidewalks_m1_0.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m1_1",
+   "file": "models/sidewalks/sidewalks_m1_1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m1_m1",
+   "file": "models/sidewalks/sidewalks_m1_m1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m1_m2",
+   "file": "models/sidewalks/sidewalks_m1_m2.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m2_0",
+   "file": "models/sidewalks/sidewalks_m2_0.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m2_1",
+   "file": "models/sidewalks/sidewalks_m2_1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m2_m1",
+   "file": "models/sidewalks/sidewalks_m2_m1.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "sidewalks_m2_m2",
+   "file": "models/sidewalks/sidewalks_m2_m2.dae",
+   "position": [
+    0,
+    0,
+    0
+   ],
+   "role": "sidewalks"
+  },
+  {
+   "name": "mapng_flag_marker",
+   "file": "models/flag/flagng.dae",
+   "position": [
+    -297,
+    -225,
+    9.026
+   ],
+   "role": "flag"
+  }
+ ],
+ "files": {
+  "roads": "roads.json",
+  "network": "network.json",
+  "objects": "objects.json",
+  "route": "route.json"
+ }
+}
