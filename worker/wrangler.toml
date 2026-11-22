@@ -22,3 +22,5 @@ new_sqlite_classes = ["Account", "Workspace", "Limiter"]
 [vars]
 ALLOWED_ORIGIN = "https://vstruminikovski.github.io"
 ADMINS = "viktor"
+SIGNUPS_PER_MIN = "20"
+SIGNINS_PER_MIN = "60"

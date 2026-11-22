@@ -13,14 +13,14 @@ export interface Env {
   ALLOWED_ORIGIN: string;
   ADMINS: string; // usernames that may create workspaces with any name (e.g. player)
   TURNSTILE_SECRET?: string; // optional: when set, signups and sign-ins need a Turnstile check
+  SIGNUPS_PER_MIN?: string; // per address; defaults in wrangler.toml
+  SIGNINS_PER_MIN?: string;
 }
 
 const TOKEN_DAYS = 30;
 const MAX_BODY = 1_500_000; // bytes: a workspace is well under the 2 MB storage value limit
 const USER_RE = /^[a-z0-9_]{3,20}$/;
 const WS_RE = /^[a-z0-9_-]{3,32}$/;
-const SIGNUPS_PER_MIN = 20;
-const SIGNINS_PER_MIN = 60;
 const LOCK_AFTER_FAILS = 10;
 const LOCK_MINUTES = 15;
 
@@ -108,7 +108,7 @@ async function turnstileOk(env: Env, req: Request, token: unknown): Promise<void
 }
 
 async function register(env: Env, req: Request): Promise<Response> {
-  await underLimit(env, req, 'signup', SIGNUPS_PER_MIN);
+  await underLimit(env, req, 'signup', Number(env.SIGNUPS_PER_MIN ?? 20));
   const body = await readBody(req);
   await turnstileOk(env, req, body.turnstile);
   const username = String(body.username ?? '').toLowerCase().trim();
@@ -123,7 +123,7 @@ async function register(env: Env, req: Request): Promise<Response> {
 }
 
 async function login(env: Env, req: Request): Promise<Response> {
-  await underLimit(env, req, 'signin', SIGNINS_PER_MIN);
+  await underLimit(env, req, 'signin', Number(env.SIGNINS_PER_MIN ?? 60));
   const body = await readBody(req);
   await turnstileOk(env, req, body.turnstile);
   const username = String(body.username ?? '').toLowerCase().trim();
