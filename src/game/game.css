@@ -261,3 +261,8 @@ body {
 #pick .pick-back { display: block; width: 100%; margin-top: 14px; background: none; border: 0; color: #777; font: inherit; font-size: 14px; text-align: center; text-decoration: none; cursor: pointer; }
 #pick .pick-back:hover { color: #fff; }
 #pick.phone .pick-back { display: none; }
+/* secondary options sit lower and smaller, so the main game button is the one you hit */
+#pick #build, #pick #load { min-height: 40px; font-size: 13px; font-weight: 600; opacity: .85; }
+#pick #build { margin-top: 40px; }
+#pick #load { margin-top: 12px; }
+#pick #build.pick-sub { display: none; }
