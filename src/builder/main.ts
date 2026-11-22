@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { startGame, type BuilderContext } from '../game/boot';
 import { kvSet, kvDel } from '../shared/db';
 import { loadItems, type ItemsFile } from '../game/items';
+import { initCloudPanel } from './cloud-panel';
 import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoints, lampOf, surfaceOnScene, type UserItem } from '../game/render/userItems';
 import type { Lamp } from '../game/traffic/signals';
 import { writeSession, readSession, type Session } from './store';
@@ -1193,3 +1194,15 @@ function updateMarkers(camera: THREE.PerspectiveCamera) {
   markings() { return markingsFile(); },
   mod() { return modOf(recs, 'test'); },
 };
+
+// the cloud panel: shared workspaces with their own logins
+initCloudPanel({
+  getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
+  getSurveyor: () => (document.getElementById('surveyor') as HTMLInputElement).value.trim(),
+  msg,
+  onLoad: (items) => {
+    backupBeforeReplace('вчитување од облакот');
+    applySession(gameSession({ format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: '', items } as ItemsFile), true);
+    void persistNow();
+  },
+});

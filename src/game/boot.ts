@@ -96,7 +96,9 @@ async function boot(builder?: BuilderHooks) {
     .then((r) => (r.ok ? r.json() : null))
     .catch(() => null);
   // the items the builder saved (or the published default): drawn as the builder draws them
-  const itemsFile = builder ? null : await loadItems();
+  // a link to a shared workspace (?ws=name) plays that workspace; the name is public, never a password
+  const ws = new URLSearchParams(location.search).get('ws');
+  const itemsFile = builder ? null : await loadItems(ws);
   const userItems: UserItem[] | null = itemsFile ? itemsFile.items : null;
   // the builder starts with no survey items; its export keeps the survey file as it is
   const surveyAll = (builder ? { type: 'FeatureCollection', features: [] } : { type: 'FeatureCollection', features: fc?.features ?? [] }) as SurveyCollection;

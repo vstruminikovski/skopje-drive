@@ -9,7 +9,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "worker:dev": "wrangler dev -c worker/wrangler.toml",
+    "worker:deploy": "wrangler deploy -c worker/wrangler.toml",
+    "worker:typecheck": "tsc -p worker/tsconfig.json"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "0.21.0",
@@ -20,6 +23,8 @@
     "@types/three": "0.169.0",
     "typescript": "5.6.3",
     "vite": "5.4.11",
-    "vitest": "2.1.5"
+    "vitest": "2.1.5",
+    "wrangler": "^3.100.0",
+    "@cloudflare/workers-types": "^4.20250101.0"
   }
 }

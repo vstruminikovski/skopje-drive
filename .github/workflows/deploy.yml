@@ -30,6 +30,8 @@ jobs:
         env:
           # project pages live under https://<user>.github.io/<repo>/
           VITE_BASE: /${{ github.event.repository.name }}/
+          # the save server (worker/): set once with: gh variable set VITE_API --body <worker url>
+          VITE_API: ${{ vars.VITE_API }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

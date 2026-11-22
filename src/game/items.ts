@@ -1,6 +1,7 @@
-// The placed items (signs, lights, poles, lines, trees, lamps). The game shows what the builder saved in this browser;
-// everyone else gets the published default file.
+// The placed items (signs, lights, poles, lines, trees, lamps). Where they come from, in order:
+// 1. a shared workspace named in the link (?ws=name), 2. what the builder saved in this browser, 3. the published default.
 import { kvGet } from '../shared/db';
+import { loadWorkspace } from '../shared/cloud';
 import type { UserItem } from './render/userItems';
 
 export const ITEMS_FORMAT = 'mapng-mod';
@@ -19,7 +20,11 @@ export function isItemsFile(v: unknown): v is ItemsFile {
   return !!d && d.format === ITEMS_FORMAT && d.version === ITEMS_VERSION && Array.isArray(d.items);
 }
 
-export async function loadItems(): Promise<ItemsFile | null> {
+export async function loadItems(ws?: string | null): Promise<ItemsFile | null> {
+  if (ws) {
+    const shared = await loadWorkspace(ws).catch(() => null);
+    if (shared && isItemsFile(shared.data)) return shared.data;
+  }
   const local = await kvGet<ItemsFile>('items').catch(() => null);
   if (isItemsFile(local)) return local;
   const url = `${import.meta.env.BASE_URL}items/default.json`;

@@ -96,6 +96,21 @@
         <div class="row"><button id="saveProj">Зачувај проект (датотека)</button><button id="openProjBtn">Отвори датотека…</button></div>
         <input type="file" id="openProj" accept=".json,application/json" style="display:none">
         <div class="row"><button id="loadGame">Вчитај од играта</button><button id="resetGame">Врати основно</button></div>
+        <div class="cloud" id="cloud">
+          <b>Облак</b>
+          <div id="cWho" class="status">Не си најавен</div>
+          <div id="cAuth">
+            <div class="row"><input id="cUser" placeholder="корисничко име" autocomplete="username"></div>
+            <div class="row"><input id="cPass" type="password" placeholder="лозинка (мин. 8)" autocomplete="current-password"></div>
+            <div class="row"><button id="cLogin">Најави се</button><button id="cRegister">Регистрирај се</button></div>
+          </div>
+          <div id="cWork" hidden>
+            <div class="row"><input id="cName" placeholder="име на работата"><button id="cLoad">Вчитај</button></div>
+            <div class="row"><button id="cSave" class="primary">Зачувај во облакот</button><button id="cLogout">Одјави се</button></div>
+            <div class="row"><input id="cShare" placeholder="корисничко име"><button id="cShareBtn">Сподели</button></div>
+            <div class="row"><small id="cLink" class="hint"></small><button id="cCopy">Копирај</button></div>
+          </div>
+        </div>
         <details class="more">
           <summary>Повеќе</summary>
           <div class="row"><button id="exportBtn">Извези ознаки и знаци</button></div>
