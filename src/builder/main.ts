@@ -819,9 +819,19 @@ document.getElementById('saveGame')!.addEventListener('click', async () => {
   let admin = false;
   try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
   if (!admin) {
-    // everyone else: a copy on this computer (IndexedDB), nothing on the shared game
+    // everyone else: a copy on this computer, and a copy on your own profile (for your other devices).
+    // Neither changes the map other players have.
     await persistNow();
-    msg('Зачувано на овој компјутер. Играта за сите не се менува.');
+    try {
+      const current = await cloud.loadWorkspace(a.username).catch(() => null);
+      const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
+      await cloud.saveWorkspace(a.username, data, current?.version ?? 0);
+      msg('Зачувано на овој компјутер и на твојот профил. Играј од кој било уред со твоето име.');
+    } catch (e) {
+      if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш на профилот.');
+      else if (e instanceof cloud.CloudError && e.status === 409) msg('Зачувано на овој компјутер. На профилот има понова верзија, вчитај ја прво.');
+      else msg('Зачувано на овој компјутер. Профилот не е достапен сега.');
+    }
     return;
   }
   // the admin: the map everyone plays
@@ -1217,5 +1227,5 @@ initCloudPanel({
   },
 });
 if (cloud.account()) {
-  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај на овој компјутер'; }).catch(() => {});
+  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај'; }).catch(() => {});
 }

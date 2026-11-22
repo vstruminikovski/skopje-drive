@@ -15,6 +15,19 @@
       <p class="error-text"></p>
       <a class="back" href="../">← Назад</a>
     </div>
+    <div id="pick" hidden>
+      <div class="pick-card">
+        <h1>Играј</h1>
+        <button id="guest" class="pick-btn">Играј ја играта</button>
+        <p class="pick-or">или</p>
+        <form id="signin" autocomplete="on">
+          <input id="pUser" placeholder="корисничко име" autocomplete="username" required>
+          <input id="pPass" type="password" placeholder="лозинка" autocomplete="current-password" required>
+          <button type="submit" class="pick-btn">Најави се и играј со мојата работа</button>
+          <p id="pErr" class="pick-err" role="alert"></p>
+        </form>
+      </div>
+    </div>
     <script type="module" src="/src/play/main.ts"></script>
   </body>
 </html>

@@ -232,3 +232,13 @@ body {
   color: var(--ink);
   pointer-events: none;
 }
+
+/* the start choice: play as a guest, or sign in to play your own saved map */
+#pick { position: fixed; inset: 0; display: grid; place-items: center; background: #f4efe6; z-index: 50; font: 16px/1.5 system-ui, sans-serif; color: #1f2a33; padding: 16px; }
+#pick[hidden] { display: none; }
+#pick .pick-card { width: min(380px, 100%); background: #fffdf8; border: 1px solid #e6dccb; border-radius: 18px; padding: 24px 20px; box-shadow: 0 8px 24px -12px rgba(0,0,0,.18); }
+#pick h1 { font-size: 24px; margin: 0 0 16px; text-align: center; }
+#pick input { width: 100%; font: inherit; padding: 12px; margin: 6px 0; border: 1px solid #e6dccb; border-radius: 10px; background: #fff; }
+#pick .pick-btn { width: 100%; font: inherit; font-weight: 600; min-height: 48px; padding: 10px; margin-top: 8px; border: 0; border-radius: 12px; background: #d9622b; color: #fff; cursor: pointer; }
+#pick .pick-or { text-align: center; color: #5d6b76; margin: 12px 0 4px; }
+#pick .pick-err { color: #b3261e; margin: 8px 0 0; min-height: 1em; }

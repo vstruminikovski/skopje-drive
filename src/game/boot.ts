@@ -57,15 +57,16 @@ export interface BuilderContext {
   poleAt: (pos: number[], dir: number[]) => number[];
 }
 
-export function startGame(builder?: BuilderHooks) {
-  boot(builder).catch((e) => {
+/** opts.ws: the workspace to play (a signed-in player passes their own name); otherwise the published map. */
+export function startGame(builder?: BuilderHooks, opts?: { ws?: string | null }) {
+  boot(builder, opts?.ws ?? null).catch((e) => {
     console.error(e);
     errorText.textContent = `Could not start: ${e.message ?? e}`;
     loading.classList.add('error');
   });
 }
 
-async function boot(builder?: BuilderHooks) {
+async function boot(builder: BuilderHooks | undefined, playWs: string | null) {
   progress(0.05);
   const level = await loadLevel(LEVEL_BASE);
 
@@ -97,7 +98,7 @@ async function boot(builder?: BuilderHooks) {
     .catch(() => null);
   // the items the builder saved (or the published default): drawn as the builder draws them
   // a link to a shared workspace (?ws=name) plays that workspace; the name is public, never a password
-  const ws = new URLSearchParams(location.search).get('ws');
+  const ws = playWs ?? new URLSearchParams(location.search).get('ws');
   const itemsFile = builder ? null : await loadItems(ws);
   const userItems: UserItem[] | null = itemsFile ? itemsFile.items : null;
   // the builder starts with no survey items; its export keeps the survey file as it is
