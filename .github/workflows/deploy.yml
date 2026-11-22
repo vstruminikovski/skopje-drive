@@ -32,6 +32,8 @@ jobs:
           VITE_BASE: /${{ github.event.repository.name }}/
           # the save server (worker/): set once with: gh variable set VITE_API --body <worker url>
           VITE_API: ${{ vars.VITE_API }}
+          # the public Turnstile site key (the secret key lives only in the Worker)
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
