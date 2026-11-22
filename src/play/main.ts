@@ -67,7 +67,8 @@ async function start() {
       play(r.username);
     } catch (err) {
       resetCheck();
-      $('pErr').textContent = err instanceof cloud.CloudError ? err.message : 'Нешто не е во ред.';
+      const taken = register && err instanceof cloud.CloudError && err.status === 409;
+      $('pErr').textContent = taken ? 'Това корисничко име веќе постои. Притисни „Најави се“ или избери друго име.' : err instanceof cloud.CloudError ? err.message : 'Нешто не е во ред.';
     }
   };
   $('signin').addEventListener('submit', (e) => { e.preventDefault(); void go(false); });

@@ -63,7 +63,13 @@ export function initCloudPanel(o: Options) {
       $<HTMLInputElement>('cPass').value = '';
       who();
       o.msg(register ? `Добредојде, ${r.username}!` : `Добредојде назад, ${r.username}.`);
-    } catch (e) { resetCheck(); fail(e); }
+    } catch (e) {
+      resetCheck();
+      // a taken name is the usual reason for "it keeps asking me to register": say what to do
+      if (register && e instanceof cloud.CloudError && e.status === 409) {
+        o.msg('Това корисничко име веќе постои. Притисни „Најави се“ или избери друго име.');
+      } else fail(e);
+    }
   }
   $('cLogin').addEventListener('click', () => void signIn(false));
   $('cRegister').addEventListener('click', () => void signIn(true));
