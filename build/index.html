@@ -76,10 +76,12 @@
       #project details.more { margin-top: 6px; }
       #project details.more summary { cursor: pointer; color: #aab2bd; }
       #project .row { margin: 6px 0; }
-      #gate .gate-card { max-width: 380px; width: calc(100vw - 32px); background: #000 !important; border: 1px solid #333; border-radius: 0; color: #fff; padding: 28px 24px; }
+      #gate { overflow-y: auto; }
+      #gate .gate-card { margin: auto; max-height: none; width: calc(100vw - 32px); background: #000 !important; border: 1px solid #333; border-radius: 0; color: #fff; padding: 28px 24px; }
       #gate .gate-title { display: block; font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
       #gate .gate-card p.lead { color: #fff; font-size: 16px; margin: 0 0 18px; }
-      #gate .gate-card input { border-radius: 0; background: #000; border: 1px solid #333; color: #fff; }
+      #gate .gate-card input { border-radius: 0; background: #000; border: 1px solid #333; color: #fff; display: block; width: 100%; height: 44px; padding: 0 12px; margin: 6px 0; font: inherit; box-sizing: border-box; }
+      #gate #cTurnstile { margin: 10px 0; min-height: 65px; }
       #gate .gate-card button { border-radius: 0; font-weight: 700; background: #fff; color: #000; border: 1px solid #fff; }
       #gate .gate-card button#cRegister { background: #000; color: #fff; }
       #gate .gate-card p { color: #aab2bd; }

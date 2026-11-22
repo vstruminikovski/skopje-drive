@@ -38,7 +38,7 @@ export function initCloudPanel(o: Options) {
     s2.async = true;
     s2.onload = () => {
       const t = (window as unknown as { turnstile?: { render: (el: string, o: object) => string } }).turnstile;
-      if (t) widget = t.render('#cTurnstile', { sitekey: siteKey });
+      if (t) widget = t.render('#cTurnstile', { sitekey: siteKey, size: 'flexible', appearance: 'interaction-only' });
     };
     document.head.appendChild(s2);
   }
