@@ -1,3 +1,5 @@
+import { fixLinks } from '../shared/links';
+fixLinks();
 // The game page. Signed out: the published map. Signed in (on any device): your own saved map.
 // Only this page loads the game, and the builder stays on desktop.
 import { startGame } from '../game/boot';

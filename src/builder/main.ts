@@ -1,3 +1,5 @@
+import { fixLinks } from '../shared/links';
+fixLinks();
 // Builder: the game itself (src/mapng/boot.ts) with a free camera and placement tools.
 // Signs, traffic lights and markings are created with the game's own renderers, so what you
 // place looks exactly like it will in the game. Export writes the survey file the game reads.

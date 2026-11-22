@@ -13,12 +13,12 @@
       <div class="pct"></div>
       <small class="credit">Карта: © OpenStreetMap contributors</small>
       <p class="error-text"></p>
-      <a class="back" href="../">← Назад</a>
+      <a class="back" data-go="home" href="#">← Назад</a>
     </div>
     <div id="pick" hidden>
       <div class="pick-card">
         <h1>SkopjeDrive</h1>
-        <a id="build" class="pick-btn" href="../build/">Гради ја играта</a>
+        <a id="build" class="pick-btn" data-go="build" href="#">Гради ја играта</a>
         <p class="pick-sub">Додавај знаци и ознаки</p>
         <button id="load" class="pick-btn pick-alt" type="button">Вчитај моја игра</button>
         <form id="signin" autocomplete="on" hidden>
@@ -31,7 +31,7 @@
           <p id="pErr" class="pick-err" role="alert"></p>
         </form>
         <button id="guest" class="pick-btn pick-alt" type="button">Играј обичната игра</button>
-        <a id="home" class="pick-back" href="../">← Почетна</a>
+        <a id="home" class="pick-back" data-go="home" href="#">← Почетна</a>
         <p id="phoneNote" class="phone-note" hidden>Отвори го на компјутер за да додаваш знаци, ознаки и семафори.</p>
       </div>
     </div>
