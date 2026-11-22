@@ -10,6 +10,7 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 function play(ws: string | null) {
   $('pick').hidden = true;
   $('loading').hidden = false;
+  $('menuBtn').hidden = false;
   startGame(undefined, { ws });
 }
 
@@ -18,9 +19,13 @@ async function start() {
   const linked = new URLSearchParams(location.search).get('ws');
   if (linked) return play(linked);
   const a = cloud.account();
-  if (a) return play(a.username);
+  // signed in: play your map at once, unless you came back to the menu on purpose
+  const menu = new URLSearchParams(location.search).has('menu');
+  if (a && !menu) return play(a.username);
+  if (a) { $('who').textContent = `Најавен си како ${a.username}`; $('who').hidden = false; $('logout').hidden = false; }
   $('loading').hidden = true; // the choice comes first
   $('pick').hidden = false;
+  $('logout').addEventListener('click', () => { cloud.setAccount(null); location.replace(`${import.meta.env.BASE_URL}`); });
   $('guest').addEventListener('click', () => play(null));
   // phones and tablets: only the game button. Accounts and building are for desktops.
   const desktop = matchMedia('(min-width: 900px) and (pointer: fine) and (hover: hover)').matches;
