@@ -818,18 +818,23 @@ document.getElementById('saveGame')!.addEventListener('click', async () => {
   if (!a) { msg('Најави се за да зачуваш.'); return; }
   let admin = false;
   try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
-  // the admin's save is the map everyone plays; anyone else's save stays under their own name
-  const target = admin ? 'published' : a.username;
-  if (admin && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return;
+  if (!admin) {
+    // everyone else: a copy on this computer (IndexedDB), nothing on the shared game
+    await persistNow();
+    msg('Зачувано на овој компјутер. Играта за сите не се менува.');
+    return;
+  }
+  // the admin: the map everyone plays
+  if (!confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return;
   try {
-    const current = await cloud.loadWorkspace(target).catch(() => null);
+    const current = await cloud.loadWorkspace('published').catch(() => null);
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
-    await cloud.saveWorkspace(target, data, current?.version ?? 0);
-    msg(admin ? `Објавено за сите играчи · ${recs.length} ставки.` : `Зачувано на твоето име „${target}“. Играј со ?ws=${target}.`);
+    await cloud.saveWorkspace('published', data, current?.version ?? 0);
+    msg(`Објавено за сите играчи · ${recs.length} ставки.`);
   } catch (e) {
-    if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
+    if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да објавиш.');
     else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој објавил меѓувреме. Вчитај ја најновата верзија и пробај повторно.');
-    else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да зачувам.');
+    else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да објавам.');
   }
 });
 document.getElementById('loadGame')!.addEventListener('click', async () => {
@@ -1212,5 +1217,5 @@ initCloudPanel({
   },
 });
 if (cloud.account()) {
-  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај на мое име'; }).catch(() => {});
+  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај на овој компјутер'; }).catch(() => {});
 }
