@@ -58,3 +58,6 @@ export function shareWorkspace(name: string, username: string) {
     method: 'POST', headers: auth(), body: JSON.stringify({ username }),
   });
 }
+export function me() {
+  return call<{ username: string; admin: boolean }>('/api/me', { headers: auth() });
+}

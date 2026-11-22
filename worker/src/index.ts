@@ -218,12 +218,15 @@ export class Workspace extends DurableObject {
         const user: string = body.user;
         if (!ws) {
           // a new workspace takes your own username as its name; admins may use any name (e.g. player)
+          if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
           if (user !== body.name && !body.admins.includes(user)) return reply(403, { error: 'Новата работа се создава со твоето корисничко име.' });
           if (body.baseVersion !== 0) return reply(409, { version: 0 });
           const rec: WsRec = { owner: user, members: [], version: 1, savedAt: body.savedAt, savedBy: user, data: body.data };
           await this.ctx.storage.put('ws', rec);
           return reply(200, { version: 1, savedAt: rec.savedAt });
         }
+        // the published map is what everyone plays: only an admin can change it
+        if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         if (ws.owner !== user && !ws.members.includes(user)) return reply(403, { error: 'Немаш пристап до оваа работа.' });
         if (body.baseVersion !== ws.version) return reply(409, { version: ws.version });
         const next: WsRec = { ...ws, version: ws.version + 1, savedAt: body.savedAt, savedBy: user, data: body.data };
@@ -265,6 +268,12 @@ export default {
       if (parts[0] !== 'api') throw new HttpError(404, 'Не постои.');
       if (req.method === 'POST' && parts.length === 2 && parts[1] === 'register') return await register(env, req);
       if (req.method === 'POST' && parts.length === 2 && parts[1] === 'login') return await login(env, req);
+      if (req.method === 'GET' && parts.length === 2 && parts[1] === 'me') {
+        const user = await userFromToken(env, req);
+        if (!user) throw new HttpError(401, 'Најави се.');
+        const admins = env.ADMINS.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+        return json(env, { username: user, admin: admins.includes(user) });
+      }
       if (parts[1] === 'ws' && parts.length === 3) {
         const name = parts[2].toLowerCase();
         if (req.method === 'GET') return await getWorkspace(env, name);

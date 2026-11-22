@@ -4,7 +4,7 @@
 
 import * as THREE from 'three';
 import { startGame, type BuilderContext } from '../game/boot';
-import { kvSet, kvDel } from '../shared/db';
+import * as cloud from '../shared/cloud';
 import { loadItems, type ItemsFile } from '../game/items';
 import { initCloudPanel } from './cloud-panel';
 import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoints, lampOf, surfaceOnScene, type UserItem } from '../game/render/userItems';
@@ -814,12 +814,22 @@ document.getElementById('openProj')!.addEventListener('change', async (e) => {
 document.getElementById('surveyor')!.addEventListener('input', () => persistSoon());
 document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
 document.getElementById('saveGame')!.addEventListener('click', async () => {
-  // the game reads these the next time it starts in this browser
+  const a = cloud.account();
+  if (!a) { msg('Најави се за да зачуваш.'); return; }
+  let admin = false;
+  try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
+  // the admin's save is the map everyone plays; anyone else's save stays under their own name
+  const target = admin ? 'published' : a.username;
+  if (admin && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return;
   try {
-    await kvSet('items', { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: (document.getElementById('surveyor') as HTMLInputElement).value.trim(), items: JSON.parse(JSON.stringify(recs)) });
-    msg(`Зачувани се ${recs.length} ставки во играта. Пушти ја играта за да ги видиш.`);
+    const current = await cloud.loadWorkspace(target).catch(() => null);
+    const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
+    await cloud.saveWorkspace(target, data, current?.version ?? 0);
+    msg(admin ? `Објавено за сите играчи · ${recs.length} ставки.` : `Зачувано на твоето име „${target}“. Играј со ?ws=${target}.`);
   } catch (e) {
-    msg(`Не можам да зачувам во играта: ${(e as Error).message}`);
+    if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
+    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој објавил меѓувреме. Вчитај ја најновата верзија и пробај повторно.');
+    else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да зачувам.');
   }
 });
 document.getElementById('loadGame')!.addEventListener('click', async () => {
@@ -830,11 +840,6 @@ document.getElementById('loadGame')!.addEventListener('click', async () => {
   applySession(gameSession(f), true);
   void persistNow();
   msg(`Вчитани се ${recs.length} ставки од играта.`);
-});
-document.getElementById('resetGame')!.addEventListener('click', async () => {
-  if (!confirm('Да се врати основната верзија? Ставките зачувани во играта ќе се избришат од овој прелистувач (твојата работа останува).')) return;
-  await kvDel('items');
-  msg('Играта сега ја покажува основната верзија.');
 });
 document.getElementById('modBtn')!.addEventListener('click', () => {
   if (!(document.getElementById('surveyor') as HTMLInputElement).value.trim()) { msg('Enter your name in Surveyor first.'); return; }
@@ -1206,3 +1211,6 @@ initCloudPanel({
     void persistNow();
   },
 });
+if (cloud.account()) {
+  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај на мое име'; }).catch(() => {});
+}
