@@ -249,3 +249,6 @@ body {
 #pick .pick-err { color: #ff6b6b; margin: 10px 0 0; min-height: 1em; }
 #pick #pTurnstile { margin-top: 8px; }
 #pick.phone h1, #pick.phone .pick-or, #pick.phone #signin { display: none; }
+#pick .phone-note { color: #777; font-size: 13px; text-align: center; margin: 14px 0 0; }
+#pick.phone .phone-note { display: block; }
+#pick .phone-note[hidden] { display: none; }
