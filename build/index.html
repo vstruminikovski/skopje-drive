@@ -65,7 +65,12 @@
       #project details.more { margin-top: 6px; }
       #project details.more summary { cursor: pointer; color: #aab2bd; }
       #project .row { margin: 6px 0; }
-      #gate .gate-card { max-width: 420px; width: calc(100vw - 32px); }
+      #gate .gate-card { max-width: 380px; width: calc(100vw - 32px); background: #000 !important; border: 1px solid #333; border-radius: 0; color: #fff; padding: 28px 24px; }
+      #gate .gate-title { display: block; font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+      #gate .gate-card p.lead { color: #fff; font-size: 16px; margin: 0 0 18px; }
+      #gate .gate-card input { border-radius: 0; background: #000; border: 1px solid #333; color: #fff; }
+      #gate .gate-card button { border-radius: 0; font-weight: 700; background: #fff; color: #000; border: 1px solid #fff; }
+      #gate .gate-card button#cRegister { background: #000; color: #fff; }
       #gate .gate-card p { color: #aab2bd; }
       #gate .gate-card input { width: 100%; margin: 4px 0; }
       #gate button:disabled { opacity: .45; cursor: not-allowed; }
@@ -165,8 +170,8 @@
       <div id="crosshair"></div>
       <div id="msg"></div>
       <div id="gate"><div class="gate-card">
-        <b>Градител</b>
-        <p>Најави се за да градиш. Секој има свој профил, а твоите знаци се зачувуваат на твоето име.</p>
+        <b class="gate-title">Градител</b>
+        <p class="lead">Направи акаунт или најави се за да додаваш сообраќајни знаци.</p>
           <div id="cAuth">
           <div class="row"><input id="cUser" placeholder="корисничко име" autocomplete="username"></div>
           <div class="row"><input id="cPass" type="password" placeholder="лозинка (мин. 8)" autocomplete="current-password"></div>

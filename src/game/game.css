@@ -233,14 +233,17 @@ body {
   pointer-events: none;
 }
 
-/* the start choice: play as a guest, or sign in to play your own saved map */
-#pick { position: fixed; inset: 0; display: grid; place-items: center; background: #f4efe6; z-index: 50; font: 16px/1.5 system-ui, sans-serif; color: #1f2a33; padding: 16px; }
+/* the start choice: sharp black and white, minimal */
+#pick { position: fixed; inset: 0; display: grid; place-items: center; background: #000; z-index: 50; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; padding: 16px; }
 #pick[hidden] { display: none; }
-#pick .pick-card { width: min(380px, 100%); background: #fffdf8; border: 1px solid #e6dccb; border-radius: 18px; padding: 24px 20px; box-shadow: 0 8px 24px -12px rgba(0,0,0,.18); }
-#pick h1 { font-size: 24px; margin: 0 0 16px; text-align: center; }
-#pick input { width: 100%; font: inherit; padding: 12px; margin: 6px 0; border: 1px solid #e6dccb; border-radius: 10px; background: #fff; }
-#pick .pick-btn { width: 100%; font: inherit; font-weight: 600; min-height: 48px; padding: 10px; margin-top: 8px; border: 0; border-radius: 12px; background: #d9622b; color: #fff; cursor: pointer; }
-#pick .pick-or { text-align: center; color: #5d6b76; margin: 12px 0 4px; }
-#pick .pick-err { color: #b3261e; margin: 8px 0 0; min-height: 1em; }
-#pick .pick-alt { background: transparent; color: #d9622b; border: 2px solid #d9622b; }
+#pick .pick-card { width: min(360px, 100%); }
+#pick h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 24px; }
+#pick input { width: 100%; font: inherit; padding: 14px; margin: 6px 0; border: 1px solid #333; border-radius: 0; background: #000; color: #fff; outline: none; }
+#pick input:focus { border-color: #fff; }
+#pick .pick-btn { width: 100%; font: inherit; font-weight: 700; min-height: 50px; padding: 12px; margin-top: 8px; border: 1px solid #fff; border-radius: 0; background: #fff; color: #000; cursor: pointer; }
+#pick .pick-btn:hover { background: #d6d6d6; }
+#pick .pick-alt { background: #000; color: #fff; }
+#pick .pick-alt:hover { background: #161616; }
+#pick .pick-or { text-align: center; color: #777; margin: 18px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+#pick .pick-err { color: #ff6b6b; margin: 10px 0 0; min-height: 1em; }
 #pick #pTurnstile { margin-top: 8px; }
