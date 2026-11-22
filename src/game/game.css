@@ -248,3 +248,4 @@ body {
 #pick .pick-or { text-align: center; color: #777; margin: 18px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
 #pick .pick-err { color: #ff6b6b; margin: 10px 0 0; min-height: 1em; }
 #pick #pTurnstile { margin-top: 8px; }
+#pick.phone h1, #pick.phone .pick-or, #pick.phone #signin { display: none; }
