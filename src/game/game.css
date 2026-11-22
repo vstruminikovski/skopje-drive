@@ -236,7 +236,8 @@ body {
 /* the start choice: sharp black and white, minimal */
 #pick { position: fixed; inset: 0; display: grid; place-items: center; background: #000; z-index: 50; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; padding: 16px; }
 #pick[hidden] { display: none; }
-#pick .pick-card { width: min(360px, 100%); }
+#pick .pick-card { width: min(360px, 100%); box-sizing: border-box; }
+#pick * { box-sizing: border-box; }
 #pick h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 24px; }
 #pick input { width: 100%; font: inherit; padding: 14px; margin: 6px 0; border: 1px solid #333; border-radius: 0; background: #000; color: #fff; outline: none; }
 #pick input:focus { border-color: #fff; }
