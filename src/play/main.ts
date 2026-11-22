@@ -20,18 +20,41 @@ async function start() {
   $('loading').hidden = true; // the choice comes first
   $('pick').hidden = false;
   $('guest').addEventListener('click', () => play(null));
-  $('signin').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  // the bot check (when a site key is set) is shown on this screen too
+  const siteKey = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '';
+  type TS = { render: (el: string, o: object) => string; getResponse: (id: string) => string; reset: (id: string) => void };
+  let widget: string | null = null;
+  if (siteKey) {
+    const s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    s.async = true;
+    s.onload = () => { const t = (window as unknown as { turnstile?: TS }).turnstile; if (t) widget = t.render('#pTurnstile', { sitekey: siteKey }); };
+    document.head.appendChild(s);
+  }
+  const check = () => {
+    const t = (window as unknown as { turnstile?: TS }).turnstile;
+    return siteKey && widget && t ? t.getResponse(widget) : '';
+  };
+  const resetCheck = () => {
+    const t = (window as unknown as { turnstile?: TS }).turnstile;
+    if (widget && t) t.reset(widget);
+  };
+  const go = async (register: boolean) => {
     const username = $<HTMLInputElement>('pUser').value.trim().toLowerCase();
     const password = $<HTMLInputElement>('pPass').value;
+    const token = check();
+    if (siteKey && !token) { $('pErr').textContent = 'Потврди дека си човек, па обиди се.'; return; }
     try {
-      const r = await cloud.login(username, password);
+      const r = register ? await cloud.register(username, password, token) : await cloud.login(username, password, token);
       cloud.setAccount({ username: r.username, token: r.token });
       play(r.username);
     } catch (err) {
+      resetCheck();
       $('pErr').textContent = err instanceof cloud.CloudError ? err.message : 'Нешто не е во ред.';
     }
-  });
+  };
+  $('signin').addEventListener('submit', (e) => { e.preventDefault(); void go(false); });
+  $('pRegister').addEventListener('click', () => void go(true));
 }
 
 void start();
