@@ -271,3 +271,11 @@ body {
 .menu-btn:hover { background: #fff; color: #000; }
 .menu-btn[hidden] { display: none; }
 #pick #logout { display: block; }
+/* your saved game, once you are signed in */
+#pick .mine { margin-top: 28px; padding-top: 20px; border-top: 1px solid #333; }
+#pick .mine-who { color: #aaa; margin: 0 0 6px; font-size: 14px; }
+#pick .mine-who b { color: #fff; }
+#pick .mine-status { color: #fff; margin: 0 0 6px; font-size: 14px; min-height: 1.4em; }
+#pick .mine .pick-btn { margin-top: 10px; }
+#pick #mineEdit { min-height: 40px; font-size: 13px; }
+#pick.phone #build, #pick.phone #load, #pick.phone #signinWrap, #pick.phone .mine { display: none; }

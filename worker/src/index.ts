@@ -110,11 +110,12 @@ async function turnstileOk(env: Env, req: Request, token: unknown): Promise<void
 async function register(env: Env, req: Request): Promise<Response> {
   await underLimit(env, req, 'signup', Number(env.SIGNUPS_PER_MIN ?? 20));
   const body = await readBody(req);
-  await turnstileOk(env, req, body.turnstile);
   const username = String(body.username ?? '').toLowerCase().trim();
   const password = String(body.password ?? '');
-  if (!USER_RE.test(username)) throw new HttpError(400, 'Корисничкото име: 3–20 мали букви, цифри или _.');
+  // the rules first: a typo must not use up the single-use bot check
+  if (!USER_RE.test(username)) throw new HttpError(400, 'Корисничко име: 3–20 латинични букви, цифри или _.');
   if (password.length < 8 || password.length > 200) throw new HttpError(400, 'Лозинката мора да има 8 до 200 знаци.');
+  await turnstileOk(env, req, body.turnstile);
   const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
   const hash = await passwordHash(env, password, salt);
   const r = await callDo(env.ACCOUNTS, username, '/create', { salt, hash });
@@ -125,10 +126,10 @@ async function register(env: Env, req: Request): Promise<Response> {
 async function login(env: Env, req: Request): Promise<Response> {
   await underLimit(env, req, 'signin', Number(env.SIGNINS_PER_MIN ?? 60));
   const body = await readBody(req);
-  await turnstileOk(env, req, body.turnstile);
   const username = String(body.username ?? '').toLowerCase().trim();
   const password = String(body.password ?? '');
-  if (!USER_RE.test(username)) throw new HttpError(401, 'Погрешно корисничко име или лозинка.');
+  if (!USER_RE.test(username) || !password) throw new HttpError(401, 'Погрешно корисничко име или лозинка.');
+  await turnstileOk(env, req, body.turnstile);
   const salt = await callDo(env.ACCOUNTS, username, '/salt');
   if (salt.status !== 200) throw new HttpError(401, 'Погрешно корисничко име или лозинка.');
   const hash = await passwordHash(env, password, salt.data.salt);

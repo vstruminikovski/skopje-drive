@@ -1,78 +1,107 @@
+// The game start screen (also the home page): a small control panel.
+// Desktop, signed out: play the game, build it, or sign in / create a profile to load your own game.
+// Desktop, signed in: who you are, your saved game (items, when), play it, edit it, sign out.
+// Phones and tablets: only "play the game". Building and accounts are for desktops.
 import { fixLinks } from '../shared/links';
-fixLinks();
-// The game page. Signed out: the published map. Signed in (on any device): your own saved map.
-// Only this page loads the game, and the builder stays on desktop.
 import { startGame } from '../game/boot';
+import { isItemsFile, type ItemsFile } from '../game/items';
 import * as cloud from '../shared/cloud';
+import { mountAuthForm, verifyAccount } from '../shared/auth-form';
 
+fixLinks();
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
-function play(ws: string | null) {
+function play(opts: { ws?: string | null; items?: ItemsFile | null }) {
   $('pick').hidden = true;
   $('loading').hidden = false;
   $('menuBtn').hidden = false;
-  startGame(undefined, { ws });
+  startGame(undefined, opts);
 }
 
-async function start() {
-  // a link to a workspace plays that workspace, as before
-  const linked = new URLSearchParams(location.search).get('ws');
-  if (linked) return play(linked);
-  const a = cloud.account();
-  // signed in: play your map at once, unless you came back to the menu on purpose
-  const menu = new URLSearchParams(location.search).has('menu');
-  if (a && !menu) return play(a.username);
-  if (a) { $('who').textContent = `Најавен си како ${a.username}`; $('who').hidden = false; $('logout').hidden = false; }
+// Macedonian dates by hand: browsers often have no Macedonian date names
+const MONTHS = ['јануари', 'февруари', 'март', 'април', 'мај', 'јуни', 'јули', 'август', 'септември', 'октомври', 'ноември', 'декември'];
+const when = (iso: string) => {
+  const d = new Date(iso);
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} во ${hm}`;
+};
+
+/** Signed out: the three options. */
+function showSignedOut(note = '') {
+  $('mine').hidden = true;
+  $('signinWrap').hidden = true;
+  $('load').hidden = false;
+  $('build').hidden = false;
+  if (note) { $('load').hidden = true; $('signinWrap').hidden = false; form?.show('login'); form?.note(note); }
+}
+
+/** Signed in: look up your saved game on the server and say exactly what is there. */
+async function showMine(a: cloud.Account) {
+  $('load').hidden = true;
+  $('build').hidden = true;
+  $('signinWrap').hidden = true;
+  $('mine').hidden = false;
+  $('mineUser').textContent = a.username;
+  $('minePlay').hidden = true;
+  $('mineStatus').textContent = 'Ја барам твојата зачувана игра…';
+  let admin = false;
+  try {
+    admin = (await cloud.me()).admin;
+  } catch (e) {
+    if (e instanceof cloud.CloudError && e.status === 401) { cloud.setAccount(null); showSignedOut('Најавата истече. Најави се повторно.'); return; }
+    $('mineStatus').textContent = 'Нема врска со серверот. Провери ја интернет-врската и освежи ја страницата.';
+    return;
+  }
+  // the admin's game is the published one (what everyone plays); everyone else has their own
+  const name = admin ? 'published' : a.username;
+  try {
+    const w = await cloud.loadWorkspace(name);
+    if (!isItemsFile(w.data)) throw new cloud.CloudError('Зачуваната игра е оштетена.', 500);
+    const data = w.data;
+    $('mineStatus').textContent = `${admin ? 'Објавената игра' : 'Твојата игра'}: ${data.items.length} ставки · зачувана ${when(w.savedAt)}${w.savedBy && w.savedBy !== a.username ? ` од ${w.savedBy}` : ''}.`;
+    $('minePlay').hidden = false;
+    $('minePlay').onclick = () => play({ items: data });
+  } catch (e) {
+    if (e instanceof cloud.CloudError && e.status === 404) {
+      $('mineStatus').textContent = 'Уште немаш зачувана игра. Отвори го градителот, додај знаци и притисни „Зачувај“.';
+    } else {
+      $('mineStatus').textContent = e instanceof cloud.CloudError ? e.message : 'Не успеав да ја вчитам играта.';
+    }
+  }
+}
+
+let form: ReturnType<typeof mountAuthForm> | null = null;
+
+function start() {
+  const params = new URLSearchParams(location.search);
+  const linked = params.get('ws'); // a link to a workspace plays that workspace
+  if (linked) return play({ ws: linked });
+
   $('loading').hidden = true; // the choice comes first
   $('pick').hidden = false;
-  $('logout').addEventListener('click', () => { cloud.setAccount(null); location.replace(`${import.meta.env.BASE_URL}`); });
-  $('guest').addEventListener('click', () => play(null));
-  // phones and tablets: only the game button. Accounts and building are for desktops.
+  $('guest').addEventListener('click', () => play({ ws: null }));
+
   const desktop = matchMedia('(min-width: 900px) and (pointer: fine) and (hover: hover)').matches;
-  if (!desktop) { $('pick').classList.add('phone'); $('guest').textContent = 'Играј ја играта'; $('phoneNote').hidden = false; return; }
-  $('load').addEventListener('click', () => {
-    const a2 = cloud.account();
-    if (a2) return play(a2.username);
-    $('signin').hidden = false;
-    $('load').hidden = true;
-  });
-  $('pBack').addEventListener('click', () => { $('signin').hidden = true; $('load').hidden = false; $('pErr').textContent = ''; });
-  // the bot check (when a site key is set) is shown on this screen too
-  const siteKey = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '';
-  type TS = { render: (el: string, o: object) => string; getResponse: (id: string) => string; reset: (id: string) => void };
-  let widget: string | null = null;
-  if (siteKey) {
-    const s = document.createElement('script');
-    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    s.async = true;
-    s.onload = () => { const t = (window as unknown as { turnstile?: TS }).turnstile; if (t) widget = t.render('#pTurnstile', { sitekey: siteKey }); };
-    document.head.appendChild(s);
+  if (!desktop) {
+    $('pick').classList.add('phone');
+    $('phoneNote').hidden = false;
+    return;
   }
-  const check = () => {
-    const t = (window as unknown as { turnstile?: TS }).turnstile;
-    return siteKey && widget && t ? t.getResponse(widget) : '';
-  };
-  const resetCheck = () => {
-    const t = (window as unknown as { turnstile?: TS }).turnstile;
-    if (widget && t) t.reset(widget);
-  };
-  const go = async (register: boolean) => {
-    const username = $<HTMLInputElement>('pUser').value.trim().toLowerCase();
-    const password = $<HTMLInputElement>('pPass').value;
-    const token = check();
-    if (siteKey && !token) { $('pErr').textContent = 'Потврди дека си човек, па обиди се.'; return; }
-    try {
-      const r = register ? await cloud.register(username, password, token) : await cloud.login(username, password, token);
-      cloud.setAccount({ username: r.username, token: r.token });
-      play(r.username);
-    } catch (err) {
-      resetCheck();
-      const taken = register && err instanceof cloud.CloudError && err.status === 409;
-      $('pErr').textContent = taken ? 'Това корисничко име веќе постои. Притисни „Најави се“ или избери друго име.' : err instanceof cloud.CloudError ? err.message : 'Нешто не е во ред.';
-    }
-  };
-  $('signin').addEventListener('submit', (e) => { e.preventDefault(); void go(false); });
-  $('pRegister').addEventListener('click', () => void go(true));
+
+  form = mountAuthForm($('authBox'), (a) => void showMine(a));
+  $('load').addEventListener('click', () => {
+    $('load').hidden = true;
+    $('signinWrap').hidden = false;
+    form?.show('login');
+  });
+  $('pBack').addEventListener('click', () => showSignedOut());
+  $('logout').addEventListener('click', () => { cloud.setAccount(null); showSignedOut(); });
+
+  const remembered = cloud.account();
+  if (remembered) {
+    void showMine(remembered);
+    void verifyAccount().then((a) => { if (!a) showSignedOut('Најавата истече. Најави се повторно.'); });
+  } else showSignedOut();
 }
 
-void start();
+start();

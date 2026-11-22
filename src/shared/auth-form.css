@@ -1,0 +1,21 @@
+/* The sign-in form: sharp, black and white. Used on the game start screen and the builder start screen. */
+.af { width: 100%; color: #fff; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; text-align: left; }
+.af * { box-sizing: border-box; }
+.af-tabs { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #333; margin-bottom: 16px; }
+.af-tabs button { font: inherit; font-weight: 700; padding: 11px 6px; background: #000; color: #888; border: 0; border-radius: 0; cursor: pointer; }
+.af-tabs button[aria-selected="true"] { background: #fff; color: #000; }
+.af label { display: block; font-size: 13px; color: #aaa; margin: 10px 0 4px; }
+.af input { display: block; width: 100%; height: 46px; padding: 0 12px; font: inherit; color: #fff; background: #000; border: 1px solid #333; border-radius: 0; outline: none; }
+.af input:focus { border-color: #fff; }
+.af input[aria-invalid="true"] { border-color: #ff6b6b; }
+.af-hint { display: block; color: #777; font-size: 12px; margin-top: 4px; min-height: 1em; }
+.af-ts { margin: 14px 0 0; min-height: 65px; }
+.af-msg { min-height: 1.4em; margin: 12px 0 0; font-size: 14px; }
+.af-msg.err { color: #ff6b6b; }
+.af-msg.ok { color: #8be28b; }
+.af-submit { display: block; width: 100%; min-height: 50px; margin-top: 12px; font: inherit; font-weight: 800; color: #000; background: #fff; border: 1px solid #fff; border-radius: 0; cursor: pointer; }
+.af-submit:hover { background: #d6d6d6; }
+.af-submit:disabled { opacity: .5; cursor: progress; }
+.af-switch { display: block; width: 100%; margin-top: 10px; background: none; border: 0; color: #888; font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+.af-switch:hover { color: #fff; }
+.af [hidden] { display: none !important; }

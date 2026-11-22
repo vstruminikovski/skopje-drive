@@ -22,7 +22,7 @@ import { bayLines, layoutParking, occupied } from './import/parkingLayout';
 import { buildParkedCars } from './render/parking';
 import { convertSurvey, frameOf, mergeSurvey, surveyPath, type SurveyCollection } from './import/manualSurvey';
 import { drawUserItems, type UserItem } from './render/userItems';
-import { loadItems } from './items';
+import { loadItems, type ItemsFile } from './items';
 
 const LEVEL_BASE = `${import.meta.env.BASE_URL}mapng/prviot_krug`.replace(/\/+/g, '/');
 const app = document.getElementById('app')!;
@@ -57,16 +57,16 @@ export interface BuilderContext {
   poleAt: (pos: number[], dir: number[]) => number[];
 }
 
-/** opts.ws: the workspace to play (a signed-in player passes their own name); otherwise the published map. */
-export function startGame(builder?: BuilderHooks, opts?: { ws?: string | null }) {
-  boot(builder, opts?.ws ?? null).catch((e) => {
+/** opts.items: the exact items to play (your own saved game); opts.ws: a workspace link; otherwise the published map. */
+export function startGame(builder?: BuilderHooks, opts?: { ws?: string | null; items?: ItemsFile | null }) {
+  boot(builder, opts?.ws ?? null, opts?.items ?? null).catch((e) => {
     console.error(e);
     errorText.textContent = `Could not start: ${e.message ?? e}`;
     loading.classList.add('error');
   });
 }
 
-async function boot(builder: BuilderHooks | undefined, playWs: string | null) {
+async function boot(builder: BuilderHooks | undefined, playWs: string | null, playItems: ItemsFile | null) {
   progress(0.05);
   const level = await loadLevel(LEVEL_BASE);
 
@@ -99,7 +99,7 @@ async function boot(builder: BuilderHooks | undefined, playWs: string | null) {
   // the items the builder saved (or the published default): drawn as the builder draws them
   // a link to a shared workspace (?ws=name) plays that workspace; the name is public, never a password
   const ws = playWs ?? new URLSearchParams(location.search).get('ws');
-  const itemsFile = builder ? null : await loadItems(ws);
+  const itemsFile = builder ? null : playItems ?? (await loadItems(ws));
   const userItems: UserItem[] | null = itemsFile ? itemsFile.items : null;
   // the builder starts with no survey items; its export keeps the survey file as it is
   const surveyAll = (builder ? { type: 'FeatureCollection', features: [] } : { type: 'FeatureCollection', features: fc?.features ?? [] }) as SurveyCollection;

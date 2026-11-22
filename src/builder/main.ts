@@ -817,23 +817,13 @@ document.getElementById('openProj')!.addEventListener('change', async (e) => {
 document.getElementById('surveyor')!.addEventListener('input', () => persistSoon());
 document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
 /** Saves the work to your account (admin: publishes it for everyone). Returns true when it is saved. */
-/** Saves a project file to this computer (everyone except the admin). The browser keeps only an emergency copy. */
-function saveFileLocally(who: string) {
-  const data = { format: 'krug-builder-session', version: 1, savedAt: new Date().toISOString(), surveyor: who, nextId, recs: JSON.parse(JSON.stringify(recs)), versions: JSON.parse(JSON.stringify(versionList)) };
-  download(`skopje_${who || 'work'}_${new Date().toISOString().slice(0, 10)}.json`, data);
-  unsaved = false;
-}
 async function saveToAccount(): Promise<boolean> {
   const a = cloud.account();
   if (!a) { msg('Најави се за да зачуваш.'); return false; }
   let admin = false;
   try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
-  if (!admin) {
-    saveFileLocally(a.username);
-    msg('Датотеката е зачувана на твојот компјутер. Вчитај ја со „Отвори датотека“.');
-    return true;
-  }
-  const target = 'published';
+  // your game lives on your account (any device); the admin's game is the published one everyone plays
+  const target = admin ? 'published' : a.username;
   if (admin && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return false;
   try {
     await persistNow();
@@ -841,7 +831,7 @@ async function saveToAccount(): Promise<boolean> {
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
     await cloud.saveWorkspace(target, data, current?.version ?? 0);
     unsaved = false;
-    msg(admin ? `Објавено за сите играчи · ${recs.length} ставки.` : `Зачувано на твојот профил. Играј од кој било уред со твоето име.`);
+    msg(admin ? `Објавено за сите играчи · ${recs.length} ставки.` : `Зачувано на твојот профил · ${recs.length} ставки. „Вчитај моја игра“ ја отвора од кој било компјутер.`);
     return true;
   } catch (e) {
     if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
@@ -853,7 +843,7 @@ async function saveToAccount(): Promise<boolean> {
 document.getElementById('saveGame')!.addEventListener('click', () => { void saveToAccount(); });
 // the save button says what it does for this account
 if (cloud.account()) {
-  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај датотека'; }).catch(() => {});
+  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај'; }).catch(() => {});
 }
 
 // ---------- leaving: unsaved work asks first (buttons, the exit link, the back button, closing the tab) ----------
@@ -928,6 +918,26 @@ const SESSION_FORMAT = 'krug-builder-session';
 let persistTimer: number | undefined;
 let restored = false; // nothing is written until the saved session has been read: an empty start must never overwrite it
 let unsaved = false; // changed since the last save to your account
+let emergencyRestored = false; // you chose the emergency copy: do not replace it with the account's game
+let accountLoaded = false;
+/** Opens the signed-in account's saved game (the admin: the published game). Waits until the map is ready. */
+async function loadAccountGame() {
+  const a = cloud.account();
+  if (!a || accountLoaded || emergencyRestored) return;
+  if (!ctx || !restored) { pendingAccountLoad = true; return; }
+  accountLoaded = true;
+  let admin = false;
+  try { admin = (await cloud.me()).admin; } catch { /* not reachable: keep what is open */ }
+  const w = await cloud.loadWorkspace(admin ? 'published' : a.username).catch(() => null);
+  const f = w?.data as { items?: Rec[] } | null;
+  if (!w || !f || !Array.isArray(f.items)) { msg('Уште немаш зачувана игра на профилот. Почни да градиш и притисни „Зачувај“.'); return; }
+  backupBeforeReplace('вчитување од профилот');
+  applySession({ format: 'krug-builder-session', version: 1, savedAt: w.savedAt, surveyor: a.username, nextId: 1, recs: f.items, versions: [] }, true);
+  unsaved = false;
+  void persistNow();
+  msg(`Ја отворив твојата игра · ${recs.length} ставки.`);
+}
+let pendingAccountLoad = false;
 function save() {
   const cur = JSON.stringify({ recs, nextId });
   if (lastState && cur !== lastState) {
@@ -999,7 +1009,7 @@ async function restoreSession() {
   }
   restored = true;
   // an emergency copy from a session that did not close properly: offer it back, do not load it silently
-  if (s && s.recs.length && !confirm(`Пронајдена е незачувана работа од прекинатa сесија (${s.recs.length} ставки). Да ја вратам?`)) {
+  if (s && s.recs.length && !(emergencyRestored = confirm(`Пронајдена е незачувана работа од прекинатa сесија (${s.recs.length} ставки). Да ја вратам?`))) {
     s = null;
     await kvDel('session').catch(() => undefined);
   }
@@ -1185,6 +1195,7 @@ startGame({
     // the builder draws at normal resolution by default: on high-density screens the full resolution is 4× the pixels
     applyQuality(c.renderer, (localStorage.getItem('builder.quality') as string) || '1');
     await restoreSession();
+    if (cloud.account() || pendingAccountLoad) void loadAccountGame();
     buildInventory();
     // start where the game starts: the parking at the spawn point
     const sp = c.level.route.start.p;
@@ -1283,6 +1294,7 @@ function updateMarkers(camera: THREE.PerspectiveCamera) {
 
 // the cloud panel: shared workspaces with their own logins
 initCloudPanel({
+  onSignedIn: () => void loadAccountGame(),
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
   getSurveyor: () => (document.getElementById('surveyor') as HTMLInputElement).value.trim(),
   msg,

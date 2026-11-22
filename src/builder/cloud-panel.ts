@@ -1,8 +1,10 @@
 // The Cloud panel: sign in, load and save a shared workspace, share it, and copy the play link.
 import * as cloud from '../shared/cloud';
+import { mountAuthForm, verifyAccount } from '../shared/auth-form';
 import type { UserItem } from '../game/render/userItems';
 
 interface Options {
+  onSignedIn?: () => void;
   getItems: () => UserItem[];
   onLoad: (items: UserItem[]) => void;
   getSurveyor: () => string;
@@ -13,12 +15,14 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 
 export function initCloudPanel(o: Options) {
   let version = 0; // the version you loaded: a save over a newer one is refused
+  let form: ReturnType<typeof mountAuthForm> | null = null;
   let name = '';
 
   const who = () => {
     const a = cloud.account();
     $('cWho').textContent = a ? `Најавен си како ${a.username}` : 'Не си најавен';
     $('cAuth').hidden = !!a;
+    if (!a) form?.show();
     $('gateSigned').hidden = !a;
     $('gateUser').textContent = a ? a.username : '';
     ($('startBtn') as HTMLButtonElement).disabled = !a; // no building without a sign-in
@@ -32,54 +36,11 @@ export function initCloudPanel(o: Options) {
   };
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
 
-  // Turnstile (optional): when a site key is set, signing in or up needs a quick check that you are a person
-  const siteKey = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '';
-  let widget: string | null = null;
-  if (siteKey) {
-    const s2 = document.createElement('script');
-    s2.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    s2.async = true;
-    s2.onload = () => {
-      const t = (window as unknown as { turnstile?: { render: (el: string, o: object) => string } }).turnstile;
-      if (t) widget = t.render('#cTurnstile', { sitekey: siteKey, theme: 'dark', size: 'flexible' });
-    };
-    document.head.appendChild(s2);
-  }
-  const check = () => {
-    if (!siteKey) return '';
-    const t = (window as unknown as { turnstile?: { getResponse: (id: string) => string } }).turnstile;
-    return widget && t ? t.getResponse(widget) : '';
-  };
-  const resetCheck = () => {
-    const t = (window as unknown as { turnstile?: { reset: (id: string) => void } }).turnstile;
-    if (widget && t) t.reset(widget);
-  };
-
-  async function signIn(register: boolean) {
-    const username = $<HTMLInputElement>('cUser').value.trim().toLowerCase();
-    const password = $<HTMLInputElement>('cPass').value;
-    const token = check();
-    if (siteKey && !token) { o.msg('Потврди дека си човек (кутијата над копчињата), па пробај пак.'); return; }
-    try {
-      const r = register ? await cloud.register(username, password, token) : await cloud.login(username, password, token);
-      cloud.setAccount({ username: r.username, token: r.token });
-      $<HTMLInputElement>('cPass').value = '';
-      who();
-      o.msg(register ? `Добредојде, ${r.username}!` : `Добредојде назад, ${r.username}.`);
-    } catch (e) {
-      resetCheck();
-      // a taken name is the usual reason for "it keeps asking me to register": say what to do
-      if (register && e instanceof cloud.CloudError && e.status === 409) {
-        o.msg('Това корисничко име веќе постои. Притисни „Најави се“ или избери друго име.');
-      } else fail(e);
-    }
-  }
+  // signing in or up: the shared form (rules first, one request at a time, messages inside the form)
+  form = mountAuthForm($('authBoxB'), () => { who(); o.onSignedIn?.(); });
   $('gateOpen').addEventListener('click', () => $('openProj').click());
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си. Можеш да создадеш нов профил.'); });
-  $('cLogin').addEventListener('click', () => void signIn(false));
-  $('cRegister').addEventListener('click', () => void signIn(true));
   $('cLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си.'); });
-  $('cPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') void signIn(false); });
 
   $<HTMLInputElement>('cName').addEventListener('input', () => { version = 0; link(); });
 
@@ -129,4 +90,5 @@ export function initCloudPanel(o: Options) {
   $('cName').addEventListener('input', link);
   who();
   link();
+  void verifyAccount().then(() => who());
 }

@@ -20,20 +20,19 @@
       <div class="pick-card">
         <h1>SkopjeDrive</h1>
         <button id="guest" class="pick-btn" type="button">Играј ја играта</button>
-        <p id="who" class="pick-sub" hidden></p>
-        <button id="logout" class="pick-back" type="button" hidden>Одјави се</button>
         <a id="build" class="pick-btn pick-alt" data-go="build" href="#">Гради ја играта</a>
-        <p class="pick-sub">Додавај знаци и ознаки</p>
         <button id="load" class="pick-btn pick-alt" type="button">Вчитај моја игра</button>
-        <form id="signin" autocomplete="on" hidden>
-          <input id="pUser" placeholder="корисничко име" autocomplete="username" required>
-          <input id="pPass" type="password" placeholder="лозинка" autocomplete="current-password" required>
-          <div id="pTurnstile"></div>
-          <button type="submit" class="pick-btn">Најави се</button>
-          <button type="button" id="pRegister" class="pick-btn pick-alt">Создај нов профил</button>
+        <div id="signinWrap" hidden>
+          <div id="authBox"></div>
           <button type="button" id="pBack" class="pick-back">← Назад</button>
-          <p id="pErr" class="pick-err" role="alert"></p>
-        </form>
+        </div>
+        <section id="mine" class="mine" hidden aria-live="polite">
+          <p class="mine-who">Најавен си како <b id="mineUser"></b></p>
+          <p id="mineStatus" class="mine-status"></p>
+          <button id="minePlay" class="pick-btn" type="button" hidden>Играј ја мојата игра</button>
+          <a id="mineEdit" class="pick-btn pick-alt" data-go="build" href="#">Уреди ја во градителот</a>
+          <button id="logout" class="pick-back" type="button">Одјави се</button>
+        </section>
         <p id="phoneNote" class="phone-note" hidden>Отвори го на компјутер за да додаваш знаци, ознаки и семафори.</p>
       </div>
     </div>
