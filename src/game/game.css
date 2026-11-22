@@ -252,3 +252,9 @@ body {
 #pick .phone-note { color: #777; font-size: 13px; text-align: center; margin: 14px 0 0; }
 #pick.phone .phone-note { display: block; }
 #pick .phone-note[hidden] { display: none; }
+#pick .pick-sub { color: #777; font-size: 13px; margin: 6px 0 0; text-align: center; }
+#pick a.pick-btn { display: block; text-align: center; text-decoration: none; line-height: 30px; }
+#pick .pick-btn + .pick-btn { margin-top: 10px; }
+#pick .pick-card > .pick-btn:not(:first-of-type) { margin-top: 10px; }
+#pick.phone #build, #pick.phone #load, #pick.phone #signin, #pick.phone .pick-sub { display: none; }
+#pick #signin[hidden] { display: none; }

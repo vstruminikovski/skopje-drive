@@ -22,7 +22,13 @@ async function start() {
   $('guest').addEventListener('click', () => play(null));
   // phones and tablets: only the game button. Accounts and building are for desktops.
   const desktop = matchMedia('(min-width: 900px) and (pointer: fine) and (hover: hover)').matches;
-  if (!desktop) { $('pick').classList.add('phone'); $('phoneNote').hidden = false; return; }
+  if (!desktop) { $('pick').classList.add('phone'); $('guest').textContent = 'Играј ја играта'; $('phoneNote').hidden = false; return; }
+  $('load').addEventListener('click', () => {
+    const a2 = cloud.account();
+    if (a2) return play(a2.username);
+    $('signin').hidden = false;
+    $('load').hidden = true;
+  });
   // the bot check (when a site key is set) is shown on this screen too
   const siteKey = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? '';
   type TS = { render: (el: string, o: object) => string; getResponse: (id: string) => string; reset: (id: string) => void };

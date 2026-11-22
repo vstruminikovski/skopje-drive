@@ -18,17 +18,19 @@
     <div id="pick" hidden>
       <div class="pick-card">
         <h1>SkopjeDrive</h1>
-        <button id="guest" class="pick-btn">Играј ја играта</button>
-        <p id="phoneNote" class="phone-note" hidden>Отвори го на компјутер за да додаваш знаци, ознаки и семафори.</p>
-        <p class="pick-or">или</p>
-        <form id="signin" autocomplete="on">
+        <a id="build" class="pick-btn" href="../build/">Гради ја играта</a>
+        <p class="pick-sub">Додавај знаци и ознаки</p>
+        <button id="load" class="pick-btn pick-alt" type="button">Вчитај моја игра</button>
+        <form id="signin" autocomplete="on" hidden>
           <input id="pUser" placeholder="корисничко име" autocomplete="username" required>
           <input id="pPass" type="password" placeholder="лозинка" autocomplete="current-password" required>
           <div id="pTurnstile"></div>
-          <button type="submit" class="pick-btn">Најави се и играј со мојата работа</button>
+          <button type="submit" class="pick-btn">Најави се</button>
           <button type="button" id="pRegister" class="pick-btn pick-alt">Создај нов профил</button>
           <p id="pErr" class="pick-err" role="alert"></p>
         </form>
+        <button id="guest" class="pick-btn pick-alt" type="button">Играј обичната игра</button>
+        <p id="phoneNote" class="phone-note" hidden>Отвори го на компјутер за да додаваш знаци, ознаки и семафори.</p>
       </div>
     </div>
     <script type="module" src="/src/play/main.ts"></script>
