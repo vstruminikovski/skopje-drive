@@ -344,6 +344,10 @@ export function initDocument(o: Options): DocApi {
     await openFile(file);
   });
 
+  // the visible ways in: the Open button, and the start sheet for someone with a friend's code
+  $('openBtn').addEventListener('click', openSheet);
+  $('gateCode').addEventListener('click', () => { $('gate').style.display = 'none'; openSheet(); });
+
   // the File menu
   const menu = $('fileMenu');
   const fileBtn = $('fileBtn');
@@ -388,6 +392,7 @@ export function initDocument(o: Options): DocApi {
     $('gateUser').textContent = a?.username ?? '';
     $('gateAvatar').textContent = initial;
     ($('startBtn') as HTMLButtonElement).disabled = !a;
+    ($('gateCode') as HTMLButtonElement).disabled = !a;
     $('menuWho').textContent = a ? `Најавен си како ${a.username}` : '';
   }
   /** Once the map is ready: open the work you had last, or your own. */
