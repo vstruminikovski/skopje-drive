@@ -7,7 +7,6 @@
 import * as cloud from '../shared/cloud';
 import { mountAuthForm, verifyAccount } from '../shared/auth-form';
 import { shortDate } from '../shared/dates';
-import { loadItems } from '../game/items';
 import type { UserItem } from '../game/render/userItems';
 
 interface Options {
@@ -47,6 +46,8 @@ export interface DocApi {
 export function initDocument(o: Options): DocApi {
   const doc: Doc = { kind: 'none', work: '', owner: '', version: 0, latest: 0, file: '', versions: [] };
   let me: { username: string; admin: boolean } | null = null;
+  let published: { savedAt: string; count: number } | null = null;
+  let copyLabel = '';
   let form: ReturnType<typeof mountAuthForm> | null = null;
 
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
@@ -86,7 +87,7 @@ export function initDocument(o: Options): DocApi {
   // ---------- what the toolbar and the versions list show ----------
   const nameOf = () => {
     if (doc.kind === 'work') return doc.work === 'published' ? 'Објавена игра' : `${doc.work}${doc.version ? ` · верзија ${doc.version}` : ''}`;
-    if (doc.kind === 'copy') return 'Копија од објавената игра';
+    if (doc.kind === 'copy') return `Објавена игра · копија${copyLabel ? ` (${copyLabel})` : ''}`;
     if (doc.kind === 'file') return doc.file;
     return 'Нова работа';
   };
@@ -96,6 +97,20 @@ export function initDocument(o: Options): DocApi {
     $('docWho').textContent = doc.kind !== 'work' ? '' : doc.owner === me?.username ? 'твоја работа' : doc.owner ? `споделена од ${doc.owner}` : '';
     const list = $('verList');
     list.innerHTML = '';
+    if (published) {
+      // the published game is a point in time like a version: loaded as a copy, never changed from here
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ver-row';
+      b.setAttribute('aria-current', String(doc.kind === 'copy'));
+      const t = document.createElement('span'); t.className = 'ver-title';
+      t.textContent = 'Објавена игра';
+      const sub = document.createElement('small'); sub.className = 'ver-sub';
+      sub.textContent = `${published.count} ставки · ${shortDate(published.savedAt)} · само за читање`;
+      b.append(t, sub);
+      b.addEventListener('click', () => void openPublished());
+      list.appendChild(b);
+    }
     if (doc.kind !== 'work') {
       $('verEmpty').textContent = 'Верзиите се на твојот профил. Користи „Зачувај како…“ за да зачуваш тука.';
     } else {
@@ -148,17 +163,27 @@ export function initDocument(o: Options): DocApi {
     if (o.isDirty() && !(await guard())) return;
     if (await openWork(doc.work, v)) o.msg(`Отворена е верзија ${v}`);
   }
-  /** Hard reset: the open items become the published game. Your saved versions stay as they are. */
-  async function hardReset() {
-    const i = await choose('Ресетирај на објавената игра?', 'Ова ги заменува ставките во отворената работа со објавената игра. Зачуваните верзии на профилот остануваат.', ['Продолжи', 'Откажи']);
-    if (i !== 0) return;
-    if (!(await countdown(5))) { o.msg('Ресетирањето е откажано'); return; }
-    const f = await loadItems();
-    if (!f) { o.msg('Објавената игра не е достапна.'); return; }
-    o.setItems(f.items as UserItem[]);
-    Object.assign(doc, { kind: 'copy', work: '', owner: '', version: 0, latest: 0, file: '', versions: [] });
+  /** The published game as a copy you can work on. Nothing is written to the published game. */
+  async function openPublished() {
+    if (o.isDirty() && !(await guard())) return;
+    try {
+      const w = await cloud.loadWorkspace('published');
+      const items = (w.data as { items?: UserItem[] } | null)?.items;
+      o.setItems(Array.isArray(items) ? items : []);
+      copyLabel = shortDate(w.savedAt);
+      Object.assign(doc, { kind: 'copy', work: '', owner: '', version: 0, latest: 0, file: '', versions: [] });
+      refresh();
+      o.msg('Отворена е копија од објавената игра. Зачувај како… ја зачувува на твојот профил. Објавената игра не се менува.');
+    } catch (e) { fail(e); }
+  }
+  /** The newest published game, shown as the first entry of the versions list. */
+  async function loadPublishedInfo() {
+    if (!cloud.account()) return;
+    try {
+      const w = await cloud.loadWorkspace('published');
+      published = { savedAt: w.savedAt, count: w.versions.find((v) => v.version === w.version)?.count ?? 0 };
+    } catch { published = null; }
     refresh();
-    o.msg('Ресетирано на објавената игра. Зачувај како… за да ја зачуваш.');
   }
   /** Five seconds to change your mind. Resolves true when it runs out; cancel resolves false. */
   function countdown(seconds: number): Promise<boolean> {
@@ -390,7 +415,7 @@ export function initDocument(o: Options): DocApi {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (!['open', 'save', 'saveas', 'computer', 'share', 'logout', 'reset'].includes(act!)) return; // the builder handles the rest
+    if (!['open', 'save', 'saveas', 'computer', 'share', 'logout'].includes(act!)) return; // the builder handles the rest
     closeMenu();
     if (act === 'open') { openSheet(); return; }
     if (act === 'save') { await save(); return; }
@@ -398,7 +423,6 @@ export function initDocument(o: Options): DocApi {
     if (act === 'computer') { downloadFile(); return; }
     if (act === 'share') { await openShare(); return; }
     if (act === 'logout') { cloud.setAccount(null); location.reload(); }
-    if (act === 'reset') { await hardReset(); return; }
   });
   // the shortcuts of the same actions
   window.addEventListener('keydown', (e) => {
@@ -429,6 +453,7 @@ export function initDocument(o: Options): DocApi {
     if (!a) return;
     const saved = (() => { try { return JSON.parse(localStorage.getItem(WORK_KEY) ?? 'null') as { user: string; work: string } | null; } catch { return null; } })();
     const name = saved && saved.user === a.username ? saved.work : await defaultWork();
+    void loadPublishedInfo();
     await openWork(name);
   }
 
