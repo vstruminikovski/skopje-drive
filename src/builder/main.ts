@@ -15,7 +15,6 @@ import { initDocument, type DocApi } from './document';
 let docApi: DocApi | undefined;
 import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoints, lampOf, surfaceOnScene, type UserItem } from '../game/render/userItems';
 import type { Lamp } from '../game/traffic/signals';
-import { readSlot, writeSlot, SLOT_COUNT, type Slot } from './store';
 import { drawItemIcon } from './icons';
 import { infoButton, initTips } from '../shared/tips';
 import { makeFloating } from './floating';
@@ -782,9 +781,7 @@ function exportGame() {
 function closeFileMenu() { document.getElementById('fileMenu')!.hidden = true; document.getElementById('fileBtn')!.setAttribute('aria-expanded', 'false'); }
 document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.addEventListener('click', () => {
   const act = b.dataset.act;
-  if (act === 'saveasws') { closeFileMenu(); void saveAsWorkspace(); }
-  else if (act === 'export') { closeFileMenu(); exportDocument(); }
-  else if (act === 'exportGeo') { closeFileMenu(); exportMap(); }
+  if (act === 'exportGeo') { closeFileMenu(); exportMap(); }
   else if (act === 'exportMod') { closeFileMenu(); exportGame(); }
   else if (act === 'clear') {
     closeFileMenu();
@@ -799,87 +796,69 @@ document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.
     })();
   }
 }));
-document.getElementById('saveGame')!.addEventListener('click', () => { void docApi!.save(); });
-// Cmd+Shift+S: save as a workspace
-window.addEventListener('keydown', (e) => {
-  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'KeyS') { e.preventDefault(); void saveAsWorkspace(); }
-});
-
-/** The save button and the admin's tools: the admin publishes the game for everyone. */
+/** The administrator's tools (deploy, exports) show for the administrator only. */
 function labelSave() {
-  const b = document.getElementById('saveGame')!;
-  b.textContent = 'Зачувај';
   const admin = (on: boolean) => {
     document.querySelectorAll<HTMLElement>('.admin-only').forEach((el) => (el.hidden = !on));
     document.querySelectorAll<HTMLElement>('.player-only').forEach((el) => (el.hidden = on));
   };
   admin(false);
-  if (cloud.account()) cloud.me().then((r) => {
-    b.title = 'Зачувај на твојот профил (⌘S)';
-    admin(r.admin);
-  }).catch(() => {});
+  if (cloud.account()) cloud.me().then((r) => admin(r.admin)).catch(() => {});
 }
 labelSave();
 initTips();
 
-// ---------- leaving with unsaved work: the page asks first (buttons, the exit link, the back button, closing the tab) ----------
+// ---------- leaving: everything is saved by itself; a change that has not reached the server asks first ----------
 let leaveTo: string | null = null;
 function askLeave(to: string) {
   leaveTo = to;
-  void docApi!.choose('Незачувани промени', 'Зачувај ја работата пред да излезеш?', ['Зачувај и излези', 'Излези без зачувување', 'Остани']).then(async (i) => {
-    if (i === 0) { if (await docApi!.save() && leaveTo) goNow(leaveTo); return; }
-    if (i === 1 && leaveTo) goNow(leaveTo);
+  void docApi!.flush().then(async (ok) => {
+    if (ok) { location.replace(to); return; }
+    const i = await docApi!.choose('Нема врска со серверот', 'Последната промена е на овој компјутер и ќе се испрати кога ќе се вратиш. Да излезам?', ['Излези', 'Остани']);
+    if (i === 0 && leaveTo) location.replace(leaveTo);
   });
-}
-function goNow(to: string) {
-  unsaved = false; // the copy on this computer is already kept
-  location.replace(to);
 }
 // links out of the builder
 window.addEventListener('click', (e) => {
   const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-go]');
-  if (!link || !unsaved) return;
+  if (!link || !docApi?.pending()) return;
   e.preventDefault();
   e.stopImmediatePropagation();
   askLeave(link.href);
 }, true);
-// closing the tab, reloading or the power going off: the browser shows its own prompt
-window.addEventListener('beforeunload', (e) => { if (unsaved) { e.preventDefault(); e.returnValue = ''; } });
-// the browser back button: keep this page, and ask first
+// closing the tab while a change is being sent: the browser asks
+window.addEventListener('beforeunload', (e) => { if (docApi?.pending()) { void docApi.flush(); e.preventDefault(); e.returnValue = ''; } });
+// the browser back button: keep this page while a change is being sent
 history.pushState({ builder: true }, '');
 window.addEventListener('popstate', () => {
-  if (!unsaved) return;
+  if (!docApi?.pending()) return;
   history.pushState({ builder: true }, '');
   askLeave(`${import.meta.env.BASE_URL}play/`);
 });
-document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
 
-// ---------- workspaces: three local workspaces, each with its own items and history, kept in this browser ----------
-let persistTimer: number | undefined;
-let restored = false; // nothing is written before the saved workspaces are read: an empty start must never overwrite them
-let unsaved = false; // changed since the last save to your account
-let slot = 1; // the workspace you are in (1 to 3)
-const slotInfo: { name: string; count: number }[] = [];
-/** the history of actions of each workspace: temporary, kept only while this page is open */
-const stepsMem: Record<number, { steps: HistStep[]; histAt: number }> = {};
+// the documents open once the map is ready and you are signed in
+let mapReady = false;
+function startDocs() { if (mapReady && cloud.account()) void docApi!.start(); }
+
+// ---------- the open document: its items and its history of actions (temporary, kept while the page is open) ----------
+/** the history of each document, by its name, while this page is open */
+const stepsMem: Record<string, { steps: HistStep[]; histAt: number }> = {};
+let docKey = '';
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
-const wsName = (i: number) => slotInfo[i - 1]?.name || `Работна површина ${i}`;
 
-/** A change to the items: a new named step in the history, and unsaved until you save to your account. */
+/** A change to the items: a new named step in the history, saved by itself. */
 function save() {
   const cur = JSON.stringify({ recs, nextId });
   if (lastState && cur !== lastState) {
-    unsaved = true;
     const label = labelFor((JSON.parse(lastState) as { recs: Rec[] }).recs, recs);
     steps = steps.slice(0, histAt + 1); // a change after an undo drops the steps that were undone
     steps.push({ json: cur, label });
     if (steps.length > HISTORY_MAX) steps.shift();
     histAt = steps.length - 1;
+    docApi?.changed();
   }
   lastState = cur;
   updateHistoryButtons();
-  setStatus(statusError, !!statusError);
-  persistSoon();
 }
 /** What a change did, in words: Постави / Избриши / Промени, and what it was. */
 function labelFor(prev: Rec[], next: Rec[]): string {
@@ -904,170 +883,24 @@ function recName(r: Rec): string {
   if (x.cat === 'axe') return 'Секира';
   return markDef(x.key ?? '')?.name ?? 'Линија';
 }
-function persistSoon() {
-  window.clearTimeout(persistTimer);
-  persistTimer = window.setTimeout(() => void persistNow(), 300);
-}
-/** The open workspace as it is kept in this browser. */
-function slotState(name = wsName(slot)): Slot {
-  return { name, savedAt: new Date().toISOString(), recs: clone(recs), nextId, history: [], histAt: 0, unsaved, work: docApi?.currentWork() ?? '' };
-}
-let statusError = '';
-/** The toolbar status: an error, unsaved changes, or what the document is. */
-function setStatus(text = '', bad = false) {
-  statusError = bad ? text : '';
-  const el = document.getElementById('saveStatus')!;
-  el.classList.toggle('bad', !!statusError);
-  el.classList.toggle('dirty', !statusError && unsaved);
-  el.textContent = statusError || docApi?.statusText(unsaved) || '';
-  el.title = statusError ? '' : unsaved ? 'Работата е на овој компјутер, но не е зачувана на профилот.' : '';
-}
-async function persistNow() {
-  window.clearTimeout(persistTimer);
-  if (!restored) return;
-  const s = slotState();
-  try {
-    await writeSlot(slot, s);
-    slotInfo[slot - 1] = { name: s.name, count: recs.length };
-    renderWorkspaces();
-    setStatus();
-  } catch (e) {
-    setStatus('Не се чува локално', true);
-    msg('Прелистувачот не дозволува чување на овој компјутер.');
-  }
-}
 function cleanRecs(list: unknown[]): Rec[] {
   return (list as Rec[]).filter((q) => q && typeof q.id === 'number' && typeof q.cat === 'string').map((q) => {
     if (q.cat === 'pole') { q.orient = 'vert'; q.yaw = q.yaw ?? 0; q.len = POLE_L; q.thick = POLE_W; }
     return q;
   });
 }
-/** Shows a workspace's items and its history (a fresh one when it is empty). */
-function applySlot(s: Slot | null) {
-  recs = s ? cleanRecs(s.recs) : [];
+/** Shows a document's items. Its history comes back when this page still has it. */
+function setItems(list: Rec[], key: string) {
+  if (docKey) stepsMem[docKey] = { steps, histAt };
+  docKey = key;
+  recs = cleanRecs(clone(list));
   nextId = Math.max(1, ...recs.map((q) => q.id + 1));
   select(null); rebuild();
   lastState = JSON.stringify({ recs, nextId });
-  const mem = stepsMem[slot];
-  if (mem && mem.steps.length) {
-    steps = mem.steps;
-    histAt = Math.min(Math.max(0, mem.histAt), steps.length - 1);
-  } else {
-    steps = [{ json: lastState, label: 'Отворено' }];
-    histAt = 0;
-  }
-  unsaved = s ? s.unsaved : false;
-  docApi?.attach(s?.work ?? '');
+  const mem = stepsMem[key];
+  if (mem && mem.steps[mem.histAt]?.json === lastState) { steps = mem.steps; histAt = mem.histAt; }
+  else { steps = [{ json: lastState, label: 'Отворено' }]; histAt = 0; }
   updateHistoryButtons();
-  setStatus();
-}
-/** Local copy first; when nothing is pending, the newest version on your account replaces it. */
-async function syncFromServer() {
-  const cur = await readSlot(slot);
-  if (!cur?.work || cur.unsaved || !cloud.account()) return;
-  try {
-    const w = await cloud.loadWorkspace(cur.work);
-    const items = (w.data as { items?: unknown[] } | null)?.items;
-    if (!Array.isArray(items)) return;
-    applySlot({ ...cur, recs: items, history: [], histAt: 0, unsaved: false });
-    await persistNow();
-  } catch { /* offline: the local copy stays */ }
-}
-/** Shows these items as the open workspace, with a fresh history (a file or your account's work). */
-function setItems(list: Rec[]) {
-  recs = cleanRecs(list);
-  nextId = Math.max(1, ...recs.map((q) => q.id + 1));
-  select(null); rebuild();
-  lastState = JSON.stringify({ recs, nextId });
-  steps = [{ json: lastState, label: 'Отворено' }]; histAt = 0;
-  unsaved = false;
-  updateHistoryButtons();
-  setStatus();
-  persistSoon();
-}
-/** Starts: reads the three workspaces, and opens the one you were in. */
-async function restoreSession() {
-  const last = Number(localStorage.getItem('builder.slot'));
-  slot = last >= 1 && last <= SLOT_COUNT ? last : 1;
-  try {
-    for (let k = 1; k <= SLOT_COUNT; k++) {
-      const s = await readSlot(k);
-      slotInfo[k - 1] = { name: s?.name || `Работна површина ${k}`, count: s?.recs.length ?? 0 };
-    }
-    applySlot(await readSlot(slot));
-    restored = true;
-    await syncFromServer();
-  } catch (e) {
-    setStatus('Не може да се прочитаат работните површини', true);
-    return;
-  }
-  renderWorkspaces();
-}
-/** Goes to another workspace: this one is kept as it is. */
-async function switchWorkspace(i: number) {
-  if (i === slot) return;
-  await persistNow();
-  stepsMem[slot] = { steps, histAt };
-  slot = i;
-  localStorage.setItem('builder.slot', String(i));
-  try {
-    applySlot(await readSlot(i));
-    await syncFromServer();
-    msg(`Работна површина: ${wsName(i)}`);
-  } catch (e) { setStatus('Не може да се отвори работната површина', true); }
-  renderWorkspaces();
-}
-/** Save as workspace: a copy of this one, with its own name and history, in another workspace (you go to it). */
-async function saveAsWorkspace() {
-  const name = prompt('Име на работната површина', wsName(slot));
-  if (!name || !name.trim()) return;
-  const i = await docApi!.choose('Зачувај како работна површина', 'Избери во која. Ако таа веќе има работа, заменува се.', [
-    ...[1, 2, 3].map((k) => `${k}. ${wsName(k)}`), 'Откажи',
-  ]);
-  if (i >= SLOT_COUNT) return;
-  const target = i + 1;
-  await persistNow();
-  stepsMem[slot] = { steps, histAt };
-  const s = slotState(name.trim());
-  await writeSlot(target, s);
-  stepsMem[target] = { steps, histAt };
-  slotInfo[target - 1] = { name: s.name, count: recs.length };
-  slot = target;
-  localStorage.setItem('builder.slot', String(target));
-  applySlot(s);
-  renderWorkspaces();
-  msg(`Зачувано како „${s.name}“`);
-}
-/** Exports the open document as a file (for backup, or to open on another computer). */
-function exportDocument() {
-  const name = wsName(slot);
-  const data = { format: 'krug-builder-session', version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: clone(recs) };
-  const url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
-  const a = document.createElement('a');
-  a.href = url; a.download = `${name.replace(/[^\p{L}\p{N}]+/gu, '_')}.json`; a.style.display = 'none';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  msg(`Документот е извезен · ${name}`);
-}
-/** The three workspaces in the panel: the one you are in is marked. */
-function renderWorkspaces() {
-  document.getElementById('docName')!.textContent = wsName(slot);
-  const list = document.getElementById('wsList');
-  if (!list) return;
-  list.innerHTML = '';
-  for (let k = 1; k <= SLOT_COUNT; k++) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'ver-row';
-    b.setAttribute('aria-current', String(k === slot));
-    const t = document.createElement('span'); t.className = 'ver-title';
-    t.textContent = wsName(k);
-    const sub = document.createElement('small'); sub.className = 'ver-sub';
-    sub.textContent = `${slotInfo[k - 1]?.count ?? 0} ставки${k === slot ? ' · отворена' : ''}`;
-    b.append(t, sub);
-    b.addEventListener('click', () => void switchWorkspace(k));
-    list.appendChild(b);
-  }
 }
 /** Shows a step of the steps: the items become that state. */
 function applyState(json: string) {
@@ -1075,9 +908,7 @@ function applyState(json: string) {
   recs = d.recs; nextId = d.nextId;
   lastState = json;
   select(null); rebuild();
-  unsaved = true;
-  setStatus();
-  persistSoon();
+  docApi?.changed();
   updateHistoryButtons();
 }
 /** Goes to a step of the steps (back or forward). */
@@ -1328,7 +1159,8 @@ startGame({
     ctx = c;
     // the builder draws at normal resolution by default: on high-density screens the full resolution is 4× the pixels
     applyQuality(c.renderer, (localStorage.getItem('builder.quality') as string) || '1');
-    await restoreSession();
+    mapReady = true;
+    startDocs();
     buildInventory();
     // start where the game starts: the parking at the spawn point
     const sp = c.level.route.start.p;
@@ -1426,13 +1258,10 @@ if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bld = 
   select(id: number | null) { select(id); },
 };
 
-// the document: the File menu, Save, Save as, Share and Open
+// the documents: saved by themselves, on the server and in this browser
 docApi = initDocument({
-  onSignedIn: () => { labelSave(); },
+  onSignedIn: () => { labelSave(); startDocs(); },
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
-  setItems: (items) => setItems(items as Rec[]),
-  isDirty: () => unsaved,
-  setDirty: (v) => { unsaved = v; setStatus(); persistSoon(); },
-  onChange: () => setStatus(),
+  setItems: (items, key) => setItems(items as Rec[], key),
   msg,
 });

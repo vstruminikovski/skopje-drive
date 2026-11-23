@@ -30,18 +30,18 @@
         <span class="spacer"></span>
         <button id="lookBtn" class="look-btn" type="button" aria-pressed="false" title="Гледај со глушецот и поставувај со нишанот (C)"><kbd>C</kbd><span id="lookLabel">Гледај</span></button>
         <span class="spacer"></span>
-        <button id="openBtn" class="btn" type="button" title="Отвори: твоја работа, код од пријател или датотека (⌘O)">Отвори</button>
+        <button id="openBtn" class="btn" type="button" title="Отвори: твоја работа, код од пријател или датотека (⌘O)">Отвори со код</button>
         <button id="shareBtn" class="btn" type="button" title="Сподели со пријател (код или линк)">Сподели</button>
-        <button id="saveGame" class="btn btn-primary" type="button" title="Зачувај (⌘S)">Зачувај</button>
       </header>
       <!-- the File menu: saving, opening, sharing, backups -->
       <div id="fileMenu" class="menu glass" role="menu" hidden>
         <div class="menu-who" id="menuWho"></div>
-        <button type="button" role="menuitem" data-act="open">Отвори…<kbd>⌘O</kbd></button>
-        <button type="button" role="menuitem" data-act="save">Зачувај<kbd>⌘S</kbd></button>
-        <button type="button" role="menuitem" data-act="export">Извези документ (датотека)…</button>
-        <button type="button" role="menuitem" data-act="saveasws">Зачувај како работна површина…<kbd>⇧⌘S</kbd></button>
+        <button type="button" role="menuitem" data-act="rename">Преименувај документ…</button>
+        <button type="button" role="menuitem" data-act="export">Извези датотека…</button>
+        <button type="button" role="menuitem" data-act="import">Увези датотека…</button>
+        <div class="menu-sep"></div>
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
+        <button type="button" role="menuitem" data-act="code">Отвори со код од пријател…</button>
         <div class="menu-sep"></div>
         <div class="admin-only" hidden>
           <button type="button" role="menuitem" data-act="deploy">Деплој во живата игра…</button>
@@ -79,7 +79,7 @@
             </section>
 
           <details class="pane" data-pane="workspaces" open>
-            <summary>Документи<button class="info" type="button" data-tip="Три документи на овој компјутер. Секој има локална копија и копија на профилот (облакот). Историјата на акциите важи само додека е отворена страната.">i</button></summary>
+            <summary>Документи<button class="info" type="button" data-tip="Твоите три документи се на серверот, под твојот профил, и се отвораат на секој компјутер. Секоја промена се зачувува сама. Кликни на документ за да го отвориш.">i</button></summary>
             <div id="wsList" class="ver-list"></div>
           </details>
           <details class="pane" data-pane="history" open>
@@ -164,12 +164,10 @@
       <!-- Open: your work, a code from a friend, or a file -->
       <div id="openDlg" class="scrim" hidden>
         <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="openTitle">
-          <h2 id="openTitle">Отвори</h2>
+          <h2 id="openTitle">Отвори со код</h2>
           <div class="stack">
-            <button id="openMine" class="btn btn-lg" type="button">Мојата работа (последна верзија)</button>
             <label class="field-label" for="openCode">Со код од пријател</label>
             <div class="btn-row"><input id="openCode" class="field" placeholder="ABCD-EFGH-JKLM-..." autocomplete="off" spellcheck="false"><button id="openCodeGo" class="btn btn-primary" type="button">Отвори</button></div>
-            <button id="openFile" class="btn btn-lg" type="button">Од датотека на компјутерот…</button>
             <input type="file" id="openFileInput" accept=".json,application/json" hidden>
             <button id="openClose" class="btn btn-lg btn-plain" type="button">Откажи</button>
           </div>

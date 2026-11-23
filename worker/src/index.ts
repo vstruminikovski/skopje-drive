@@ -157,7 +157,7 @@ async function saveWorkspace(env: Env, req: Request, name: string): Promise<Resp
   const body = await readBody(req);
   const admins = env.ADMINS.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
   const r = await callDo(env.WORKSPACES, name, '/put', {
-    user, name, admins, data: body.data, savedAt: now(), backup: body.backup === true,
+    user, name, admins, data: body.data, savedAt: now(), backup: body.backup === true, title: body.title,
   });
   if (r.status === 403) throw new HttpError(403, r.data.error ?? 'Немаш пристап до оваа работа.');
   if (r.status !== 200) throw new HttpError(500, 'Не успеав да зачувам.');
@@ -178,6 +178,18 @@ function newCode(): string {
 const normalizeCode = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 /** The owner makes a code for one work. A new code replaces the old one. */
+/** Your three documents: <username>, <username>-2, <username>-3 (each may not exist yet). */
+async function listDocs(env: Env, req: Request): Promise<Response> {
+  const user = await userFromToken(env, req);
+  if (!user) throw new HttpError(401, 'Најави се.');
+  const names = [user, `${user}-2`, `${user}-3`];
+  const docs = await Promise.all(names.map(async (name, i) => {
+    const r = await callDo(env.WORKSPACES, name, '/meta', { user });
+    return r.status === 200 ? { n: i + 1, name, exists: true, ...r.data } : { n: i + 1, name, exists: false, title: '', savedAt: '', count: 0 };
+  }));
+  return json(env, { docs });
+}
+
 async function invite(env: Env, req: Request, name: string): Promise<Response> {
   const user = await userFromToken(env, req);
   if (!user) throw new HttpError(401, 'Најави се.');
@@ -246,7 +258,7 @@ export class Account extends DurableObject {
 /** A work has one saved version (what you save) and up to 5 automatic backups (taken every 10 minutes). */
 const MAX_BACKUPS = 5;
 interface BackupMeta { id: string; savedAt: string; savedBy: string; count: number }
-interface WsRec { owner: string; members: string[]; savedAt: string; savedBy: string; backups: BackupMeta[] }
+interface WsRec { owner: string; members: string[]; savedAt: string; savedBy: string; backups: BackupMeta[]; title?: string; count?: number }
 const itemCount = (data: unknown) => (data && Array.isArray((data as { items?: unknown[] }).items) ? (data as { items: unknown[] }).items.length : 0);
 
 export class Workspace extends DurableObject {
@@ -276,18 +288,26 @@ export class Workspace extends DurableObject {
           if (!(ws as WsRec).backups.some((b) => b.id === body.backup)) return reply(404);
           return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, data: await st.get(`b:${body.backup}`), backup: body.backup });
         }
-        return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, data: await st.get('data') });
+        return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, title: ws.title ?? '', data: await st.get('data') });
+      }
+      if (path === '/meta') {
+        // for the document list: what the document is called, when it was saved, how many items
+        if (!ws) return reply(404);
+        if (body.user !== ws.owner && !ws.members.includes(body.user)) return reply(403);
+        return reply(200, { title: ws.title ?? '', savedAt: ws.savedAt, savedBy: ws.savedBy, count: ws.count ?? 0 });
       }
       if (path === '/put') {
         // Save writes the saved version. A backup keeps a copy next to it (the newest 5), and the saved version stays as it is.
         const user: string = body.user;
         const now = body.savedAt;
         if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
+        const title = typeof body.title === 'string' ? body.title.trim().slice(0, 60) : undefined;
         if (!ws) {
-          // a new workspace takes your own username as its name; admins may use any name (e.g. player)
-          if (user !== body.name && !body.admins.includes(user)) return reply(403, { error: 'Новата работа се создава со твоето корисничко име.' });
+          // your three documents are named after you: <username>, <username>-2, <username>-3; admins may use any name
+          const own = body.name === user || body.name === `${user}-2` || body.name === `${user}-3`;
+          if (!own && !body.admins.includes(user)) return reply(403, { error: 'Новиот документ се создава со твоето корисничко име.' });
           await st.put('data', body.data);
-          await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [] } as WsRec);
+          await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [], title, count: itemCount(body.data) } as WsRec);
           return reply(200, { savedAt: now, backups: 0 });
         }
         if (ws.owner !== user && !ws.members.includes(user)) return reply(403, { error: 'Немаш пристап до оваа работа.' });
@@ -300,7 +320,7 @@ export class Workspace extends DurableObject {
           return reply(200, { savedAt: now, backups: backups.length });
         }
         await st.put('data', body.data);
-        await st.put('ws', { ...ws, savedAt: now, savedBy: user });
+        await st.put('ws', { ...ws, savedAt: now, savedBy: user, count: itemCount(body.data), ...(title !== undefined ? { title } : {}) });
         return reply(200, { savedAt: now, backups: ws.backups.length });
       }
       if (path === '/invite') {
@@ -361,6 +381,7 @@ export default {
         return await invite(env, req, parts[2].toLowerCase());
       }
       if (parts.length === 2 && parts[1] === 'join' && req.method === 'POST') return await join(env, req);
+      if (parts.length === 2 && parts[1] === 'docs' && req.method === 'GET') return await listDocs(env, req);
       throw new HttpError(404, 'Не постои.');
     } catch (e) {
       if (e instanceof HttpError) return json(env, { error: e.message }, e.status);

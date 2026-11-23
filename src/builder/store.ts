@@ -1,30 +1,19 @@
-// The three local workspaces of the builder. Each keeps its items and its history in this browser
-// (IndexedDB), so it is still there after a reload, and changes are kept as you work.
+// The local cache of each document (in this browser): what was last loaded or changed, and whether the
+// newest change has reached the server. The server copy is the real one; this copy covers a reload or a
+// lost connection until the change is sent.
 import { kvGet, kvSet } from '../shared/db';
 
-export const SLOT_COUNT = 3;
-
-export interface Slot {
+export interface DocCache {
   name: string;
-  savedAt: string;
+  title: string;
   recs: unknown[];
-  nextId: number;
-  /** the steps of the history, and the step you are on */
-  history: unknown[];
-  histAt: number;
-  /** changed since the last save to your account */
-  unsaved: boolean;
-  /** the work on your account this workspace is saved to ('' when none) */
-  work?: string;
+  savedAt: string;
+  /** a change that has not reached the server yet */
+  dirty: boolean;
 }
 
-export async function readSlot(i: number): Promise<Slot | null> {
-  return kvGet<Slot>(`slot:${i}`);
-}
-
-export async function writeSlot(i: number, s: Slot): Promise<void> {
-  await kvSet(`slot:${i}`, s);
-}
+export const readCache = (name: string) => kvGet<DocCache>(`doc:${name}`);
+export const writeCache = (c: DocCache) => kvSet(`doc:${c.name}`, c);
 
 /** A project file the builder can open: the format and a list of items. */
 export function isSession(v: unknown): v is { format: 'krug-builder-session'; recs: unknown[] } {

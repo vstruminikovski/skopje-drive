@@ -9,7 +9,9 @@ export interface Account { username: string; token: string }
 /** An automatic backup of a work: a copy taken while you worked (the newest 5 are kept). */
 export interface BackupMeta { id: string; savedAt: string; savedBy: string; count: number }
 /** A work: its one saved version (`data`), and its backups. */
-export interface Workspace { name: string; owner: string; members: string[]; savedAt: string; savedBy: string; data: unknown; backups: BackupMeta[] }
+export interface Workspace { name: string; owner: string; members: string[]; savedAt: string; savedBy: string; data: unknown; backups: BackupMeta[]; title?: string }
+/** One of your three documents in the list (it may not exist yet). */
+export interface DocMeta { n: number; name: string; exists: boolean; title: string; savedAt: string; count: number }
 export class CloudError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }
@@ -53,11 +55,15 @@ export function loadWorkspace(name: string, backup?: string) {
   const q = backup ? `?backup=${encodeURIComponent(backup)}` : '';
   return call<Workspace>(`/api/ws/${encodeURIComponent(name)}${q}`, { headers: auth() });
 }
-/** Saves the items: as the saved version (default), or as a backup next to it. */
-export function saveWorkspace(name: string, data: unknown, backup = false) {
-  return call<{ name: string; savedAt: string; backups: number }>(`/api/ws/${encodeURIComponent(name)}`, {
-    method: 'PUT', headers: auth(), body: JSON.stringify({ data, backup }),
+/** Saves a document (its items, and its title when given). */
+export function saveWorkspace(name: string, data: unknown, title?: string) {
+  return call<{ name: string; savedAt: string }>(`/api/ws/${encodeURIComponent(name)}`, {
+    method: 'PUT', headers: auth(), body: JSON.stringify({ data, title }),
   });
+}
+/** Your three documents. */
+export function listDocs() {
+  return call<{ docs: DocMeta[] }>('/api/docs', { headers: auth() });
 }
 /** A join code for one work: only its owner can make one, and a new one replaces the old. */
 export function createCode(name: string) {
