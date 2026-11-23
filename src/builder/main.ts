@@ -1,3 +1,5 @@
+import '../shared/ui.css';
+import './builder.css';
 import { fixLinks } from '../shared/links';
 fixLinks();
 // Builder: the game itself (src/mapng/boot.ts) with a free camera and placement tools.
@@ -13,17 +15,21 @@ import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoint
 import type { Lamp } from '../game/traffic/signals';
 import { writeSession, readSession, type Session } from './store';
 import { kvDel } from '../shared/db';
+import { clock } from '../shared/dates';
 
 // ---------- desktop only ----------
 // A mouse-and-keyboard screen at least 900 px wide. Phones and touch tablets never get the builder.
 const isDesktop = innerWidth >= 900 && matchMedia('(pointer: fine) and (hover: hover)').matches;
 if (!isDesktop) {
   document.getElementById('loading')?.remove();
-  document.getElementById('gate')!.innerHTML = '<div><b>Builder is desktop only</b><p>Open this page on a desktop computer with a mouse and keyboard. It is not available on phones or touch tablets.</p></div>';
+  document.getElementById('gate')!.innerHTML = `<div class="sheet"><h2>Само на компјутер</h2><p>Градителот бара глушец и тастатура. На телефон можеш да ја играш играта.</p><a class="btn btn-primary btn-lg" href="${import.meta.env.BASE_URL}">Играј ја играта</a></div>`;
   throw new Error('builder: desktop only');
 }
 
 const BASE = import.meta.env.BASE_URL;
+const surveyorInput = document.getElementById('surveyor') as HTMLInputElement;
+/** Whose work this is, for the exports: the name you typed, else your account name. */
+const surveyor = () => surveyorInput.value.trim() || cloud.account()?.username || 'builder';
 const SURVEY_URL = `${BASE}survey/prviot_krug.geojson`.replace(/\/+/g, '/');
 
 // ---------- inventory: the city's own sign and marking types ----------
@@ -51,8 +57,8 @@ const TEMPLATES: { key: string; name: string; width: number; strokes: [number, n
   { key: 'arrow_uturn', name: 'Пресврт', width: 0.5, strokes: [[[0, -2], [0, 0.8], [-0.7, 1.3], [-0.7, 0.4]], [[-1.1, 0.7], [-0.7, 0.2], [-0.3, 0.7]]] },
   // European bus stop: yellow box with the word BUS painted inside (letters 1 m tall, 0.5 m wide). Sizes vary by country: check on site.
   // give-way triangle: a white outline, apex towards the traffic. Drivers wait here, before the stop line, at the pedestrian crossing
-  { key: 'give_way_triangle', name: 'Триаголник: уступи (чекај тука)', width: 0.12, strokes: [[[-0.5, -0.433], [0.5, -0.433], [0, 0.433], [-0.5, -0.433]]] },
-  { key: 'bus_stop', name: 'Автобуска стојалка (жолта кутија со BUS)', width: 0.12, material: 'm_line_yellow', strokes: [
+  { key: 'give_way_triangle', name: 'Триаголник: уступи', width: 0.12, strokes: [[[-0.5, -0.433], [0.5, -0.433], [0, 0.433], [-0.5, -0.433]]] },
+  { key: 'bus_stop', name: 'Автобуска стојалка', width: 0.12, material: 'm_line_yellow', strokes: [
     [[-1.5, -1], [1.5, -1], [1.5, 1], [-1.5, 1], [-1.5, -1]],
     // B
     [[-1.15, -0.5], [-1.15, 0.5], [-0.85, 0.5], [-0.75, 0.35], [-0.85, 0.05], [-1.15, 0.05]],
@@ -65,11 +71,11 @@ const TEMPLATES: { key: string; name: string; width: number; strokes: [number, n
 ];
 const markDef = (key: string) => (MARKS.find((m) => m.key === key) ?? TEMPLATES.find((t) => t.key === key)) as { name: string; code: string | null; width: number };
 const MARKS: MarkItem[] = [
-  { key: 'solid', name: 'Полна бела линија (цртај по патека)', kind: 'marking', material: 'm_line_white', width: 0.12, code: null, poly: true },
-  { key: 'dashed', name: 'Испрекината бела линија (цртај по патека)', kind: 'marking', material: 'm_line_white_discontinue', width: 0.12, code: null, poly: true },
-  { key: 'double', name: 'Двојна полна линија (цртај по патека)', kind: 'marking', material: 'm_line_white', width: 0.12, code: null, poly: true },
-  { key: 'stop', name: 'Линија за застанување (V-1)', kind: 'marking', material: 'm_line_white', width: 0.5, code: 'V-1', poly: false },
-  { key: 'zebra', name: 'Пешачки премин (V-4)', kind: 'zebra', material: 'italy_road_markings_zebra', width: 3, code: 'V-4', poly: false },
+  { key: 'solid', name: 'Полна линија', kind: 'marking', material: 'm_line_white', width: 0.12, code: null, poly: true },
+  { key: 'dashed', name: 'Испрекината линија', kind: 'marking', material: 'm_line_white_discontinue', width: 0.12, code: null, poly: true },
+  { key: 'double', name: 'Двојна полна линија', kind: 'marking', material: 'm_line_white', width: 0.12, code: null, poly: true },
+  { key: 'stop', name: 'Линија за застанување', kind: 'marking', material: 'm_line_white', width: 0.5, code: 'V-1', poly: false },
+  { key: 'zebra', name: 'Пешачки премин', kind: 'zebra', material: 'italy_road_markings_zebra', width: 3, code: 'V-4', poly: false },
 ];
 // Trees and street lamps: the game's own asset types (taken from the map export).
 const TREES = [
@@ -85,7 +91,7 @@ const LAMPS = [{ key: 'eca_lamppost', name: 'Улична светилка' }];
 // Pole block: one 1 x 1 x 1 m cube, one material. Blocks snap to a 1 m grid, like Minecraft: click the ground to put one down,
 // click a face of a block to glue the next one on that side. Right-click removes it.
 const POLE_ITEMS = [
-  { key: 'block', name: 'Столбче-коцка (0,2 м)', sub: 'кликни на земјата или на страна од коцка за да залепиш нова' },
+  { key: 'block', name: 'Столбче-коцка', sub: 'кликни на земјата или на страна од коцка за да залепиш нова' },
 ];
 type Cat = 'sign' | 'sfloat' | 'light' | 'mark' | 'tree' | 'lamp' | 'pole' | 'tpl' | 'axe';
 // traffic light kinds: glued to a pole block you built, with its own pole, or floating with no pole
@@ -221,7 +227,7 @@ function snapBearing(from: [number, number], to: [number, number]): [number, num
 function bearingOf(from: [number, number], to: [number, number]) {
   return (((Math.atan2(to[0] - from[0], to[1] - from[1]) * 180) / Math.PI) + 360) % 360;
 }
-const COMPASS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+const COMPASS = ['С', 'СИ', 'И', 'ЈИ', 'Ј', 'ЈЗ', 'З', 'СЗ'];
 const compassName = (deg: number) => `${COMPASS[Math.round(deg / 45) % 8]} ${Math.round(deg)}°`;
 function snapPt(x: number, y: number): [number, number] {
   return [Math.round(x / snap) * snap, Math.round(y / snap) * snap];
@@ -254,7 +260,7 @@ function smoothPath(pts: [number, number][]): [number, number][] {
   return curve.getSpacedPoints(n).map((v) => [v.x, -v.z] as [number, number]);
 }
 function finishPoly() {
-  if (poly.length < 2) { msg('A line needs at least two points.'); return; }
+  if (poly.length < 2) { msg('Линијата бара најмалку две точки.'); return; }
   const m = MARKS.find((q) => q.key === hand.key)!;
   const pts = smoothPath(poly);
   const id = nextId++;
@@ -342,7 +348,6 @@ window.addEventListener('mousemove', (e) => {
 function placeAtAim(shift: boolean, camera: THREE.PerspectiveCamera, at?: [number, number] | null) {
   if (!ctx) return;
   if (hand.cat === 'pole') { placePoleBlock(camera); return; }
-  if (!(document.getElementById('surveyor') as HTMLInputElement).value.trim()) { msg('Enter your name in Surveyor first (needed for the export).'); return; }
   const a = at ?? aimPoint(camera, aimNdc());
   if (!a) return;
   if (hand.cat === 'tree' || hand.cat === 'lamp') {
@@ -395,7 +400,7 @@ function placeAtAim(shift: boolean, camera: THREE.PerspectiveCamera, at?: [numbe
     const rc = new THREE.Raycaster();
     rc.setFromCamera(aimNdc(), camera);
     const hit = rc.intersectObjects(groups.poles ? groups.poles.children : [], false)[0];
-    if (!hit || hit.distance > 60) { msg('Traffic lights go on a pole block you built: aim at one and click.'); return; }
+    if (!hit || hit.distance > 60) { msg('Овој семафор оди на столбче-коцка: насочи кон неа и кликни.'); return; }
     const r = recs.find((q) => q.id === hit.object.userData.id);
     if (!r || r.cat !== 'pole') return;
     const n = hit.face!.normal.clone().transformDirection(hit.object.matrixWorld); // three.js: x east, y up, z = -north
@@ -486,37 +491,75 @@ function drawSign(g: CanvasRenderingContext2D, type: string) {
   else if (type.startsWith('speed')) { g.fillStyle = '#c0392b'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, r * .8, 0, 7); g.fill(); g.fillStyle = '#111'; g.font = 'bold 22px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(type === 'speed_50' ? '50' : '30', 0, 1); }
   else { g.fillStyle = '#2456a6'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#fff'; g.fillRect(-r * .5, -r * .1, r * .8, r * .2); }
 }
+/** Signs go on a post by default; the switch in the signs header places the plate alone. */
+let signsFloat = false;
 function buildInventory() {
   const inv = document.getElementById('inv')!;
   inv.innerHTML = '';
   let n = 0;
-  const section = (title: string, rows: { cat: Cat; key: string; name: string; sub: string; draw: (g: CanvasRenderingContext2D) => void }[]) => {
-    const h = document.createElement('h4'); h.textContent = title; inv.appendChild(h);
+  type Row = { cat: Cat; key: string; name: string; sub: string; draw: (g: CanvasRenderingContext2D) => void };
+  const section = (title: string, rows: Row[], extra?: HTMLElement) => {
+    const h = document.createElement('div'); h.className = 'inv-sec';
+    const l = document.createElement('span'); l.className = 'label'; l.textContent = title; h.appendChild(l);
+    if (extra) h.appendChild(extra);
+    inv.appendChild(h);
     for (const row of rows) {
       const el = document.createElement('div'); el.className = 'item'; el.dataset.cat = row.cat; el.dataset.key = row.key;
-      const cv = document.createElement('canvas'); cv.width = cv.height = 80;
-      const g = cv.getContext('2d')!; g.translate(40, 40); row.draw(g); el.appendChild(cv);
-      const t = document.createElement('div'); t.className = 'n';
-      n++; t.innerHTML = `${n <= 9 ? `<b>${n}</b> ` : ''}${row.name}<small>${row.sub}</small>`; el.appendChild(t);
-      el.onclick = () => { hand = { cat: row.cat, key: row.key }; pending = null; markActive(); };
+      el.dataset.find = `${title} ${row.name} ${row.sub}`.toLowerCase();
+      const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+      const g = cv.getContext('2d')!; g.translate(32, 32); g.scale(0.8, 0.8); row.draw(g); el.appendChild(cv);
+      const t = document.createElement('div'); t.className = 'n'; t.textContent = row.name;
+      if (row.sub) { const sm = document.createElement('small'); sm.textContent = row.sub; t.appendChild(sm); }
+      el.appendChild(t);
+      n++;
+      if (n <= 9) { const k = document.createElement('kbd'); k.textContent = String(n); el.appendChild(k); }
+      el.onclick = () => { hand = { cat: row.cat === 'sign' && signsFloat ? 'sfloat' : row.cat, key: row.key }; pending = null; markActive(); };
       inv.appendChild(el);
     }
   };
-  section('Знаци во градот', SIGNS.map((s) => ({ cat: 'sign' as const, key: s.type, name: `${s.code ?? 'код за потврда'} · ${s.name}`, sub: `Wikipedia no. ${s.wiki}${s.exportable ? '' : ' · not exported yet'}`, draw: (g) => drawSign(g, s.type) })));
-  section('Семафори', LIGHT_ITEMS.map((l) => ({ cat: 'light' as const, key: l.key, name: l.name, sub: l.sub, draw: (g: CanvasRenderingContext2D) => {
+  // signs: one list, with or without a post
+  const seg = document.createElement('div'); seg.className = 'seg'; seg.setAttribute('role', 'tablist');
+  seg.innerHTML = '<button type="button" data-f="0">Со столб</button><button type="button" data-f="1">Без столб</button>';
+  const paint = () => seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-selected', String((b.dataset.f === '1') === signsFloat)));
+  seg.onclick = (e) => {
+    const b = (e.target as HTMLElement).closest('button'); if (!b) return;
+    signsFloat = b.dataset.f === '1'; paint();
+    if (hand.cat === 'sign' || hand.cat === 'sfloat') { hand = { cat: signsFloat ? 'sfloat' : 'sign', key: hand.key }; markActive(); }
+  };
+  paint();
+  section('Знаци', SIGNS.map((s) => ({ cat: 'sign' as const, key: s.type, name: s.name, sub: s.code ?? 'код за потврда', draw: (g) => drawSign(g, s.type) })), seg);
+  section('Семафори', LIGHT_ITEMS.map((l) => ({ cat: 'light' as const, key: l.key, name: l.name.replace('Семафор: ', '').replace('Семафор со свој столб', 'Со свој столб').replace(/^./, (c) => c.toUpperCase()), sub: '', draw: (g: CanvasRenderingContext2D) => {
     g.fillStyle = '#8a8f96'; g.fillRect(-2, -28, 4, 56);
-    g.fillStyle = '#5c626b'; g.fillRect(-9, -26, 18, 52);
-    [['#7a2020', -14], ['#7a6a20', 0], ['#20703a', 14]].forEach(([c, y]) => { g.fillStyle = c as string; g.beginPath(); g.arc(0, y as number, 5, 0, 7); g.fill(); });
+    g.fillStyle = '#3a3d42'; g.fillRect(-9, -26, 18, 52);
+    [['#ff453a', -14], ['#ffd60a', 0], ['#30d158', 14]].forEach(([c, y]) => { g.fillStyle = c as string; g.beginPath(); g.arc(0, y as number, 5, 0, 7); g.fill(); });
   } })));
-  section('Знаци без столб', SIGNS.map((s) => ({ cat: 'sfloat' as const, key: s.type, name: `${s.code ?? 'код за потврда'} · ${s.name}`, sub: 'sign plate only, no post', draw: (g: CanvasRenderingContext2D) => drawSign(g, s.type) })));
-  section('Дрвја', TREES.map((t) => ({ cat: 'tree' as const, key: t.key, name: t.name, sub: t.key, draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#6b4e2e'; g.fillRect(-2, 0, 4, 22); g.fillStyle = '#2f7a34'; g.beginPath(); g.arc(0, -6, 16, 0, 7); g.fill(); } })));
-  section('Алатки', [{ cat: 'axe' as const, key: 'axe', name: 'Секира (K)', sub: 'брише само ставките што ги постави', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#6b4e2e'; g.fillRect(-2, -26, 4, 44); g.fillStyle = '#c0392b'; g.beginPath(); g.moveTo(2, -26); g.lineTo(18, -20); g.lineTo(18, -6); g.lineTo(2, -10); g.closePath(); g.fill(); } }]);
-  section('Столбчиња', POLE_ITEMS.map((p) => ({ cat: 'pole' as const, key: p.key, name: p.name, sub: p.sub, draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a8f96'; g.fillRect(-16, -16, 32, 32); g.fillStyle = '#5d6168'; g.fillRect(-16, -16, 32, 4); } })));
-  section('Улични светилки', LAMPS.map((l) => ({ cat: 'lamp' as const, key: l.key, name: l.name, sub: l.key, draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a8f96'; g.fillRect(-1.5, -26, 3, 50); g.fillRect(-1.5, -26, 16, 3); g.fillStyle = '#ffe9a8'; g.fillRect(12, -24, 6, 4); } })));
-  section('Стрелки и ознаки', TEMPLATES.map((t) => ({ cat: 'tpl' as const, key: t.key, name: t.name, sub: 'click to place · Q / E turn', draw: (g: CanvasRenderingContext2D) => { g.strokeStyle = '#fff'; g.lineWidth = 4; g.beginPath(); if (t.key === 'give_way_triangle') { g.moveTo(-14, 9); g.lineTo(14, 9); g.lineTo(0, -16); g.closePath(); g.stroke(); return; } g.fillStyle = '#fff'; g.fillRect(-3, -26, 6, 44); g.beginPath(); g.moveTo(-12, -10); g.lineTo(0, -28); g.lineTo(12, -10); g.closePath(); g.fill(); } })));
-  section('Ознаки на коловоз', MARKS.map((m) => ({ cat: 'mark' as const, key: m.key, name: m.name, sub: `${m.kind === 'zebra' ? 'zebra' : 'line'} · width ${m.width} m`, draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#fff'; if (m.key === 'dashed') { for (let y = -30; y < 30; y += 16) g.fillRect(-3, y, 6, 10); } else if (m.kind === 'zebra') { for (let x = -30; x < 30; x += 12) g.fillRect(x, -22, 6, 44); } else if (m.key === 'stop') g.fillRect(-30, -4, 60, 8); else g.fillRect(-3, -30, 6, 60); } })));
+  section('Ознаки на коловоз', MARKS.map((m) => ({ cat: 'mark' as const, key: m.key, name: m.name, sub: m.code ?? '', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#fff'; if (m.key === 'dashed') { for (let y = -30; y < 30; y += 16) g.fillRect(-3, y, 6, 10); } else if (m.key === 'double') { g.fillRect(-8, -30, 5, 60); g.fillRect(3, -30, 5, 60); } else if (m.kind === 'zebra') { for (let x = -30; x < 30; x += 12) g.fillRect(x, -22, 6, 44); } else if (m.key === 'stop') g.fillRect(-30, -4, 60, 8); else g.fillRect(-3, -30, 6, 60); } })));
+  section('Стрелки и симболи', TEMPLATES.map((t) => ({ cat: 'tpl' as const, key: t.key, name: t.name.replace('Стрелка: ', '').replace(/^./, (c) => c.toUpperCase()), sub: '', draw: (g: CanvasRenderingContext2D) => {
+    g.strokeStyle = t.material === 'm_line_yellow' ? '#ffd60a' : '#fff'; g.fillStyle = g.strokeStyle; g.lineWidth = 4; g.lineJoin = 'round';
+    if (t.key === 'give_way_triangle') { g.beginPath(); g.moveTo(-14, -9); g.lineTo(14, -9); g.lineTo(0, 16); g.closePath(); g.stroke(); return; }
+    if (t.key === 'bus_stop') { g.lineWidth = 3; g.strokeRect(-26, -16, 52, 32); g.font = 'bold 16px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('BUS', 0, 1); return; }
+    // the arrow itself, drawn from its own strokes (y up in the world is up on the tile)
+    g.lineWidth = 4; g.lineCap = 'round';
+    for (const st of t.strokes) { g.beginPath(); st.forEach(([x, y], i) => (i ? g.lineTo(x * 16, -y * 16 + 3) : g.moveTo(x * 16, -y * 16 + 3))); g.stroke(); }
+  } })));
+  section('Столбчиња', POLE_ITEMS.map((p) => ({ cat: 'pole' as const, key: p.key, name: p.name, sub: '0,2 × 0,2 м', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a8f96'; g.fillRect(-16, -16, 32, 32); g.fillStyle = '#5d6168'; g.fillRect(-16, -16, 32, 4); } })));
+  section('Дрвја и светилки', [
+    ...TREES.map((t) => ({ cat: 'tree' as const, key: t.key, name: t.name, sub: '', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#6b4e2e'; g.fillRect(-2, 0, 4, 22); g.fillStyle = '#34c759'; g.beginPath(); g.arc(0, -6, 16, 0, 7); g.fill(); } })),
+    ...LAMPS.map((l) => ({ cat: 'lamp' as const, key: l.key, name: l.name, sub: '', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a8f96'; g.fillRect(-1.5, -26, 3, 50); g.fillRect(-1.5, -26, 16, 3); g.fillStyle = '#ffe9a8'; g.fillRect(12, -24, 6, 4); } })),
+  ]);
+  section('Алатки', [{ cat: 'axe' as const, key: 'axe', name: 'Секира', sub: 'K · брише само твои ставки', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a6a48'; g.fillRect(-2, -26, 4, 44); g.fillStyle = '#ff453a'; g.beginPath(); g.moveTo(2, -26); g.lineTo(18, -20); g.lineTo(18, -6); g.lineTo(2, -10); g.closePath(); g.fill(); } }]);
+  const empty = document.createElement('p'); empty.className = 'inv-empty'; empty.textContent = 'Нема такви ставки'; empty.hidden = true; inv.appendChild(empty);
   markActive();
 }
+// search: filters the library as you type
+document.getElementById('libSearch')!.addEventListener('input', (e) => {
+  const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
+  const inv = document.getElementById('inv')!;
+  let shown = 0;
+  inv.querySelectorAll<HTMLElement>('.item').forEach((el) => { const on = !q || el.dataset.find!.includes(q); el.hidden = !on; if (on) shown++; });
+  inv.querySelectorAll<HTMLElement>('.inv-sec').forEach((h) => { h.hidden = !!q; });
+  (inv.querySelector('.inv-empty') as HTMLElement).hidden = shown > 0;
+});
 // ---------- axe: destroys only the items placed in this builder ----------
 const AXE_REACH = 12; // metres
 let axeHover: number | null = null;   // id of the record under the crosshair
@@ -579,10 +622,10 @@ function updateAxe(camera: THREE.PerspectiveCamera) {
   if (axeHover === null) axeHi.visible = false;
 }
 function axeChop() {
-  if (axeHover === null) { msg('Aim at an item you placed (red) and click to destroy it.'); return; }
+  if (axeHover === null) { msg('Насочи кон твоја ставка (се црвени) и кликни.'); return; }
   removeRec(axeHover);
   axeHover = null; axeHi.visible = false;
-  msg('Destroyed. Undo (Ctrl+Z) brings it back.');
+  msg('Избришано · ⌘Z враќа');
 }
 
 /** Draw resolution of the builder: 1 = fast (default), 2 = sharp. The game itself is not changed. */
@@ -617,7 +660,7 @@ function buildSignTargets() {
   if (ctx) ctx.scene.add(signTargets);
 }
 
-function markActive() { poly = []; pending = null; document.querySelectorAll<HTMLElement>('#inv .item').forEach((el) => el.classList.toggle('active', el.dataset.cat === hand.cat && el.dataset.key === hand.key)); }
+function markActive() { poly = []; pending = null; const cat = hand.cat === 'sfloat' ? 'sign' : hand.cat; document.querySelectorAll<HTMLElement>('#inv .item').forEach((el) => el.classList.toggle('active', el.dataset.cat === cat && el.dataset.key === hand.key)); }
 
 // ---------- inspector ----------
 function select(id: number | null) {
@@ -627,14 +670,14 @@ function select(id: number | null) {
   if (!r) { side.classList.remove('show'); return; }
   side.classList.add('show');
   const sign = r.cat === 'sign' ? SIGNS.find((s) => s.type === r.type) : null;
-  const title = r.cat === 'sign' ? sign!.name : r.cat === 'light' ? 'Traffic light' : r.cat === 'pole' ? 'Pole block (0.2 × 1 × 0.2 m)' : r.cat === 'prop' ? (r.kind === 'tree' ? 'Tree' : 'Street lamp') : markDef(r.key).name;
-  const code = r.cat === 'sign' ? (sign!.code ?? 'to confirm') : r.cat === 'light' ? 'VI-4.1' : r.cat === 'pole' ? '0.2 × 1 × 0.2 m'  : r.cat === 'prop' ? r.type : (markDef(r.key).code ?? 'markings file');
+  const title = r.cat === 'sign' ? sign!.name : r.cat === 'light' ? 'Семафор' : r.cat === 'pole' ? 'Столбче-коцка' : r.cat === 'prop' ? (r.kind === 'tree' ? (TREES.find((t) => t.key === r.type)?.name ?? 'Дрво') : 'Улична светилка') : markDef(r.key).name;
+  const code = r.cat === 'sign' ? (sign!.code ?? 'код за потврда') : r.cat === 'light' ? 'VI-4.1' : r.cat === 'pole' ? '0,2 × 0,2 м' : r.cat === 'prop' ? '' : (markDef(r.key).code ?? '');
   document.getElementById('ins-title')!.textContent = title;
   document.getElementById('ins-code')!.textContent = code;
   const signLike = r.cat === 'sign' || r.cat === 'light';
-  (document.getElementById('ins-facing')!.parentElement as HTMLElement).style.display = signLike ? 'flex' : 'none';
-  (document.getElementById('ins-verified')!.parentElement as HTMLElement).style.display = signLike ? 'flex' : 'none';
-  (document.getElementById('ins-width')!.parentElement as HTMLElement).style.display = r.cat === 'mark' ? 'flex' : 'none';
+  (document.getElementById('ins-facing')!.closest('.irow') as HTMLElement).style.display = signLike ? 'flex' : 'none';
+  (document.getElementById('ins-verified')!.closest('.irow') as HTMLElement).style.display = signLike ? 'flex' : 'none';
+  (document.getElementById('ins-width')!.closest('.irow') as HTMLElement).style.display = r.cat === 'mark' ? 'flex' : 'none';
   const isPole = r.cat === 'pole';
   for (const id of ['row-plen', 'row-pthick', 'row-pz']) (document.getElementById(id) as HTMLElement).style.display = 'none'; // poles are fixed 1 m blocks
   if (isPole) {
@@ -652,7 +695,7 @@ function select(id: number | null) {
     (document.getElementById('ins-off') as HTMLInputElement).value = String(r.offset);
   }
   (document.getElementById('ins-width') as HTMLInputElement).value = r.cat === 'mark' ? String(r.width) : '';
-  (document.getElementById('ins-facing') as HTMLInputElement).value = String(signLike ? r.facing : isPole ? (r.yaw ?? 0) : 0);
+  (document.getElementById('ins-facing') as HTMLInputElement).value = String(Math.round((signLike ? r.facing : isPole ? (r.yaw ?? 0) : 0) * 10) / 10);
   (document.getElementById('ins-verified') as HTMLInputElement).checked = r.verified;
   (document.getElementById('ins-note') as HTMLTextAreaElement).value = r.note;
 }
@@ -695,7 +738,7 @@ document.getElementById('delBtn')!.addEventListener('click', () => { if (selecte
 // ---------- survey export (the file the game reads) ----------
 function surveyFeatures(list: Rec[] = recs): any[] {
   const date = new Date().toISOString().slice(0, 10);
-  const who = (document.getElementById('surveyor') as HTMLInputElement).value.trim();
+  const who = surveyor();
   const out: any[] = [];
   let k = 1;
   const id = () => `B-${String(k++).padStart(3, '0')}`;
@@ -725,7 +768,7 @@ function surveyFeatures(list: Rec[] = recs): any[] {
   return out;
 }
 function markingsFile(list: Rec[] = recs) {
-  const who = (document.getElementById('surveyor') as HTMLInputElement).value.trim();
+  const who = surveyor();
   return list.filter((r): r is Rec & { cat: 'mark' } => r.cat === 'mark' && !markDef(r.key).code).map((r, i) => ({
     type: 'Feature', id: `M-${String(i + 1).padStart(3, '0')}`,
     geometry: { type: 'MultiLineString', coordinates: strokesOf(r).map((st) => st.map(([x, y]) => lonLat(x, y))) },
@@ -742,7 +785,6 @@ function download(name: string, obj: unknown) {
   a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 document.getElementById('exportBtn')!.addEventListener('click', () => {
-  if (!(document.getElementById('surveyor') as HTMLInputElement).value.trim()) { msg('Enter your name in Surveyor first.'); return; }
   // the survey file keeps everything already in it, and appends what you placed
   download('prviot_krug.geojson', { ...surveyRaw, type: 'FeatureCollection', features: [...surveyRaw.features, ...surveyFeatures()] });
   const mk = markingsFile();
@@ -754,7 +796,7 @@ document.getElementById('clearBtn')!.addEventListener('click', () => { if (confi
 interface Version { id: number; name: string; savedAt: string; recs: Rec[]; nextId: number }
 /** The mod file (version 2): every item exactly as the builder has it. The game draws the same items. */
 function modOf(list: Rec[], name: string) {
-  const who = (document.getElementById('surveyor') as HTMLInputElement).value.trim();
+  const who = surveyor();
   return {
     format: 'mapng-mod', version: 2, name, label: `${list.length} items`, createdAt: new Date().toISOString(),
     surveyor: who,
@@ -767,27 +809,27 @@ function setVersions(v: Version[]) { versionList = v; persistSoon(); }
 function refreshVersions(keep?: number) {
   const sel = document.getElementById('verSel') as HTMLSelectElement;
   const list = versions();
-  sel.innerHTML = list.length ? '' : '<option value="">no saved versions</option>';
-  list.forEach((v) => { const o = document.createElement('option'); o.value = String(v.id); o.textContent = `${v.name} · ${v.recs.length} items`; sel.appendChild(o); });
+  sel.innerHTML = list.length ? '' : '<option value="">Нема верзии</option>';
+  list.forEach((v) => { const o = document.createElement('option'); o.value = String(v.id); o.textContent = `${v.name} · ${v.recs.length}`; sel.appendChild(o); });
   if (keep !== undefined) sel.value = String(keep);
 }
 function selectedVersion(): Version | null { const id = Number((document.getElementById('verSel') as HTMLSelectElement).value); return versions().find((v) => v.id === id) ?? null; }
 document.getElementById('saveVer')!.addEventListener('click', () => {
   const list = versions();
-  const name = prompt('Name this version', `version ${list.length + 1}`);
+  const name = prompt('Име на верзијата', `Верзија ${list.length + 1}`);
   if (!name) return;
   const v: Version = { id: Date.now(), name, savedAt: new Date().toISOString(), recs: JSON.parse(JSON.stringify(recs)), nextId };
-  setVersions([...list, v]); refreshVersions(v.id); msg(`Saved "${name}".`);
+  setVersions([...list, v]); refreshVersions(v.id); msg(`Зачувана е „${name}“`);
 });
 document.getElementById('loadVer')!.addEventListener('click', () => {
   const v = selectedVersion(); if (!v) return;
-  if (!confirm(`Load "${v.name}"? Your current items are replaced (save a version first to keep them).`)) return;
+  if (!confirm(`Да ја вратам „${v.name}“? Сегашната работа останува како резерва.`)) return;
   backupBeforeReplace('вчитување верзија');
-  recs = JSON.parse(JSON.stringify(v.recs)); nextId = v.nextId; select(null); rebuild(); save(); msg(`Loaded "${v.name}".`);
+  recs = JSON.parse(JSON.stringify(v.recs)); nextId = v.nextId; select(null); rebuild(); save(); msg(`Вратена е „${v.name}“`);
 });
 document.getElementById('delVer')!.addEventListener('click', () => {
   const v = selectedVersion(); if (!v) return;
-  if (!confirm(`Delete the saved version "${v.name}"?`)) return;
+  if (!confirm(`Да ја избришам верзијата „${v.name}“?`)) return;
   setVersions(versions().filter((q) => q.id !== v.id)); refreshVersions();
 });
 document.getElementById('saveProj')!.addEventListener('click', () => {
@@ -831,7 +873,9 @@ async function saveToAccount(): Promise<boolean> {
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
     await cloud.saveWorkspace(target, data, current?.version ?? 0);
     unsaved = false;
-    msg(admin ? `Објавено за сите играчи · ${recs.length} ставки.` : `Зачувано на твојот профил · ${recs.length} ставки. „Вчитај моја игра“ ја отвора од кој било компјутер.`);
+    onAccount = true;
+    setStatus();
+    msg(admin ? `Објавено за сите · ${recs.length} ставки` : `Зачувано на профилот · ${recs.length} ставки`);
     return true;
   } catch (e) {
     if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
@@ -841,10 +885,15 @@ async function saveToAccount(): Promise<boolean> {
   }
 }
 document.getElementById('saveGame')!.addEventListener('click', () => { void saveToAccount(); });
-// the save button says what it does for this account
-if (cloud.account()) {
-  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај'; }).catch(() => {});
+// ⌘S saves too
+window.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') { e.preventDefault(); void saveToAccount(); } });
+/** The save button says what it does for this account: the admin publishes, everyone else saves. */
+function labelSave() {
+  const b = document.getElementById('saveGame')!;
+  b.textContent = 'Зачувај';
+  if (cloud.account()) cloud.me().then((r) => { b.textContent = r.admin ? 'Објави' : 'Зачувај'; b.title = r.admin ? 'Ја менува играта за сите играчи' : 'Зачувај на твојот профил (⌘S)'; }).catch(() => {});
 }
+labelSave();
 
 // ---------- leaving: unsaved work asks first (buttons, the exit link, the back button, closing the tab) ----------
 const leaveDlg = document.getElementById('leaveDlg')!;
@@ -887,7 +936,7 @@ setInterval(() => {
   const snap = JSON.stringify(recs);
   if (snap === lastSnapshot) return;
   lastSnapshot = snap;
-  const v: Version = { id: Date.now(), name: `автозачувување ${new Date().toLocaleTimeString()}`, savedAt: new Date().toISOString(), recs: JSON.parse(snap), nextId };
+  const v: Version = { id: Date.now(), name: `автозачувување ${clock()}`, savedAt: new Date().toISOString(), recs: JSON.parse(snap), nextId };
   const auto = versionList.filter((q) => q.name.startsWith('автозачувување '));
   let list = [...versionList, v];
   if (auto.length >= 6) { const drop = new Set(auto.slice(0, auto.length - 5).map((q) => q.id)); list = list.filter((q) => !drop.has(q.id)); }
@@ -905,7 +954,6 @@ document.getElementById('loadGame')!.addEventListener('click', async () => {
   msg(`Вчитани се ${recs.length} ставки од играта.`);
 });
 document.getElementById('modBtn')!.addEventListener('click', () => {
-  if (!(document.getElementById('surveyor') as HTMLInputElement).value.trim()) { msg('Enter your name in Surveyor first.'); return; }
   const v = selectedVersion();
   const mod = v ? modOf(v.recs, v.name) : modOf(recs, 'current');
   // the published default for everyone: commit it as public/items/default.json
@@ -930,12 +978,14 @@ async function loadAccountGame() {
   try { admin = (await cloud.me()).admin; } catch { /* not reachable: keep what is open */ }
   const w = await cloud.loadWorkspace(admin ? 'published' : a.username).catch(() => null);
   const f = w?.data as { items?: Rec[] } | null;
-  if (!w || !f || !Array.isArray(f.items)) { msg('Уште немаш зачувана игра на профилот. Почни да градиш и притисни „Зачувај“.'); return; }
+  if (!w || !f || !Array.isArray(f.items)) return; // nothing saved yet: start from what the game shows
   backupBeforeReplace('вчитување од профилот');
   applySession({ format: 'krug-builder-session', version: 1, savedAt: w.savedAt, surveyor: a.username, nextId: 1, recs: f.items, versions: [] }, true);
   unsaved = false;
+  onAccount = true;
+  setStatus();
   void persistNow();
-  msg(`Ја отворив твојата игра · ${recs.length} ставки.`);
+  msg(`Твојата игра е отворена · ${recs.length} ставки`);
 }
 let pendingAccountLoad = false;
 function save() {
@@ -948,6 +998,7 @@ function save() {
   }
   lastState = cur;
   updateHistoryButtons();
+  setStatus(statusError, !!statusError);
   persistSoon();
 }
 function persistSoon() {
@@ -957,13 +1008,20 @@ function persistSoon() {
 function sessionOf(): Session {
   return {
     format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(),
-    surveyor: (document.getElementById('surveyor') as HTMLInputElement).value.trim(),
+    surveyor: surveyor(),
     nextId, recs: JSON.parse(JSON.stringify(recs)), versions: JSON.parse(JSON.stringify(versionList)),
   };
 }
-function setStatus(text: string, bad = false) {
-  const el = document.getElementById('saveStatus');
-  if (el) { el.textContent = text; el.style.color = bad ? '#ff8a80' : '#9fd8a8'; }
+let statusError = '';
+let onAccount = false; // what is open is exactly what your account has (opened from it, or saved to it)
+/** The toolbar status: an error, unsaved changes, or saved. Every change is also kept on this computer. */
+function setStatus(text = '', bad = false) {
+  statusError = bad ? text : '';
+  const el = document.getElementById('saveStatus')!;
+  el.classList.toggle('bad', !!statusError);
+  el.classList.toggle('dirty', !statusError && unsaved);
+  el.textContent = statusError || (unsaved ? 'Незачувано' : onAccount ? 'Зачувано' : '');
+  el.title = statusError ? '' : unsaved ? 'Промените се на овој компјутер. Притисни „Зачувај“ за профилот.' : '';
 }
 async function persistNow() {
   window.clearTimeout(persistTimer);
@@ -971,10 +1029,10 @@ async function persistNow() {
   const s = sessionOf();
   try {
     await writeSession(s);
-    setStatus(`Зачувано ${new Date(s.savedAt).toLocaleTimeString()} · ${recs.length} ставки`);
+    setStatus();
   } catch (e) {
-    setStatus(`НЕ Е ЗАЧУВАНО: ${(e as Error).message}. Зачувај проект сега.`, true);
-    msg('Не можам да ја зачувам работата. Користи „Зачувај проект“.');
+    setStatus('Не се чува локално', true);
+    msg('Прелистувачот не дозволува чување. Зачувај на профилот или сними проект.');
   }
 }
 /** Puts a session's items (and, when merging, its versions) back in the builder. */
@@ -987,7 +1045,7 @@ function applySession(s: Session, mergeVersions: boolean) {
   const incoming = Array.isArray(s.versions) ? (s.versions as Version[]) : [];
   const seen = new Set<number>();
   versionList = (mergeVersions ? [...versionList, ...incoming] : incoming).filter((v) => (seen.has(v.id) ? false : (seen.add(v.id), true)));
-  if (s.surveyor) (document.getElementById('surveyor') as HTMLInputElement).value = s.surveyor;
+  if (s.surveyor) surveyorInput.value = s.surveyor;
   undoStack = []; redoStack = [];
   select(null); rebuild(); refreshVersions();
   lastState = JSON.stringify({ recs, nextId });
@@ -1003,7 +1061,7 @@ async function restoreSession() {
   try {
     s = await readSession();
   } catch (e) {
-    setStatus(`Could not read your saved work (${(e as Error).message}). It is not overwritten. Open a project file instead.`, true);
+    setStatus('Не може да се прочита зачуваното', true);
     refreshVersions();
     return;
   }
@@ -1021,18 +1079,18 @@ async function restoreSession() {
     refreshVersions();
     lastState = JSON.stringify({ recs, nextId });
     updateHistoryButtons();
-    setStatus('Уште нема зачувано · работата се зачувува автоматски');
+    setStatus();
     return;
   }
   applySession(s, false);
-  setStatus(`Вратено ${new Date(s.savedAt).toLocaleTimeString()} · ${recs.length} ставки`);
-  msg(`Вратени се ${recs.length} ставки од последната работа (зачувано ${new Date(s.savedAt).toLocaleString()}).`);
+  if (emergencyRestored) unsaved = true; // a rescued copy is not on your account yet
+  setStatus();
   persistSoon();
 }
 /** Before a non-empty map is replaced, keep it as a backup in Versions (the 20 newest backups are kept). */
 function backupBeforeReplace(why: string) {
   if (!recs.length) return;
-  const v: Version = { id: Date.now(), name: `резерва ${new Date().toLocaleTimeString()} пред ${why}`, savedAt: new Date().toISOString(), recs: JSON.parse(JSON.stringify(recs)), nextId };
+  const v: Version = { id: Date.now(), name: `резерва ${clock()} · ${why}`, savedAt: new Date().toISOString(), recs: JSON.parse(JSON.stringify(recs)), nextId };
   let list = [...versionList, v];
   const auto = list.filter((q) => q.name.startsWith('резерва '));
   if (auto.length > 20) { const drop = new Set(auto.slice(0, auto.length - 20).map((q) => q.id)); list = list.filter((q) => !drop.has(q.id)); }
@@ -1048,34 +1106,56 @@ function applyState(json: string) {
 }
 function undo() {
   const prev = undoStack.pop();
-  if (!prev) { msg('Nothing to undo.'); return; }
+  if (!prev) { msg('Нема што да се врати'); return; }
   redoStack.push(lastState);
   applyState(prev);
 }
 function redo() {
   const next = redoStack.pop();
-  if (!next) { msg('Nothing to redo.'); return; }
+  if (!next) { msg('Нема што да се повтори'); return; }
   undoStack.push(lastState);
   applyState(next);
 }
 function updateHistoryButtons() {
   (document.getElementById('undoBtn') as HTMLButtonElement).disabled = undoStack.length === 0;
   (document.getElementById('redoBtn') as HTMLButtonElement).disabled = redoStack.length === 0;
-  (document.getElementById('undoBtn') as HTMLButtonElement).title = `undo (${undoStack.length} of ${HISTORY_MAX})`;
+  (document.getElementById('undoBtn') as HTMLButtonElement).title = `Врати (⌘Z) · ${undoStack.length} од ${HISTORY_MAX}`;
 }
 
 // ---------- UI ----------
-function msg(text: string) { const el = document.getElementById('msg')!; el.textContent = text; el.style.display = 'block'; clearTimeout((msg as any).t); (msg as any).t = setTimeout(() => (el.style.display = 'none'), 3500); }
+let msgTimer = 0;
+function msg(text: string) {
+  const el = document.getElementById('msg')!;
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(msgTimer);
+  msgTimer = window.setTimeout(() => el.classList.remove('show'), 3200);
+}
 function info(camera: THREE.PerspectiveCamera) {
   const it = hand;
-  const label = it.cat === 'pole' ? POLE_ITEMS.find((p) => p.key === it.key)!.name : it.cat === 'sign' ? SIGNS.find((s) => s.type === it.key)!.name : it.cat === 'sfloat' ? SIGNS.find((s) => s.type === it.key)!.name + ' (floating)' : it.cat === 'light' ? LIGHT_ITEMS.find((l) => l.key === it.key)!.name : it.cat === 'tree' ? TREES.find((t) => t.key === it.key)!.name : it.cat === 'lamp' ? 'Street lamp' : it.cat === 'axe' ? 'Axe' : markDef(it.key).name;
-  const how = it.cat === 'tpl' ? 'click to place · Q / E turn it 15°' : it.cat === 'mark' && MARKS.find((m) => m.key === it.key)!.poly ? 'click points · Enter finishes · Backspace removes the last point' : it.cat === 'mark' ? (pending ? 'click the end point (the compass snaps the direction, X cancels)' : 'click the start point') : 'click to place';
-  const a = aim;
-  const ll = a ? lonLat(a[0], a[1]) : null;
-  document.getElementById('info')!.innerHTML = `<b>${label}</b> · ${how} · snap ${snap} m<br>` +
-    (a ? `x ${a[0].toFixed(2)} · y ${a[1].toFixed(2)} m · ${ll![1].toFixed(6)}, ${ll![0].toFixed(6)} · camera ${Math.round(camera.position.y)} m up` : 'aim at the ground') +
-    ` · ${recs.length} new items`;
+  const label = it.cat === 'pole' ? POLE_ITEMS.find((p) => p.key === it.key)!.name : it.cat === 'sign' ? SIGNS.find((s) => s.type === it.key)!.name : it.cat === 'sfloat' ? `${SIGNS.find((s) => s.type === it.key)!.name}, без столб` : it.cat === 'light' ? LIGHT_ITEMS.find((l) => l.key === it.key)!.name : it.cat === 'tree' ? TREES.find((t) => t.key === it.key)!.name : it.cat === 'lamp' ? 'Улична светилка' : it.cat === 'axe' ? 'Секира' : markDef(it.key).name;
+  const how = it.cat === 'axe' ? 'кликни на твоја ставка'
+    : it.cat === 'tpl' ? 'кликни за да поставиш · Q / E сврти'
+    : it.cat === 'mark' && MARKS.find((m) => m.key === it.key)!.poly ? (poly.length ? 'кликни следна точка · Enter заврши · X откажи' : 'кликни за почеток на линијата')
+    : it.cat === 'mark' ? (pending ? 'кликни крајна точка · X откажи' : 'кликни почетна точка')
+    : it.cat === 'pole' || it.cat === 'tree' || it.cat === 'lamp' ? 'кликни за да поставиш · Q / E сврти'
+    : 'кликни за да поставиш';
+  const el = document.getElementById('info')!;
+  const html = `<b>${label}</b> · ${aim ? how : 'насочи кон земјата'}`;
+  if (el.innerHTML !== html) el.innerHTML = html;
+  void camera;
 }
+
+// ---------- the "more" panel ----------
+const drawer = document.getElementById('drawer')!;
+const menuToggle = document.getElementById('menuToggle')!;
+function setDrawer(open: boolean) {
+  drawer.hidden = !open;
+  menuToggle.setAttribute('aria-expanded', String(open));
+  document.getElementById('bld')!.classList.toggle('drawer-open', open);
+}
+menuToggle.addEventListener('click', () => setDrawer(drawer.hidden));
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !drawer.hidden) setDrawer(false); });
 
 // ---------- controls and keys ----------
 // A clicked button or menu keeps keyboard focus, so Space would click it again. Clicks drop the focus,
@@ -1105,7 +1185,8 @@ document.addEventListener('pointerlockerror', () => msg('Прелистувач�
 // the top-bar label only shows the mode; switching is done with C (look and free) and Esc (free)
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas();
-  lookBtn.textContent = locked ? 'Глушец: гледа (C за слободно)' : 'Глушец: слободно (C за гледање)';
+  lookBtn.textContent = locked ? 'Гледање · C или Esc' : 'Слободен глушец · C';
+  lookBtn.classList.toggle('on', locked);
 });
 window.addEventListener('mousemove', (e) => {
   // without the locked mouse, right-drag turns the camera too (same sensitivity)
@@ -1129,9 +1210,9 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   keys.add(e.code);
-  if (/^Digit[1-9]$/.test(e.code)) { const it = ITEMS[parseInt(e.code.slice(5), 10) - 1]; if (it) { hand = it; pending = null; markActive(); } }
-  else if (e.code === 'KeyX') { pending = null; poly = []; msg('Line cancelled.'); }
-  else if (e.code === 'KeyK') { const it = ITEMS.find((q) => q.cat === 'axe')!; hand = it; markActive(); msg('Axe: aim at an item you placed and click.'); }
+  if (/^Digit[1-9]$/.test(e.code)) { const it = ITEMS[parseInt(e.code.slice(5), 10) - 1]; if (it) { hand = it.cat === 'sign' && signsFloat ? { cat: 'sfloat', key: it.key } : it; pending = null; markActive(); } }
+  else if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }
+  else if (e.code === 'KeyK') { const it = ITEMS.find((q) => q.cat === 'axe')!; hand = it; markActive(); msg('Секира: насочи кон твоја ставка и кликни'); }
   else if (e.code === 'KeyC') { if (locked) document.exitPointerLock(); else lockView(); } // C: mouse look on / free
   else if (e.code === 'Enter') { if (poly.length) finishPoly(); }
   else if (e.code === 'Backspace') { if (poly.length) poly.pop(); }  // only undoes the last point of a line being drawn
@@ -1142,7 +1223,7 @@ window.addEventListener('keydown', (e) => {
     if (hand.cat === 'tree' || hand.cat === 'lamp') propTurn = (((propTurn + d) % 360) + 360) % 360;
     if (hand.cat === 'pole') poleTurn = (((poleTurn + d) % 360) + 360) % 360;
   }
-  else if (e.code === 'KeyV') { walkMode = !walkMode; vel.set(0, 0, 0); msg(walkMode ? 'Walk mode: you stand on the ground, gravity and jump on Space.' : 'Fly mode: fly freely with Space and Shift.'); }
+  else if (e.code === 'KeyV') { walkMode = !walkMode; vel.set(0, 0, 0); msg(walkMode ? 'Одење · Space скока' : 'Летање · Space и Shift за горе и долу'); }
   else if (e.code === 'KeyF') { const id = aim ? nearestRec(aim, 3) : null; select(id); }
   else if (e.code === 'BracketLeft' || e.code === 'BracketRight') {
     const r = recs.find((q) => q.id === selectedId);
@@ -1167,7 +1248,6 @@ window.addEventListener('mousedown', (e) => {
 (document.getElementById('speedSel') as HTMLSelectElement).addEventListener('change', (e) => (moveSpeed = parseFloat((e.target as HTMLSelectElement).value)));
 document.getElementById('surveyor')!.addEventListener('change', save);
 document.getElementById('undoBtn')!.addEventListener('click', undo);
-document.getElementById('axeBtn')!.addEventListener('click', () => { hand = ITEMS.find((q) => q.cat === 'axe')!; markActive(); msg('Axe: aim at an item you placed and click.'); });
 document.getElementById('redoBtn')!.addEventListener('click', redo);
 
 // ---------- hooks into the game boot ----------
@@ -1256,15 +1336,15 @@ function updateGuide() {
     const snapped = snapBearing(from, tip);
     const b = bearingOf(from, tip), sb = bearingOf(from, snapped);
     (document.getElementById('needle') as HTMLElement).style.transform = `rotate(${sb}deg)`;
-    compass.style.opacity = '1';
-    text.textContent = `${compassName(sb)}${compassStep > 0 ? ` (snapped from ${Math.round(b)}°)` : ''} · ${Math.hypot(snapped[0] - from[0], snapped[1] - from[1]).toFixed(1)} m`;
+    compass.classList.add('on');
+    void b;
+    text.textContent = `${compassName(sb)} · ${Math.hypot(snapped[0] - from[0], snapped[1] - from[1]).toFixed(1).replace('.', ',')} м`;
   } else if (hand.cat === 'tpl') {
     (document.getElementById('needle') as HTMLElement).style.transform = `rotate(${tplRot}deg)`;
-    compass.style.opacity = '1';
-    text.textContent = `placeholder facing ${compassName(tplRot)} · Q / E turn it`;
+    compass.classList.add('on');
+    text.textContent = compassName(tplRot);
   } else {
-    compass.style.opacity = '0.35';
-    text.textContent = 'start a line to see its bearing';
+    compass.classList.remove('on');
   }
 }
 
@@ -1290,13 +1370,14 @@ function updateMarkers(camera: THREE.PerspectiveCamera) {
   axeTarget() { return axeHover; },
   markings() { return markingsFile(); },
   mod() { return modOf(recs, 'test'); },
+  select(id: number | null) { select(id); },
 };
 
 // the cloud panel: shared workspaces with their own logins
 initCloudPanel({
-  onSignedIn: () => void loadAccountGame(),
+  onSignedIn: () => { labelSave(); void loadAccountGame(); },
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
-  getSurveyor: () => (document.getElementById('surveyor') as HTMLInputElement).value.trim(),
+  getSurveyor: () => surveyor(),
   msg,
   onLoad: (items) => {
     backupBeforeReplace('вчитување од облакот');
@@ -1304,6 +1385,4 @@ initCloudPanel({
     void persistNow();
   },
 });
-if (cloud.account()) {
-  cloud.me().then((r) => { document.getElementById('saveGame')!.textContent = r.admin ? 'Објави за сите' : 'Зачувај'; }).catch(() => {});
-}
+

@@ -3,8 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-    <meta name="theme-color" content="#f5f5f7" />
-    <title>Играј · Скопје</title>
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+    <title>SkopjeDrive</title>
   </head>
   <body>
     <div id="app"></div>
@@ -13,29 +14,39 @@
       <div class="pct"></div>
       <small class="credit">Карта: © OpenStreetMap contributors</small>
       <p class="error-text"></p>
-      <a class="back" data-go="home" href="#">← Назад</a>
+      <a class="back" data-go="home" href="#">Назад</a>
     </div>
-    <a id="menuBtn" class="menu-btn" href="./?menu=1" hidden>Мени</a>
-    <div id="pick" hidden>
-      <div class="pick-card">
+    <a id="menuBtn" class="menu-btn ui glass" href="./?menu=1" hidden>‹ Мени</a>
+
+    <div id="pick" class="ui" hidden>
+      <main class="home">
         <h1>SkopjeDrive</h1>
-        <button id="guest" class="pick-btn" type="button">Играј ја играта</button>
-        <a id="build" class="pick-btn pick-alt" data-go="build" href="#">Гради ја играта</a>
-        <button id="load" class="pick-btn pick-alt" type="button">Вчитај моја игра</button>
-        <div id="signinWrap" hidden>
-          <div id="authBox"></div>
-          <button type="button" id="pBack" class="pick-back">← Назад</button>
-        </div>
-        <section id="mine" class="mine" hidden aria-live="polite">
-          <p class="mine-who">Најавен си како <b id="mineUser"></b></p>
-          <p id="mineStatus" class="mine-status"></p>
-          <button id="minePlay" class="pick-btn" type="button" hidden>Играј ја мојата игра</button>
-          <a id="mineEdit" class="pick-btn pick-alt" data-go="build" href="#">Уреди ја во градителот</a>
-          <button id="logout" class="pick-back" type="button">Одјави се</button>
-        </section>
-        <p id="phoneNote" class="phone-note" hidden>Отвори го на компјутер за да додаваш знаци, ознаки и семафори.</p>
+        <p class="home-sub">Вози низ Дебар Маало.</p>
+        <button id="guest" class="btn btn-primary btn-lg" type="button">Играј ја играта</button>
+        <nav class="list home-more" aria-label="Повеќе">
+          <a id="build" class="row" data-go="build" href="#">
+            <span class="row-main"><span class="row-title">Гради ја играта</span><span class="row-sub">Знаци, ознаки и семафори</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </a>
+          <button id="load" class="row" type="button">
+            <span class="row-main"><span class="row-title">Вчитај моја игра</span><span id="loadSub" class="row-sub">Најави се за да ја отвориш</span></span>
+            <span class="chev" aria-hidden="true"></span>
+          </button>
+        </nav>
+        <p id="acct" class="home-foot" hidden><span id="acctName"></span><span aria-hidden="true"> · </span><button id="logout" class="link" type="button">Одјави се</button></p>
+        <p id="phoneNote" class="home-foot" hidden>Отвори го на компјутер за да додаваш знаци, ознаки и семафори.</p>
+      </main>
+    </div>
+
+    <div id="signin" class="scrim ui" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="signinTitle">
+        <button id="signinClose" class="sheet-x" type="button" aria-label="Затвори">✕</button>
+        <h2 id="signinTitle">Вчитај моја игра</h2>
+        <p>Најави се и твојата игра се отвора на секој компјутер.</p>
+        <div id="authBox"></div>
       </div>
     </div>
+
     <script type="module" src="/src/play/main.ts"></script>
   </body>
 </html>

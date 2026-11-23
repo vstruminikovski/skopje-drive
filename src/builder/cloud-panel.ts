@@ -1,4 +1,4 @@
-// The Cloud panel: sign in, load and save a shared workspace, share it, and copy the play link.
+// Accounts in the builder: the start sheet (sign in first), and the profile and shared-work groups in the "more" panel.
 import * as cloud from '../shared/cloud';
 import { mountAuthForm, verifyAccount } from '../shared/auth-form';
 import type { UserItem } from '../game/render/userItems';
@@ -20,27 +20,34 @@ export function initCloudPanel(o: Options) {
 
   const who = () => {
     const a = cloud.account();
-    $('cWho').textContent = a ? `Најавен си како ${a.username}` : 'Не си најавен';
+    const initial = a ? a.username.slice(0, 1) : '';
+    // start sheet: the form while signed out; your name and "Start" once signed in
     $('cAuth').hidden = !!a;
     if (!a) form?.show();
     $('gateSigned').hidden = !a;
-    $('gateUser').textContent = a ? a.username : '';
+    $('gateGo').hidden = !a;
+    $('gateLead').textContent = a ? 'Твојата игра се отвора од профилот.' : 'Направи акаунт или најави се за да додаваш сообраќајни знаци.';
+    $('gateUser').textContent = a?.username ?? '';
+    $('gateAvatar').textContent = initial;
     ($('startBtn') as HTMLButtonElement).disabled = !a; // no building without a sign-in
     ($('gateOpen') as HTMLButtonElement).disabled = !a;
+    // the "more" panel
+    $('cWho').textContent = a?.username ?? 'Не си најавен';
+    $('cAvatar').textContent = initial;
     $('cWork').hidden = !a;
     if (a && !$<HTMLInputElement>('cName').value) $<HTMLInputElement>('cName').value = a.username;
   };
   const link = () => {
     const n = $<HTMLInputElement>('cName').value.trim().toLowerCase();
-    $('cLink').textContent = n ? `Линк за играње: ${location.origin}${import.meta.env.BASE_URL}play/?ws=${n}` : '';
+    $('cLink').textContent = n ? `${location.origin}${import.meta.env.BASE_URL}play/?ws=${n}` : '';
   };
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
 
   // signing in or up: the shared form (rules first, one request at a time, messages inside the form)
   form = mountAuthForm($('authBoxB'), () => { who(); o.onSignedIn?.(); });
   $('gateOpen').addEventListener('click', () => $('openProj').click());
-  $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си. Можеш да создадеш нов профил.'); });
-  $('cLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си.'); });
+  $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си'); });
+  $('cLogout').addEventListener('click', () => { cloud.setAccount(null); location.reload(); }); // signed out: back to the start sheet
 
   $<HTMLInputElement>('cName').addEventListener('input', () => { version = 0; link(); });
 
@@ -52,7 +59,7 @@ export function initCloudPanel(o: Options) {
       version = w.version;
       if (f && Array.isArray(f.items)) o.onLoad(f.items);
       link();
-      o.msg(`Вчитана е „${name}“ · верзија ${w.version}, зачувано од ${w.savedBy}.`);
+      o.msg(`Вчитана „${name}“ · верзија ${w.version} од ${w.savedBy}`);
     } catch (e) { fail(e); }
   });
 
@@ -63,7 +70,7 @@ export function initCloudPanel(o: Options) {
       const r = await cloud.saveWorkspace(name, data, version);
       version = r.version;
       link();
-      o.msg(`Зачувано во облакот · „${name}“ верзија ${r.version}.`);
+      o.msg(`Зачувана „${name}“ · верзија ${r.version}`);
     } catch (e) {
       if (e instanceof cloud.CloudError && e.status === 409) o.msg('Некој зачувал меѓувреме. Прво вчитај ја најновата верзија.');
       else fail(e);
@@ -82,9 +89,9 @@ export function initCloudPanel(o: Options) {
   });
 
   $('cCopy').addEventListener('click', async () => {
-    const url = $('cLink').textContent?.replace('Линк за играње: ', '') ?? '';
+    const url = $('cLink').textContent ?? '';
     if (!url) { o.msg('Прво внеси име на работата.'); return; }
-    try { await navigator.clipboard.writeText(url); o.msg('Линкот е копиран.'); } catch { o.msg(url); }
+    try { await navigator.clipboard.writeText(url); o.msg('Линкот е копиран'); } catch { o.msg(url); }
   });
 
   $('cName').addEventListener('input', link);

@@ -4,6 +4,7 @@
 // - one request at a time (a double click cannot create the account and then report it as taken)
 // - messages appear inside the form, where you are looking
 // - the bot check (Cloudflare Turnstile) is drawn only when the form is visible, and renewed after every attempt
+import './ui.css';
 import './auth-form.css';
 import * as cloud from './cloud';
 import { normalizeUser, validateAuth, type AuthMode } from './auth-rules';
@@ -54,39 +55,35 @@ export async function verifyAccount(): Promise<cloud.Account | null> {
 export function mountAuthForm(host: HTMLElement, onSignedIn: (a: cloud.Account) => void, initial: AuthMode = 'login'): AuthForm {
   host.innerHTML = `
     <div class="af">
-      <div class="af-tabs" role="tablist">
+      <div class="seg af-seg" role="tablist" aria-label="Профил">
         <button type="button" role="tab" data-mode="login">Најави се</button>
-        <button type="button" role="tab" data-mode="register">Создај профил</button>
+        <button type="button" role="tab" data-mode="register">Нов профил</button>
       </div>
       <form novalidate>
-        <label for="afUser">Корисничко име</label>
-        <input id="afUser" name="username" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40">
-        <small class="af-hint" id="afUserHint">3–20 латинични букви, цифри или _</small>
-        <label for="afPass">Лозинка</label>
-        <input id="afPass" name="password" type="password" autocomplete="current-password" maxlength="200">
-        <small class="af-hint" id="afPassHint"></small>
-        <div class="af-reg" hidden>
-          <label for="afPass2">Повтори ја лозинката</label>
-          <input id="afPass2" name="password2" type="password" autocomplete="new-password" maxlength="200">
+        <div class="af-group">
+          <label class="vh" for="afUser">Корисничко име</label>
+          <input id="afUser" class="field" name="username" placeholder="Корисничко име" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40">
+          <label class="vh" for="afPass">Лозинка</label>
+          <input id="afPass" class="field" name="password" type="password" placeholder="Лозинка" autocomplete="current-password" maxlength="200">
+          <label class="vh af-reg" for="afPass2">Повтори ја лозинката</label>
+          <input id="afPass2" class="field af-reg" name="password2" type="password" placeholder="Повтори ја лозинката" autocomplete="new-password" maxlength="200">
         </div>
+        <small class="af-hint" id="afHint"></small>
         <div class="af-ts" ${SITE_KEY ? '' : 'hidden'}></div>
         <p class="af-msg" role="alert" aria-live="polite"></p>
-        <button type="submit" class="af-submit">Најави се</button>
-        <button type="button" class="af-switch"></button>
+        <button type="submit" class="btn btn-primary btn-lg af-submit">Најави се</button>
       </form>
     </div>`;
   const q = <T extends HTMLElement>(sel: string) => host.querySelector(sel) as T;
   const user = q<HTMLInputElement>('#afUser');
   const pass = q<HTMLInputElement>('#afPass');
   const pass2 = q<HTMLInputElement>('#afPass2');
-  const userHint = q('#afUserHint');
-  const passHint = q('#afPassHint');
-  const reg = q('.af-reg');
+  const hint = q('#afHint');
+  const regs = Array.from(host.querySelectorAll<HTMLElement>('.af-reg'));
   const tsBox = q('.af-ts');
   const msgEl = q('.af-msg');
   const submit = q<HTMLButtonElement>('.af-submit');
-  const switcher = q<HTMLButtonElement>('.af-switch');
-  const tabs = Array.from(host.querySelectorAll<HTMLButtonElement>('.af-tabs button'));
+  const tabs = Array.from(host.querySelectorAll<HTMLButtonElement>('.af-seg button'));
 
   let mode: AuthMode = initial;
   let busy = false;
@@ -99,24 +96,23 @@ export function mountAuthForm(host: HTMLElement, onSignedIn: (a: cloud.Account) 
   function setMode(m: AuthMode) {
     mode = m;
     tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.mode === m)));
-    reg.hidden = m !== 'register';
+    regs.forEach((el) => (el.hidden = m !== 'register'));
     pass.autocomplete = m === 'register' ? 'new-password' : 'current-password';
+    pass.placeholder = m === 'register' ? 'Лозинка (најмалку 8 знаци)' : 'Лозинка';
     submit.textContent = m === 'register' ? 'Создај профил' : 'Најави се';
-    switcher.textContent = m === 'register' ? 'Веќе имаш профил? Најави се' : 'Немаш профил? Создај нов';
-    passHint.textContent = m === 'register' ? 'Најмалку 8 знаци' : '';
+    showHint();
     say('', '');
     [user, pass, pass2].forEach((i) => i.removeAttribute('aria-invalid'));
   }
 
-  // as you type: show what the username will be, without nagging
-  user.addEventListener('input', () => {
+  // one quiet hint line: the username rule while creating a profile, or what the typed name becomes
+  function showHint() {
     const n = normalizeUser(user.value);
-    userHint.textContent = n && n !== user.value ? `Ќе биде: ${n}` : '3–20 латинични букви, цифри или _';
-    user.removeAttribute('aria-invalid');
-  });
+    hint.textContent = n && n !== user.value ? `Ќе се најавиш како ${n}` : mode === 'register' ? '3–20 латинични букви, цифри или _' : '';
+  }
+  user.addEventListener('input', () => { showHint(); user.removeAttribute('aria-invalid'); });
   [pass, pass2].forEach((i) => i.addEventListener('input', () => i.removeAttribute('aria-invalid')));
   tabs.forEach((t) => t.addEventListener('click', () => setMode(t.dataset.mode as AuthMode)));
-  switcher.addEventListener('click', () => setMode(mode === 'login' ? 'register' : 'login'));
 
   async function drawCheck() {
     if (!SITE_KEY || widget || tsFailed) return;

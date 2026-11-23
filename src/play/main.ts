@@ -1,83 +1,81 @@
-// The game start screen (also the home page): a small control panel.
-// Desktop, signed out: play the game, build it, or sign in / create a profile to load your own game.
-// Desktop, signed in: who you are, your saved game (items, when), play it, edit it, sign out.
+// The home page: one primary action (play), two quiet options (build, load my game).
+// Signing in is a sheet over the home page, opened only when it is needed.
+// "Load my game" shows what is on your account (items, date) and plays it in one click.
 // Phones and tablets: only "play the game". Building and accounts are for desktops.
+import '../shared/ui.css';
 import { fixLinks } from '../shared/links';
 import { startGame } from '../game/boot';
 import { isItemsFile, type ItemsFile } from '../game/items';
 import * as cloud from '../shared/cloud';
-import { mountAuthForm, verifyAccount } from '../shared/auth-form';
+import { mountAuthForm, type AuthForm } from '../shared/auth-form';
+import { shortDate } from '../shared/dates';
 
 fixLinks();
-const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 function play(opts: { ws?: string | null; items?: ItemsFile | null }) {
+  closeSignin();
   $('pick').hidden = true;
   $('loading').hidden = false;
   $('menuBtn').hidden = false;
   startGame(undefined, opts);
 }
 
-// Macedonian dates by hand: browsers often have no Macedonian date names
-const MONTHS = ['јануари', 'февруари', 'март', 'април', 'мај', 'јуни', 'јули', 'август', 'септември', 'октомври', 'ноември', 'декември'];
-const when = (iso: string) => {
-  const d = new Date(iso);
-  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} во ${hm}`;
-};
-
-/** Signed out: the three options. */
-function showSignedOut(note = '') {
-  $('mine').hidden = true;
-  $('signinWrap').hidden = true;
-  $('load').hidden = false;
-  $('build').hidden = false;
-  if (note) { $('load').hidden = true; $('signinWrap').hidden = false; form?.show('login'); form?.note(note); }
+// ---------- "load my game": one row that always says what it will do ----------
+let mine: ItemsFile | null = null;
+function loadRow(sub: string, enabled: boolean) {
+  $('loadSub').textContent = sub;
+  $('load').setAttribute('aria-disabled', String(!enabled));
 }
 
-/** Signed in: look up your saved game on the server and say exactly what is there. */
-async function showMine(a: cloud.Account) {
-  $('load').hidden = true;
-  $('build').hidden = true;
-  $('signinWrap').hidden = true;
-  $('mine').hidden = false;
-  $('mineUser').textContent = a.username;
-  $('minePlay').hidden = true;
-  $('mineStatus').textContent = 'Ја барам твојата зачувана игра…';
+/** Reads the account and its saved game from the server (the server is the only source of truth). */
+async function refresh() {
+  const a = cloud.account();
+  mine = null;
+  $('acct').hidden = !a;
+  if (!a) { loadRow('Најави се за да ја отвориш', true); return; }
+  $('acctName').textContent = a.username;
+  loadRow('Се вчитува…', false);
   let admin = false;
   try {
     admin = (await cloud.me()).admin;
   } catch (e) {
-    if (e instanceof cloud.CloudError && e.status === 401) { cloud.setAccount(null); showSignedOut('Најавата истече. Најави се повторно.'); return; }
-    $('mineStatus').textContent = 'Нема врска со серверот. Провери ја интернет-врската и освежи ја страницата.';
+    if (e instanceof cloud.CloudError && e.status === 401) {
+      cloud.setAccount(null);
+      void refresh();
+      openSignin('Најавата истече. Најави се повторно.');
+      return;
+    }
+    loadRow('Нема врска со серверот', false);
     return;
   }
-  // the admin's game is the published one (what everyone plays); everyone else has their own
-  const name = admin ? 'published' : a.username;
+  // the admin's game is the published one everyone plays; everyone else has their own
   try {
-    const w = await cloud.loadWorkspace(name);
-    if (!isItemsFile(w.data)) throw new cloud.CloudError('Зачуваната игра е оштетена.', 500);
-    const data = w.data;
-    $('mineStatus').textContent = `${admin ? 'Објавената игра' : 'Твојата игра'}: ${data.items.length} ставки · зачувана ${when(w.savedAt)}${w.savedBy && w.savedBy !== a.username ? ` од ${w.savedBy}` : ''}.`;
-    $('minePlay').hidden = false;
-    $('minePlay').onclick = () => play({ items: data });
+    const w = await cloud.loadWorkspace(admin ? 'published' : a.username);
+    if (!isItemsFile(w.data)) { loadRow('Зачуваната игра е оштетена', false); return; }
+    mine = w.data;
+    loadRow(`${admin ? 'Објавена · ' : ''}${mine.items.length} ставки · ${shortDate(w.savedAt)}`, true);
   } catch (e) {
-    if (e instanceof cloud.CloudError && e.status === 404) {
-      $('mineStatus').textContent = 'Уште немаш зачувана игра. Отвори го градителот, додај знаци и притисни „Зачувај“.';
-    } else {
-      $('mineStatus').textContent = e instanceof cloud.CloudError ? e.message : 'Не успеав да ја вчитам играта.';
-    }
+    if (e instanceof cloud.CloudError && e.status === 404) loadRow('Уште нема зачувана игра', false);
+    else loadRow('Не може да се вчита', false);
   }
 }
 
-let form: ReturnType<typeof mountAuthForm> | null = null;
+// ---------- sign-in sheet ----------
+let form: AuthForm | null = null;
+function openSignin(note = '') {
+  form ??= mountAuthForm($('authBox'), () => { closeSignin(); void refresh(); });
+  $('signin').hidden = false;
+  form.show('login');
+  if (note) form.note(note);
+}
+function closeSignin() { $('signin').hidden = true; }
 
 function start() {
-  const params = new URLSearchParams(location.search);
-  const linked = params.get('ws'); // a link to a workspace plays that workspace
+  const linked = new URLSearchParams(location.search).get('ws'); // a shared link plays that workspace
   if (linked) return play({ ws: linked });
 
-  $('loading').hidden = true; // the choice comes first
+  $('loading').hidden = true;
   $('pick').hidden = false;
   $('guest').addEventListener('click', () => play({ ws: null }));
 
@@ -88,20 +86,16 @@ function start() {
     return;
   }
 
-  form = mountAuthForm($('authBox'), (a) => void showMine(a));
   $('load').addEventListener('click', () => {
-    $('load').hidden = true;
-    $('signinWrap').hidden = false;
-    form?.show('login');
+    if (!cloud.account()) openSignin();
+    else if (mine) play({ items: mine });
   });
-  $('pBack').addEventListener('click', () => showSignedOut());
-  $('logout').addEventListener('click', () => { cloud.setAccount(null); showSignedOut(); });
+  $('logout').addEventListener('click', () => { cloud.setAccount(null); void refresh(); });
+  $('signinClose').addEventListener('click', closeSignin);
+  $('signin').addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) closeSignin(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('signin').hidden) closeSignin(); });
 
-  const remembered = cloud.account();
-  if (remembered) {
-    void showMine(remembered);
-    void verifyAccount().then((a) => { if (!a) showSignedOut('Најавата истече. Најави се повторно.'); });
-  } else showSignedOut();
+  void refresh();
 }
 
 start();

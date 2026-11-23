@@ -1,19 +1,19 @@
-/* Plain, light, Apple-style chrome. Nothing on screen except what the player needs. */
+/* Plain, dark, Apple-style chrome. Nothing on screen except what the player needs. */
 :root {
-  --ink: #1d1d1f;
-  --ink-2: #6e6e73;
-  --card: rgba(255, 255, 255, 0.32);
-  --glyph: rgba(20, 20, 24, 0.7);
-  --line: rgba(0, 0, 0, 0.08);
-  --accent: #0071e3;
-  color-scheme: light;
+  --ink: #f5f5f7;
+  --ink-2: rgba(235, 235, 245, 0.6);
+  --card: rgba(28, 28, 30, 0.55);
+  --glyph: #f5f5f7;
+  --line: rgba(255, 255, 255, 0.08);
+  --accent: #0a84ff;
+  color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
 }
 html,
 body {
   margin: 0;
   height: 100%;
-  background: #e9ecef;
+  background: #000;
   overflow: hidden;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
@@ -35,7 +35,7 @@ body {
   place-content: center;
   justify-items: center;
   gap: 14px;
-  background: #f5f5f7;
+  background: #000;
   z-index: 10;
   transition: opacity 0.4s ease;
 }
@@ -47,7 +47,7 @@ body {
   width: 220px;
   height: 4px;
   border-radius: 2px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
 }
 #loading .bar i {
@@ -178,7 +178,7 @@ body {
   cursor: pointer;
 }
 .mg-touch button:active {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(60, 60, 64, 0.7);
   transform: scale(0.96);
 }
 @media (max-width: 600px) {
@@ -233,49 +233,37 @@ body {
   pointer-events: none;
 }
 
-/* the start choice: sharp black and white, minimal */
-#pick { position: fixed; inset: 0; display: grid; place-items: center; background: #000; z-index: 50; font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; padding: 16px; }
-#pick[hidden] { display: none; }
-#pick .pick-card { width: min(360px, 100%); box-sizing: border-box; }
-#pick * { box-sizing: border-box; }
-#pick h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 24px; }
-#pick input { width: 100%; font: inherit; padding: 14px; margin: 6px 0; border: 1px solid #333; border-radius: 0; background: #000; color: #fff; outline: none; }
-#pick input:focus { border-color: #fff; }
-#pick .pick-btn { width: 100%; font: inherit; font-weight: 700; min-height: 50px; padding: 12px; margin-top: 8px; border: 1px solid #fff; border-radius: 0; background: #fff; color: #000; cursor: pointer; }
-#pick .pick-btn:hover { background: #d6d6d6; }
-#pick .pick-alt { background: #000; color: #fff; }
-#pick .pick-alt:hover { background: #161616; }
-#pick .pick-or { text-align: center; color: #777; margin: 18px 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
-#pick .pick-err { color: #ff6b6b; margin: 10px 0 0; min-height: 1em; }
-#pick #pTurnstile { margin-top: 8px; }
-#pick.phone h1, #pick.phone .pick-or, #pick.phone #signin { display: none; }
-#pick .phone-note { color: #777; font-size: 13px; text-align: center; margin: 14px 0 0; }
-#pick.phone .phone-note { display: block; }
-#pick .phone-note[hidden] { display: none; }
-#pick .pick-sub { color: #777; font-size: 13px; margin: 6px 0 0; text-align: center; }
-#pick a.pick-btn { display: block; text-align: center; text-decoration: none; line-height: 30px; }
-#pick .pick-btn + .pick-btn { margin-top: 10px; }
-#pick .pick-card > .pick-btn:not(:first-of-type) { margin-top: 10px; }
-#pick.phone #build, #pick.phone #load, #pick.phone #signin, #pick.phone .pick-sub { display: none; }
-#pick #signin[hidden] { display: none; }
-#pick .pick-back { display: block; width: 100%; margin-top: 14px; background: none; border: 0; color: #777; font: inherit; font-size: 14px; text-align: center; text-decoration: none; cursor: pointer; }
-#pick .pick-back:hover { color: #fff; }
-#pick.phone .pick-back { display: none; }
-/* secondary options sit lower and smaller, so the main game button is the one you hit */
-#pick #build, #pick #load { min-height: 40px; font-size: 13px; font-weight: 600; opacity: .85; }
-#pick #build { margin-top: 40px; }
-#pick #load { margin-top: 12px; }
-#pick #build.pick-sub { display: none; }
-/* back to the menu, from inside the game (your saved work stays on this computer) */
-.menu-btn { position: fixed; top: 12px; left: 12px; z-index: 40; background: #000; color: #fff; border: 1px solid #fff; padding: 6px 12px; font: 600 13px system-ui, sans-serif; text-decoration: none; border-radius: 0; }
-.menu-btn:hover { background: #fff; color: #000; }
-.menu-btn[hidden] { display: none; }
-#pick #logout { display: block; }
-/* your saved game, once you are signed in */
-#pick .mine { margin-top: 28px; padding-top: 20px; border-top: 1px solid #333; }
-#pick .mine-who { color: #aaa; margin: 0 0 6px; font-size: 14px; }
-#pick .mine-who b { color: #fff; }
-#pick .mine-status { color: #fff; margin: 0 0 6px; font-size: 14px; min-height: 1.4em; }
-#pick .mine .pick-btn { margin-top: 10px; }
-#pick #mineEdit { min-height: 40px; font-size: 13px; }
-#pick.phone #build, #pick.phone #load, #pick.phone #signinWrap, #pick.phone .mine { display: none; }
+/* frosted glass for the in-game chrome */
+.mg-toast, .mg-speed, .mg-help, .mg-touch button {
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+.mg-count { color: #fff; text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+
+/* loading: a way back if it stalls, and errors in plain words */
+#loading .back { position: absolute; top: 18px; left: 18px; color: var(--ink-2); font-size: 14px; text-decoration: none; }
+#loading .back::before { content: '‹ '; }
+#loading .back:hover { color: var(--ink); }
+#loading .error-text { margin: 0; max-width: 420px; text-align: center; color: #ff453a; font-size: 14px; }
+#loading .error-text:empty { display: none; }
+
+/* back to the menu, from inside the game */
+.menu-btn { position: fixed; top: 16px; left: 16px; z-index: 40; height: 34px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--text); }
+.menu-btn:hover { background: rgba(58, 58, 60, 0.8); }
+
+/* the home page */
+#pick { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px 16px; overflow-y: auto;
+  background: radial-gradient(120% 80% at 50% 0%, #1c1c1e 0%, #000 60%); }
+#pick .home { width: min(380px, 100%); animation: rise 0.6s var(--ease); }
+#pick h1 { margin: 0; font: 700 52px/1.05 var(--font-display); letter-spacing: -0.045em; }
+#pick .home-sub { margin: 8px 0 36px; font-size: 19px; color: var(--text-2); letter-spacing: -0.015em; }
+#pick .home-more { margin-top: 44px; }
+#pick .home-more .row-title { font-size: 15px; }
+#pick #load[aria-disabled='true'] .chev { visibility: hidden; }
+#pick .home-foot { margin: 18px 0 0; text-align: center; font-size: 13px; color: var(--text-2); }
+#pick .link { background: none; border: 0; padding: 0; font: inherit; color: var(--text-2); cursor: pointer; }
+#pick .link:hover { color: var(--text); }
+#pick.phone .home-more, #pick.phone #acct { display: none; }
+
+/* the menu button sits top left; the speed reading goes just below it */
+body:has(#menuBtn:not([hidden])) .mg-speed { top: 62px; }

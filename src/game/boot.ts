@@ -382,7 +382,7 @@ async function boot(builder: BuilderHooks | undefined, playWs: string | null, pl
     }
     count.remove();
     running = true;
-    hud.toast('You are spawned at Skopje Zoo.');
+    hud.toast('Почнуваш кај Зоолошката градина.');
   }
 
   // test hook
@@ -438,7 +438,7 @@ function makeHud() {
   el.innerHTML = `
     <div class="mg-toast" hidden></div>
     <div class="mg-speed"><b>0</b><span>km/h</span><em>D</em></div>
-    <div class="mg-help">W/↑ gas · S/↓ brake · A D steer · Space handbrake · R reset · C camera</div>`;
+    <div class="mg-help">W гас · S кочница · A D волан · Space рачна · R од почеток · C камера</div>`;
   document.getElementById('app')!.appendChild(el);
   const sp = el.querySelector<HTMLElement>('.mg-speed b')!;
   const gear = el.querySelector<HTMLElement>('.mg-speed em')!;
