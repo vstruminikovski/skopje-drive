@@ -39,7 +39,7 @@
         <div class="menu-who" id="menuWho"></div>
         <button type="button" role="menuitem" data-act="open">Отвори…<kbd>⌘O</kbd></button>
         <button type="button" role="menuitem" data-act="save">Зачувај<kbd>⌘S</kbd></button>
-        <button type="button" role="menuitem" data-act="localver">Зачувај локална верзија…</button>
+        <button type="button" role="menuitem" data-act="export">Извези документ (датотека)…</button>
         <button type="button" role="menuitem" data-act="saveasws">Зачувај како работна површина…<kbd>⇧⌘S</kbd></button>
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
         <div class="menu-sep"></div>
@@ -79,11 +79,11 @@
             </section>
 
           <details class="pane" data-pane="workspaces" open>
-            <summary>Работни површини<button class="info" type="button" data-tip="Три работни површини на овој компјутер. Секоја ја памти својата работа и историја. Зачувај како работна површина прави копија во друг слот.">i</button></summary>
+            <summary>Документи<button class="info" type="button" data-tip="Три документи на овој компјутер. Секој има локална копија и копија на профилот (облакот). Историјата на акциите важи само додека е отворена страната.">i</button></summary>
             <div id="wsList" class="ver-list"></div>
           </details>
           <details class="pane" data-pane="history" open>
-            <summary>Историја<button class="info" type="button" data-tip="Секоја промена е чекор со име. Кликни на чекор за да се вратиш на него или напред. Историјата се чува при автоматското зачувување на овој компјутер.">i</button></summary>
+            <summary>Историја<button class="info" type="button" data-tip="Секоја промена е чекор со име. Кликни на чекор за да се вратиш. Историјата е привремена: важи додека е отворена страната.">i</button></summary>
             <div id="histList" class="ver-list"></div>
           </details>
           <details class="pane" data-pane="view" open>

@@ -16,7 +16,6 @@ let docApi: DocApi | undefined;
 import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoints, lampOf, surfaceOnScene, type UserItem } from '../game/render/userItems';
 import type { Lamp } from '../game/traffic/signals';
 import { readSlot, writeSlot, SLOT_COUNT, type Slot } from './store';
-import { clock } from '../shared/dates';
 import { drawItemIcon } from './icons';
 import { infoButton, initTips } from '../shared/tips';
 import { makeFloating } from './floating';
@@ -784,7 +783,7 @@ function closeFileMenu() { document.getElementById('fileMenu')!.hidden = true; d
 document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.addEventListener('click', () => {
   const act = b.dataset.act;
   if (act === 'saveasws') { closeFileMenu(); void saveAsWorkspace(); }
-  else if (act === 'localver') { closeFileMenu(); localVersion(); }
+  else if (act === 'export') { closeFileMenu(); exportDocument(); }
   else if (act === 'exportGeo') { closeFileMenu(); exportMap(); }
   else if (act === 'exportMod') { closeFileMenu(); exportGame(); }
   else if (act === 'clear') {
@@ -861,6 +860,8 @@ let restored = false; // nothing is written before the saved workspaces are read
 let unsaved = false; // changed since the last save to your account
 let slot = 1; // the workspace you are in (1 to 3)
 const slotInfo: { name: string; count: number }[] = [];
+/** the history of actions of each workspace: temporary, kept only while this page is open */
+const stepsMem: Record<number, { steps: HistStep[]; histAt: number }> = {};
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 const wsName = (i: number) => slotInfo[i - 1]?.name || `Работна површина ${i}`;
 
@@ -909,7 +910,7 @@ function persistSoon() {
 }
 /** The open workspace as it is kept in this browser. */
 function slotState(name = wsName(slot)): Slot {
-  return { name, savedAt: new Date().toISOString(), recs: clone(recs), nextId, history: steps, histAt, unsaved, work: docApi?.currentWork() ?? '' };
+  return { name, savedAt: new Date().toISOString(), recs: clone(recs), nextId, history: [], histAt: 0, unsaved, work: docApi?.currentWork() ?? '' };
 }
 let statusError = '';
 /** The toolbar status: an error, unsaved changes, or what the document is. */
@@ -947,9 +948,10 @@ function applySlot(s: Slot | null) {
   nextId = Math.max(1, ...recs.map((q) => q.id + 1));
   select(null); rebuild();
   lastState = JSON.stringify({ recs, nextId });
-  if (s && s.history?.length) {
-    steps = s.history as HistStep[];
-    histAt = Math.min(Math.max(0, s.histAt), steps.length - 1);
+  const mem = stepsMem[slot];
+  if (mem && mem.steps.length) {
+    steps = mem.steps;
+    histAt = Math.min(Math.max(0, mem.histAt), steps.length - 1);
   } else {
     steps = [{ json: lastState, label: 'Отворено' }];
     histAt = 0;
@@ -1005,6 +1007,7 @@ async function restoreSession() {
 async function switchWorkspace(i: number) {
   if (i === slot) return;
   await persistNow();
+  stepsMem[slot] = { steps, histAt };
   slot = i;
   localStorage.setItem('builder.slot', String(i));
   try {
@@ -1024,8 +1027,10 @@ async function saveAsWorkspace() {
   if (i >= SLOT_COUNT) return;
   const target = i + 1;
   await persistNow();
+  stepsMem[slot] = { steps, histAt };
   const s = slotState(name.trim());
   await writeSlot(target, s);
+  stepsMem[target] = { steps, histAt };
   slotInfo[target - 1] = { name: s.name, count: recs.length };
   slot = target;
   localStorage.setItem('builder.slot', String(target));
@@ -1033,19 +1038,16 @@ async function saveAsWorkspace() {
   renderWorkspaces();
   msg(`Зачувано како „${s.name}“`);
 }
-/** Local version: a named step in the history, without a file. */
-function localVersion() {
-  const name = prompt('Име на локалната верзија', `Верзија ${clock()}`);
-  if (!name || !name.trim()) return;
-  const cur = JSON.stringify({ recs, nextId });
-  steps = steps.slice(0, histAt + 1);
-  steps.push({ json: cur, label: `Локална верзија: ${name.trim()}` });
-  if (steps.length > HISTORY_MAX) steps.shift();
-  histAt = steps.length - 1;
-  lastState = cur;
-  updateHistoryButtons();
-  persistSoon();
-  msg(`Локалната верзија „${name.trim()}“ е зачувана во историјата`);
+/** Exports the open document as a file (for backup, or to open on another computer). */
+function exportDocument() {
+  const name = wsName(slot);
+  const data = { format: 'krug-builder-session', version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: clone(recs) };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = `${name.replace(/[^\p{L}\p{N}]+/gu, '_')}.json`; a.style.display = 'none';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  msg(`Документот е извезен · ${name}`);
 }
 /** The three workspaces in the panel: the one you are in is marked. */
 function renderWorkspaces() {
