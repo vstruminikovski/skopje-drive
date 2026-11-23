@@ -751,10 +751,15 @@ function lonLat(x: number, y: number): [number, number] {
   const B = { north: 42.0081198283681, south: 41.998828670911365, west: 21.406403607562424, east: 21.41886132316271 };
   return [B.west + ((x + 512) / 1024) * (B.east - B.west), B.south + ((y + 512) / 1024) * (B.north - B.south)];
 }
-function download(name: string, obj: unknown) {
+/** Saves a file to the computer. A plain JSON file, attached to the page while it downloads; the link is freed a minute later. */
+function download(name: string, obj: unknown, type = 'application/json') {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(obj)], { type }));
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 2)], { type: 'application/geo+json' }));
-  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  a.href = url; a.download = name; a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 document.getElementById('exportBtn')!.addEventListener('click', () => {
   // the survey file keeps everything already in it, and appends what you placed
@@ -805,10 +810,11 @@ document.getElementById('delVer')!.addEventListener('click', () => {
   setVersions(versions().filter((q) => q.id !== v.id)); refreshVersions();
 });
 document.getElementById('saveProj')!.addEventListener('click', () => {
-  const s = sessionOf();
+  // the project file holds the items only (the local backups stay in this browser): small and quick to write
+  const s = { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: recs as Rec[] };
   const who = (s.surveyor || 'project').replace(/\W+/g, '_');
   download(`krug_project_${who}_${new Date().toISOString().slice(0, 10)}.json`, s);
-  msg('Проектот е зачуван. Се отвора во било кој прелистувач.');
+  msg(`Проектот е зачуван · ${recs.length} ставки`);
 });
 document.getElementById('openProjBtn')!.addEventListener('click', () => (document.getElementById('openProj') as HTMLInputElement).click());
 document.getElementById('openProj')!.addEventListener('change', async (e) => {
