@@ -158,9 +158,8 @@ async function saveWorkspace(env: Env, req: Request, name: string): Promise<Resp
   const body = await readBody(req);
   const admins = env.ADMINS.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
   const r = await callDo(env.WORKSPACES, name, '/put', {
-    user, name, admins, baseVersion: Number(body.baseVersion ?? 0), data: body.data, savedAt: now(), mode: body.mode, label: body.label,
+    user, name, admins, data: body.data, savedAt: now(), label: body.label,
   });
-  if (r.status === 409) return json(env, { error: 'Некој зачувал меѓувреме.', version: r.data.version }, 409);
   if (r.status === 403) throw new HttpError(403, r.data.error ?? 'Немаш пристап до оваа работа.');
   if (r.status !== 200) throw new HttpError(500, 'Не успеав да зачувам.');
   return json(env, { name, version: r.data.version, savedAt: r.data.savedAt });
@@ -277,29 +276,20 @@ export class Workspace extends DurableObject {
         return reply(200, { owner: ws.owner, members: ws.members, latest: ws.version, version: shown, savedAt: meta.savedAt, savedBy: meta.savedBy, data, versions: ws.versions });
       }
       if (path === '/put') {
+        // every save is a new version: the newest one is the work. No version check, so a save never conflicts.
         const user: string = body.user;
         const now = body.savedAt;
         const label = typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 60) : undefined;
-        const overwrite = body.mode === 'overwrite';
         if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         if (!ws) {
           // a new workspace takes your own username as its name; admins may use any name (e.g. player)
           if (user !== body.name && !body.admins.includes(user)) return reply(403, { error: 'Новата работа се создава со твоето корисничко име.' });
-          if (body.baseVersion !== 0) return reply(409, { version: 0 });
           await st.put('v1', body.data);
           const rec: WsRec = { owner: user, members: [], version: 1, versions: [{ version: 1, savedAt: now, savedBy: user, count: itemCount(body.data), label }] };
           await st.put('ws', rec);
-          return reply(200, { version: 1, savedAt: now });
+          return reply(200, { version: 1, savedAt: now, dropped: 0 });
         }
         if (ws.owner !== user && !ws.members.includes(user)) return reply(403, { error: 'Немаш пристап до оваа работа.' });
-        if (body.baseVersion !== ws.version) return reply(409, { version: ws.version });
-        // Save overwrites the newest version (like saving a document); Save as adds a named version
-        if (overwrite) {
-          await st.put(`v${ws.version}`, body.data);
-          const versions = ws.versions.map((v) => (v.version === ws.version ? { ...v, savedAt: now, savedBy: user, count: itemCount(body.data) } : v));
-          await st.put('ws', { ...ws, versions, savedAt: now, savedBy: user } as WsRec);
-          return reply(200, { version: ws.version, savedAt: now, dropped: 0 });
-        }
         const next = ws.version + 1;
         await st.put(`v${next}`, body.data);
         const versions = [...ws.versions, { version: next, savedAt: now, savedBy: user, count: itemCount(body.data), label }];

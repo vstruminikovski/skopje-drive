@@ -53,11 +53,10 @@ export function loadWorkspace(name: string, version?: number) {
   const q = version ? `?v=${version}` : '';
   return call<Workspace>(`/api/ws/${encodeURIComponent(name)}${q}`, { headers: auth() });
 }
-/** Save overwrites the newest version of a work; "new" adds a named version (up to 5 are kept). */
-export interface SaveMode { mode: 'overwrite' | 'new'; label?: string }
-export function saveWorkspace(name: string, data: unknown, baseVersion: number, how: SaveMode = { mode: 'overwrite' }) {
+/** Saves the items as a new version of a work (the newest one). The newest versions are kept, up to 5. */
+export function saveWorkspace(name: string, data: unknown, label?: string) {
   return call<{ name: string; version: number; savedAt: string; dropped?: number }>(`/api/ws/${encodeURIComponent(name)}`, {
-    method: 'PUT', headers: auth(), body: JSON.stringify({ data, baseVersion, mode: how.mode, label: how.label }),
+    method: 'PUT', headers: auth(), body: JSON.stringify({ data, label }),
   });
 }
 /** A join code for one work: only its owner can make one, and a new one replaces the old. */

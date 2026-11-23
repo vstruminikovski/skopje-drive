@@ -1,6 +1,6 @@
 // The document: what you are editing, where it is kept, and how you save and open it.
 // Like a drawing app:
-// - Save overwrites the document's newest version. If you opened an older version, Save keeps it as a new version.
+// - Save adds a new version. The newest version is the work. Nothing is overwritten, so saves never conflict.
 // - Save as… names a new version on your account, or saves a copy to this computer.
 // - Versions are the named snapshots of your work on your account (up to 5).
 // - Share makes a code (and a link) for a friend. Open loads your work, a code, the published game or a file.
@@ -223,8 +223,8 @@ export function initDocument(o: Options): DocApi {
   }
 
   // ---------- saving ----------
-  /** Writes the open items to the work. 'overwrite' replaces the newest version; 'new' adds a named one. */
-  async function saveToAccount(mode: 'overwrite' | 'new', label?: string): Promise<boolean> {
+  /** Writes the open items to the work as a new version. A name is optional. */
+  async function saveToAccount(label?: string): Promise<boolean> {
     const m = await whoAmI();
     if (!m) { o.msg('Најави се за да зачуваш.'); return false; }
     const work = doc.kind === 'work' ? doc.work : await defaultWork();
@@ -232,22 +232,14 @@ export function initDocument(o: Options): DocApi {
     if (publishing && !(await confirmPublish())) return false;
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() };
     try {
-      // the version we build on: the one this document shows, or the newest one on the server when it is another document
-      const base = doc.kind === 'work' && doc.work === work
-        ? doc.latest
-        : await cloud.loadWorkspace(work).then((w) => w.latest).catch(() => 0);
-      const r = await cloud.saveWorkspace(work, data, base, { mode, label });
+      const r = await cloud.saveWorkspace(work, data, label);
       Object.assign(doc, { kind: 'work', work, owner: doc.owner || m.username, version: r.version, latest: r.version, file: '' });
       await reloadList();
       o.markClean();
-      const dropped = r.dropped ? ` · најстарата верзија (${r.dropped}) е избришана, лимит 5` : '';
-      o.msg(publishing ? `Објавено за сите · верзија ${r.version}` : mode === 'new' ? `Зачувана е верзија ${r.version}${dropped}` : `Зачувано · верзија ${r.version}`);
+      const dropped = r.dropped ? ` · најстарата неименувана верзија (${r.dropped}) е избришана` : '';
+      o.msg(publishing ? `Објавено за сите · верзија ${r.version}` : `Зачувана е верзија ${r.version}${dropped}`);
       return true;
-    } catch (e) {
-      if (e instanceof cloud.CloudError && e.status === 409) o.msg('Некој друг зачувал нова верзија. Отвори ја најновата (Верзии) и повтори ја промената.');
-      else fail(e);
-      return false;
-    }
+    } catch (e) { fail(e); return false; }
   }
   /** The newest versions from the server (names, dates, counts). */
   async function reloadList() {
@@ -277,10 +269,7 @@ export function initDocument(o: Options): DocApi {
 
   /** Save: writes to where the document is kept. A file or a copy asks where to keep it first. */
   async function save(): Promise<boolean> {
-    if (doc.kind === 'work') {
-      // on an older version, Save keeps it as a new version: the newest one is never overwritten by accident
-      return saveToAccount(doc.version === doc.latest ? 'overwrite' : 'new');
-    }
+    if (doc.kind === 'work') return saveToAccount();
     if (doc.kind === 'file') { downloadFile(doc.file); o.markClean(); return true; }
     return saveAs();
   }
@@ -361,7 +350,7 @@ export function initDocument(o: Options): DocApi {
     const name = ($('saveAsName') as HTMLInputElement).value.trim() || undefined;
     if (where === 'computer') { downloadFile(); closeSaveAs(true); return; }
     if (!cloud.account()) { o.msg('Најави се за да зачуваш на профилот.'); closeSaveAs(false); return; }
-    const ok = await saveToAccount('new', name);
+    const ok = await saveToAccount(name);
     if (ok) closeSaveAs(true);
   });
   $('saveAsDlg').addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) closeSaveAs(false); });
