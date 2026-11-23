@@ -59,6 +59,7 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 #lib { left: 12px; width: 272px; height: calc(100% - 88px); }
 #lib.min { height: auto; }
 #lib .fw-body { display: flex; flex-direction: column; overflow: hidden; }
+#lib.min .fw-body { display: none; } /* collapsed: the library's own flex rule must not win */
 .lib-search { flex: none; margin: 10px; width: auto; height: 34px; font-size: 13px; background: var(--fill); }
 #inv { flex: 1; min-height: 0; overflow-y: auto; padding: 0 6px 10px; }
 .inv-sec { display: flex; align-items: center; gap: 8px; margin: 14px 8px 6px; }

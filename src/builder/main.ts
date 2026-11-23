@@ -1204,34 +1204,27 @@ document.addEventListener('keydown', (e) => {
 const gate = document.getElementById('gate')!;
 // start with the mouse free, so the top bar and the exit button can always be clicked (C locks the view)
 document.getElementById('startBtn')!.addEventListener('click', () => { gate.style.display = 'none'; });
-// C: look mode. The view turns as the mouse moves and keeps turning while the pointer is at the window's edge.
-// It does not use the browser's mouse capture, so the browser shows no "press Esc" banner; only C switches it.
+// C: mouse look on / free, as before: the browser holds the mouse while look is on, so the view turns with it.
+function lockView() {
+  // Browsers refuse the mouse lock for a moment after the browser's own release, and need a click after that: say so
+  const c = canvas();
+  if (!c) return;
+  const p = c.requestPointerLock() as unknown as Promise<void> | undefined;
+  if (p && typeof p.catch === 'function') p.catch(() => msg('Прелистувачот го блокира глушецот: притисни C повторно.'));
+}
+function toggleLook() { if (locked) document.exitPointerLock(); else lockView(); }
 const lookLabel = document.getElementById('lookLabel')!;
-let pointer = { x: innerWidth / 2, y: innerHeight / 2, inside: true };
-function setLook(on: boolean) {
-  locked = on;
-  rightDrag = null;
-  document.body.classList.toggle('looking', on);
-  lookBtn.classList.toggle('on', on);
-  lookBtn.setAttribute('aria-pressed', String(on));
-  lookLabel.textContent = on ? 'Гледаш' : 'Гледај';
-  if (on) { document.getElementById('coach')!.hidden = true; try { localStorage.setItem('builder.coach', '1'); } catch (e) {} }
-}
-lookBtn.addEventListener('click', () => setLook(!locked));
-window.addEventListener('blur', () => setLook(false)); // another app or tab: the mouse is yours again
-document.addEventListener('mouseleave', () => { pointer.inside = false; });
-document.addEventListener('mouseenter', () => { pointer.inside = true; });
-/** While looking, the pointer near a window edge keeps turning the view, faster the closer it is. */
-function edgeTurn(dt: number) {
-  if (!locked || !pointer.inside) return;
-  const zone = 70, rate = 1.8; // radians per second at the very edge
-  const push = (d: number) => Math.max(0, (zone - d) / zone);
-  yaw += (push(pointer.x) - push(innerWidth - pointer.x)) * rate * dt;
-  pitch += (push(pointer.y - 64) - push(innerHeight - pointer.y)) * rate * 0.6 * dt;
-  pitch = Math.max(-1.5, Math.min(1.5, pitch));
-}
+document.addEventListener('pointerlockerror', () => msg('Прелистувачот го блокира глушецот: притисни C повторно.'));
+document.addEventListener('pointerlockchange', () => {
+  locked = document.pointerLockElement === canvas();
+  document.body.classList.toggle('looking', locked);
+  lookBtn.classList.toggle('on', locked);
+  lookBtn.setAttribute('aria-pressed', String(locked));
+  lookLabel.textContent = locked ? 'Гледаш' : 'Гледај';
+  if (locked) { document.getElementById('coach')!.hidden = true; try { localStorage.setItem('builder.coach', '1'); } catch (e) { /* not remembered */ } }
+});
+lookBtn.addEventListener('click', toggleLook);
 window.addEventListener('mousemove', (e) => {
-  pointer = { x: e.clientX, y: e.clientY, inside: true };
   // without look mode, right-drag turns the camera too (same sensitivity)
   if (!locked && rightDrag) {
     yaw -= (e.clientX - rightDrag.x) * mouseSens; pitch -= (e.clientY - rightDrag.y) * mouseSens;
@@ -1260,7 +1253,7 @@ window.addEventListener('keydown', (e) => {
   keys.add(e.code);
   if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }
   else if (e.code === 'KeyK') { const it = ITEMS.find((q) => q.cat === 'axe')!; hand = it; markActive(); msg('Секира: насочи кон твоја ставка и кликни'); }
-  else if (e.code === 'KeyC') setLook(!locked); // C: look mode on / off
+  else if (e.code === 'KeyC') toggleLook(); // C: mouse look on / free
   else if (e.code === 'Enter') { if (poly.length) finishPoly(); }
   else if (e.code === 'Backspace') { if (poly.length) poly.pop(); }  // only undoes the last point of a line being drawn
   else if (e.code === 'Delete') { if (selectedId !== null) removeRec(selectedId); }
@@ -1292,7 +1285,6 @@ document.getElementById('redoBtn')!.addEventListener('click', redo);
 // ---------- hooks into the game boot ----------
 startGame({
   drive(camera, dt) {
-    edgeTurn(dt);
     freeCamera(camera, dt);
     // depth precision: the near plane follows the altitude, so thin markings stay visible from high up
     const alt = ctx ? camera.position.y - ctx.heightAt(camera.position.x, -camera.position.z) : 2;
