@@ -213,3 +213,9 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 
 /* ---------- share: the code, large and easy to read ---------- */
 .share-code { margin: 4px 0 14px; padding: 16px 12px; border-radius: 14px; background: var(--fill-2); text-align: center; font: 700 20px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.08em; user-select: all; overflow-wrap: anywhere; }
+
+/* the File menu takes the mouse (the builder layer lets clicks through, except on its own surfaces) */
+#bld .menu, #bld .scrim { pointer-events: auto; }
+.menu button { min-height: 36px; font-size: 14px; }
+.doc-label { font-weight: 600; color: var(--text-2); }
+#docName { font-weight: 500; color: var(--text-2); }

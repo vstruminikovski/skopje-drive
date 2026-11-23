@@ -250,8 +250,9 @@ export function initDocument(o: Options): DocApi {
   function closeSaveAs(ok: boolean) { $('saveAsDlg').hidden = true; const r = saveAsResolve; saveAsResolve = null; r?.(ok); }
 
   // ---------- share: a code (and a link) for a friend ----------
-  function openShare() {
-    if (doc.kind !== 'work') { o.msg('Прво зачувај на профилот: Зачувај како…'); return; }
+  async function openShare() {
+    // a friend can only join a work on your account: an unsaved document is saved to it first
+    if (doc.kind !== 'work' && !(await saveAs())) return;
     $('shareCodeBox').hidden = true; $('shareCopy').hidden = true; $('shareLink').hidden = true;
     $('shareMake').hidden = false;
     $('shareText').textContent = `Создај код за „${doc.work}“ и испрати го. Пријателот го внесува во Отвори → Со код од пријател и ја добива работата. Кодот важи 7 дена.`;
@@ -310,7 +311,6 @@ export function initDocument(o: Options): DocApi {
   $('shareMake').addEventListener('click', () => void makeCode());
   $('shareCopy').addEventListener('click', () => void copy(shareCode, 'Кодот е копиран'));
   $('shareLink').addEventListener('click', () => void copy(`${location.origin}${BASE}build/?join=${encodeURIComponent(shareCode)}`, 'Линкот е копиран. Пријателот се најавува и го внесува кодот.'));
-  $('shareBtn').addEventListener('click', openShare);
   $('shareClose').addEventListener('click', () => { $('shareDlg').hidden = true; });
   $('shareDlg').addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) $('shareDlg').hidden = true; });
 
@@ -346,6 +346,7 @@ export function initDocument(o: Options): DocApi {
 
   // the visible ways in: the Open button, and the start sheet for someone with a friend's code
   $('openBtn').addEventListener('click', openSheet);
+  $('shareBtn').addEventListener('click', () => void openShare());
   $('gateCode').addEventListener('click', () => { $('gate').style.display = 'none'; openSheet(); });
 
   // the File menu
@@ -369,7 +370,7 @@ export function initDocument(o: Options): DocApi {
     if (act === 'save') { await save(); return; }
     if (act === 'saveas') { await saveAs(); return; }
     if (act === 'computer') { downloadFile(); return; }
-    if (act === 'share') { openShare(); return; }
+    if (act === 'share') { await openShare(); return; }
     if (act === 'logout') { cloud.setAccount(null); location.reload(); }
   });
   // the shortcuts of the same actions
