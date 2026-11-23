@@ -163,31 +163,45 @@ async function saveWorkspace(env: Env, req: Request, name: string): Promise<Resp
   return json(env, { name, version: r.data.version, savedAt: r.data.savedAt });
 }
 
-/** A link token is 256 random bits: unguessable, unique, and only its hash is stored. Old links stop working when a new one is made. */
+/** A join code: 24 characters from a 32-letter alphabet (no 0, O, 1, I), so 120 random bits. Only its hash is stored. */
 const INVITE_DAYS = 7;
+const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const sha256 = async (text: string) => b64(new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(text))));
-const newToken = () => b64(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+function newCode(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(24));
+  let out = '';
+  for (const x of bytes) out += CODE_ALPHABET[x & 31]; // 256 is a multiple of 32: every letter is equally likely
+  return out.match(/.{1,4}/g)!.join('-');
+}
+/** What people type: letters and digits only, in any case, with or without dashes. */
+const normalizeCode = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
+/** The owner makes a code for one work. A new code replaces the old one. */
 async function invite(env: Env, req: Request, name: string): Promise<Response> {
   const user = await userFromToken(env, req);
   if (!user) throw new HttpError(401, 'Најави се.');
-  const token = newToken();
+  const code = newCode();
+  const hash = await sha256(normalizeCode(code));
   const expires = Date.now() + INVITE_DAYS * 86_400_000;
-  const r = await callDo(env.WORKSPACES, name, '/invite', { user, hash: await sha256(token), expires });
+  const r = await callDo(env.WORKSPACES, name, '/invite', { user, hash, expires });
   if (r.status === 404) throw new HttpError(404, 'Нема таква работа.');
-  if (r.status === 403) throw new HttpError(403, 'Само сопственикот може да прави линк.');
-  return json(env, { name, token, expiresAt: new Date(expires).toISOString() });
+  if (r.status === 403) throw new HttpError(403, 'Само сопственикот може да создава код.');
+  await callDo(env.ACCOUNTS, `code:${hash}`, '/code-put', { name, expires });
+  return json(env, { name, code, expiresAt: new Date(expires).toISOString() });
 }
 
-async function join(env: Env, req: Request, name: string): Promise<Response> {
+/** Someone types a code in the builder: they are added to the work the code belongs to. */
+async function join(env: Env, req: Request): Promise<Response> {
   const user = await userFromToken(env, req);
   if (!user) throw new HttpError(401, 'Најави се за да ја отвориш работата.');
-  const token = String((await readBody(req)).token ?? '');
-  if (!/^[A-Za-z0-9_-]{30,80}$/.test(token)) throw new HttpError(400, 'Линкот не е исправен.');
-  const r = await callDo(env.WORKSPACES, name, '/join', { user, hash: await sha256(token) });
-  if (r.status === 404) throw new HttpError(404, 'Нема таква работа.');
-  if (r.status === 403) throw new HttpError(403, 'Линкот не е важечки или е истечен.');
-  return json(env, { name });
+  const code = normalizeCode(String((await readBody(req)).code ?? ''));
+  if (code.length !== 24) throw new HttpError(400, 'Кодот има 24 знаци (пример: ABCD-EFGH-...).');
+  const hash = await sha256(code);
+  const found = await callDo(env.ACCOUNTS, `code:${hash}`, '/code-get');
+  if (found.status !== 200) throw new HttpError(403, 'Кодот не е важечки или е истечен.');
+  const r = await callDo(env.WORKSPACES, found.data.name, '/join', { user, hash });
+  if (r.status !== 200) throw new HttpError(403, 'Кодот не е важечки или е истечен.');
+  return json(env, { name: found.data.name });
 }
 
 export class Account extends DurableObject {
@@ -204,6 +218,12 @@ export class Account extends DurableObject {
         return reply(201);
       }
       if (path === '/exists') return reply(200, { exists: !!rec });
+      // join codes are kept here too, under "code:<hash>" (a user name can never contain a colon)
+      if (path === '/code-put') { await this.ctx.storage.put('code', { name: body.name, expires: body.expires }); return reply(200); }
+      if (path === '/code-get') {
+        const c = await this.ctx.storage.get<{ name: string; expires: number }>('code');
+        return c && c.expires > Date.now() ? reply(200, { name: c.name }) : reply(404);
+      }
       if (path === '/salt') return rec ? reply(200, { salt: rec.salt }) : reply(404);
       if (path === '/verify') {
         if (!rec) return reply(401);
@@ -313,9 +333,7 @@ export default {
       if (parts[1] === 'ws' && parts.length === 4 && parts[3] === 'invite' && req.method === 'POST') {
         return await invite(env, req, parts[2].toLowerCase());
       }
-      if (parts[1] === 'ws' && parts.length === 4 && parts[3] === 'join' && req.method === 'POST') {
-        return await join(env, req, parts[2].toLowerCase());
-      }
+      if (parts.length === 2 && parts[1] === 'join' && req.method === 'POST') return await join(env, req);
       throw new HttpError(404, 'Не постои.');
     } catch (e) {
       if (e instanceof HttpError) return json(env, { error: e.message }, e.status);

@@ -41,10 +41,9 @@ export function initCloudPanel(o: Options) {
     $('cLink').textContent = n ? `${location.origin}${import.meta.env.BASE_URL}play/?ws=${n}` : '';
   };
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
-  let joinOnSignIn: () => Promise<void> = async () => {};
 
   // signing in or up: the shared form (rules first, one request at a time, messages inside the form)
-  form = mountAuthForm($('authBoxB'), () => { who(); void joinOnSignIn(); o.onSignedIn?.(); });
+  form = mountAuthForm($('authBoxB'), () => { who(); o.onSignedIn?.(); });
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си'); });
   $('cLogout').addEventListener('click', () => { cloud.setAccount(null); location.reload(); }); // signed out: back to the start sheet
 
@@ -76,42 +75,41 @@ export function initCloudPanel(o: Options) {
     }
   });
 
-  // the magic link: a unique token for this work, copied to the clipboard, sent to whoever should join
+  // a join code for this work: copied, and typed in the builder by the person who should join
   $('cLinkBtn').addEventListener('click', async () => {
     name = $<HTMLInputElement>('cName').value.trim().toLowerCase();
     if (!name) { o.msg('Прво внеси име на работата.'); return; }
     try {
-      const r = await cloud.createInvite(name);
-      const url = `${location.origin}${import.meta.env.BASE_URL}build/?ws=${encodeURIComponent(r.name)}&join=${r.token}`;
-      $('cLink').textContent = `Важи 7 дена`;
-      try { await navigator.clipboard.writeText(url); o.msg('Магичниот линк е копиран. Испрати го на членот.'); }
-      catch { o.msg(url); }
+      const r = await cloud.createCode(name);
+      $('cLink').textContent = r.code;
+      try { await navigator.clipboard.writeText(r.code); o.msg('Кодот е копиран. Важи 7 дена; нов код го поништува стариот.'); }
+      catch { o.msg(`Код: ${r.code}`); }
     } catch (e) { fail(e); }
   });
+  $('cCopy').addEventListener('click', async () => {
+    const code = $('cLink').textContent ?? '';
+    if (!code) { o.msg('Прво создај код.'); return; }
+    try { await navigator.clipboard.writeText(code); o.msg('Кодот е копиран.'); } catch { o.msg(code); }
+  });
 
-  // someone opened a magic link: sign in, join, and load the work
-  const pending = () => {
-    const p = new URLSearchParams(location.search);
-    const ws = p.get('ws'), token = p.get('join');
-    return ws && token ? { ws: ws.toLowerCase(), token } : null;
-  };
-  async function tryJoin() {
-    const j = pending();
-    if (!j || !cloud.account()) return;
-    history.replaceState(null, '', location.pathname); // the link is used once it is opened: a reload does not repeat it
+  // typing a code: join the work, then load it
+  const joinNow = async () => {
+    const code = $<HTMLInputElement>('cCode').value;
+    if (!code.trim()) { o.msg('Внеси код.'); return; }
+    if (!cloud.account()) { o.msg('Најави се за да ја отвориш работата.'); return; }
     try {
-      await cloud.joinWorkspace(j.ws, j.token);
-      $<HTMLInputElement>('cName').value = j.ws;
+      const r = await cloud.joinWithCode(code);
+      $<HTMLInputElement>('cCode').value = '';
+      $<HTMLInputElement>('cName').value = r.name;
       link();
       $('cLoad').click();
-      o.msg(`Додаден си во „${j.ws}“.`);
     } catch (e) { fail(e); }
-  }
-  joinOnSignIn = tryJoin;
+  };
+  $('cJoin').addEventListener('click', joinNow);
+  $<HTMLInputElement>('cCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') void joinNow(); });
 
   $('cName').addEventListener('input', link);
   who();
   link();
-  void joinOnSignIn();
-  void verifyAccount().then(() => { who(); void joinOnSignIn(); });
+  void verifyAccount().then(() => who());
 }

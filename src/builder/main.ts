@@ -950,11 +950,9 @@ let unsaved = false; // changed since the last save to your account
 let emergencyRestored = false; // you chose the emergency copy: do not replace it with the account's game
 let accountLoaded = false;
 /** Opens the signed-in account's saved game (the admin: the published game). Waits until the map is ready. */
-// a magic link opened in this tab: the link's work is loaded instead of your own saved game
-const joining = new URLSearchParams(location.search).has('join');
 async function loadAccountGame() {
   const a = cloud.account();
-  if (!a || accountLoaded || emergencyRestored || joining) return;
+  if (!a || accountLoaded || emergencyRestored) return;
   if (!ctx || !restored) { pendingAccountLoad = true; return; }
   accountLoaded = true;
   let admin = false;

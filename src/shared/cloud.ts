@@ -53,17 +53,15 @@ export function saveWorkspace(name: string, data: unknown, baseVersion: number) 
     method: 'PUT', headers: auth(), body: JSON.stringify({ data, baseVersion }),
   });
 }
-/** A magic link for one work: only its owner can make one, and a new one replaces the old. */
-export function createInvite(name: string) {
-  return call<{ name: string; token: string; expiresAt: string }>(`/api/ws/${encodeURIComponent(name)}/invite`, {
+/** A join code for one work: only its owner can make one, and a new one replaces the old. */
+export function createCode(name: string) {
+  return call<{ name: string; code: string; expiresAt: string }>(`/api/ws/${encodeURIComponent(name)}/invite`, {
     method: 'POST', headers: auth(), body: '{}',
   });
 }
-/** Opens a magic link: adds the signed-in user as a member of the work. */
-export function joinWorkspace(name: string, token: string) {
-  return call<{ name: string }>(`/api/ws/${encodeURIComponent(name)}/join`, {
-    method: 'POST', headers: auth(), body: JSON.stringify({ token }),
-  });
+/** Types a join code: the signed-in user is added to that work. */
+export function joinWithCode(code: string) {
+  return call<{ name: string }>('/api/join', { method: 'POST', headers: auth(), body: JSON.stringify({ code }) });
 }
 export function me() {
   return call<{ username: string; admin: boolean }>('/api/me', { headers: auth() });
