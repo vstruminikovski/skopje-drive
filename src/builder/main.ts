@@ -117,10 +117,12 @@ const ITEMS: { cat: Cat; key: string }[] = [
 // ---------- records ----------
 type Rec = UserItem;
 let recs: Rec[] = [];
-// undo / redo: every saved change is one step; the last 10 are kept
-const HISTORY_MAX = 10;
-let undoStack: string[] = [];
-let redoStack: string[] = [];
+// steps: every change is a step with its name ("Постави: Отстапи предност"). The last 60 are kept, and the
+// steps is kept with unsaved work, so undo and redo still work after a reload. `histAt` is the step you are on.
+const HISTORY_MAX = 60;
+interface HistStep { json: string; label: string }
+let steps: HistStep[] = [];
+let histAt = -1;
 let lastState = '';
 let nextId = 1;
 let hand = ITEMS[0];
@@ -808,7 +810,7 @@ function labelSave() {
   };
   admin(false);
   if (cloud.account()) cloud.me().then((r) => {
-    b.title = r.admin ? 'Зачувај (⌘S). Администраторот објавува за сите играчи.' : 'Зачувај (⌘S)';
+    b.title = 'Зачувај на твојот профил (⌘S)';
     admin(r.admin);
   }).catch(() => {});
 }
@@ -862,26 +864,51 @@ async function loadAccountGame() {
   accountLoaded = true;
   await docApi!.start();
 }
-/** A change to the items: undo keeps it, and it is unsaved until you save. */
+/** A change to the items: a new named step in the steps, and unsaved until you save. */
 function save() {
   const cur = JSON.stringify({ recs, nextId });
   if (lastState && cur !== lastState) {
     unsaved = true;
-    undoStack.push(lastState);
-    if (undoStack.length > HISTORY_MAX) undoStack.shift();
-    redoStack = [];
+    const label = labelFor((JSON.parse(lastState) as { recs: Rec[] }).recs, recs);
+    steps = steps.slice(0, histAt + 1); // a change after an undo drops the steps that were undone
+    steps.push({ json: cur, label });
+    if (steps.length > HISTORY_MAX) steps.shift();
+    histAt = steps.length - 1;
   }
   lastState = cur;
   updateHistoryButtons();
   setStatus(statusError, !!statusError);
   persistSoon();
 }
+/** What a change did, in words: Постави / Избриши / Промени, and what it was. */
+function labelFor(prev: Rec[], next: Rec[]): string {
+  const before = new Map(prev.map((r) => [r.id, r]));
+  const after = new Map(next.map((r) => [r.id, r]));
+  const added = next.filter((r) => !before.has(r.id));
+  const removed = prev.filter((r) => !after.has(r.id));
+  const changed = next.filter((r) => before.has(r.id) && JSON.stringify(before.get(r.id)) !== JSON.stringify(r));
+  if (added.length && !removed.length) return added.length === 1 ? `Постави: ${recName(added[0])}` : `Постави ${added.length} ставки`;
+  if (removed.length && !added.length) return removed.length === 1 ? `Избриши: ${recName(removed[0])}` : `Избриши ${removed.length} ставки`;
+  if (changed.length) return `Промени: ${recName(changed[0])}`;
+  return 'Промена';
+}
+function recName(r: Rec): string {
+  const x = r as unknown as { cat: string; type?: string; key?: string; kind?: string };
+  if (x.cat === 'sign' || x.cat === 'sfloat') return SIGNS.find((s) => s.type === x.type)?.name ?? 'Знак';
+  if (x.cat === 'light') return 'Семафор';
+  if (x.cat === 'pole') return 'Столбче-коцка';
+  if (x.cat === 'prop') return x.kind === 'tree' ? 'Дрво' : 'Улична светилка';
+  if (x.cat === 'tree') return TREES.find((t) => t.key === x.key)?.name ?? 'Дрво';
+  if (x.cat === 'lamp') return 'Улична светилка';
+  if (x.cat === 'axe') return 'Секира';
+  return markDef(x.key ?? '')?.name ?? 'Линија';
+}
 function persistSoon() {
   window.clearTimeout(persistTimer);
   persistTimer = window.setTimeout(() => void persistNow(), 300);
 }
 function sessionOf(): Session {
-  return { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: JSON.parse(JSON.stringify(recs)), dirty: unsaved };
+  return { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: JSON.parse(JSON.stringify(recs)), dirty: unsaved, history: steps, histAt };
 }
 let statusError = '';
 /** The toolbar status: an error, unsaved changes, or what the document is. */
@@ -904,16 +931,16 @@ async function persistNow() {
     msg('Прелистувачот не дозволува чување. Зачувај на профилот или на компјутерот.');
   }
 }
-/** Shows these items as the open document. Clears the undo history and marks them as saved. */
+/** Shows these items as the open document. Clears the undo steps and marks them as saved. */
 function setItems(list: Rec[]) {
   recs = (list as Rec[]).filter((q) => q && typeof q.id === 'number' && typeof q.cat === 'string').map((q) => {
     if (q.cat === 'pole') { q.orient = 'vert'; q.yaw = q.yaw ?? 0; q.len = POLE_L; q.thick = POLE_W; }
     return q;
   });
   nextId = Math.max(1, ...recs.map((q) => q.id + 1));
-  undoStack = []; redoStack = [];
   select(null); rebuild();
   lastState = JSON.stringify({ recs, nextId });
+  steps = [{ json: lastState, label: 'Отворено' }]; histAt = 0;
   unsaved = false;
   updateHistoryButtons();
   setStatus();
@@ -934,6 +961,10 @@ async function restoreSession() {
     if (i === 0) {
       emergencyRestored = true;
       setItems(s.recs as Rec[]);
+      if (Array.isArray(s.history) && s.history.length && typeof s.histAt === "number") {
+        steps = s.history as HistStep[];
+        histAt = Math.min(Math.max(0, s.histAt), steps.length - 1);
+      }
       unsaved = true;
       setStatus();
       persistSoon();
@@ -942,9 +973,11 @@ async function restoreSession() {
     await kvDel('session').catch(() => undefined);
   }
   lastState = JSON.stringify({ recs, nextId });
+  if (!steps.length) { steps = [{ json: lastState, label: 'Отворено' }]; histAt = 0; }
   updateHistoryButtons();
   setStatus();
 }
+/** Shows a step of the steps: the items become that state. */
 function applyState(json: string) {
   const d = JSON.parse(json);
   recs = d.recs; nextId = d.nextId;
@@ -955,22 +988,40 @@ function applyState(json: string) {
   persistSoon();
   updateHistoryButtons();
 }
+/** Goes to a step of the steps (back or forward). */
+function goToStep(i: number) {
+  if (i < 0 || i >= steps.length || i === histAt) return;
+  histAt = i;
+  applyState(steps[i].json);
+}
 function undo() {
-  const prev = undoStack.pop();
-  if (!prev) { msg('Нема што да се врати'); return; }
-  redoStack.push(lastState);
-  applyState(prev);
+  if (histAt <= 0) { msg('Нема што да се врати'); return; }
+  goToStep(histAt - 1);
 }
 function redo() {
-  const next = redoStack.pop();
-  if (!next) { msg('Нема што да се повтори'); return; }
-  undoStack.push(lastState);
-  applyState(next);
+  if (histAt >= steps.length - 1) { msg('Нема што да се повтори'); return; }
+  goToStep(histAt + 1);
 }
+/** The buttons, and the steps list: the newest step at the top, the current one marked. */
 function updateHistoryButtons() {
-  (document.getElementById('undoBtn') as HTMLButtonElement).disabled = undoStack.length === 0;
-  (document.getElementById('redoBtn') as HTMLButtonElement).disabled = redoStack.length === 0;
-  (document.getElementById('undoBtn') as HTMLButtonElement).title = `Врати (⌘Z) · ${undoStack.length} од ${HISTORY_MAX}`;
+  const back = histAt > 0, forward = histAt < steps.length - 1;
+  (document.getElementById('undoBtn') as HTMLButtonElement).disabled = !back;
+  (document.getElementById('redoBtn') as HTMLButtonElement).disabled = !forward;
+  (document.getElementById('undoBtn') as HTMLButtonElement).title = back ? `Врати: ${steps[histAt].label}` : 'Нема што да се врати';
+  const list = document.getElementById('histList');
+  if (!list) return;
+  list.innerHTML = '';
+  for (let i = steps.length - 1; i >= 0; i--) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ver-row';
+    b.setAttribute('aria-current', String(i === histAt));
+    const t = document.createElement('span'); t.className = 'ver-title';
+    t.textContent = steps[i].label || 'Почеток';
+    b.appendChild(t);
+    b.addEventListener('click', () => goToStep(i));
+    list.appendChild(b);
+  }
 }
 
 // ---------- UI ----------

@@ -10,6 +10,9 @@ export interface Session {
   recs: unknown[];
   /** true while the items are not saved to the account or a file: offered back after a crash */
   dirty?: boolean;
+  /** the undo history of unsaved work, and the step you are on */
+  history?: unknown[];
+  histAt?: number;
 }
 
 const KEY = 'session';

@@ -39,11 +39,11 @@
         <div class="menu-who" id="menuWho"></div>
         <button type="button" role="menuitem" data-act="open">Отвори…<kbd>⌘O</kbd></button>
         <button type="button" role="menuitem" data-act="save">Зачувај<kbd>⌘S</kbd></button>
-        <button type="button" role="menuitem" data-act="computer">Зачувај на компјутерот…</button>
-        <button type="button" role="menuitem" data-act="backups">Врати од бекап…</button>
+        <button type="button" role="menuitem" data-act="computer">Зачувај локална верзија (файл)…</button>
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
         <div class="menu-sep"></div>
         <div class="admin-only" hidden>
+          <button type="button" role="menuitem" data-act="deploy">Деплој во живата игра…</button>
           <button type="button" role="menuitem" data-act="exportGeo">Извези карта (GeoJSON)</button>
           <button type="button" role="menuitem" data-act="exportMod">Извези основна игра (default.json)</button>
           <div class="menu-sep"></div>
@@ -77,6 +77,10 @@
               <button id="delBtn" class="btn btn-danger ins-del">Избриши</button>
             </section>
 
+          <details class="pane" data-pane="history" open>
+            <summary>Историја<button class="info" type="button" data-tip="Секоја промена е чекор со име. Кликни на чекор за да се вратиш на него или напред. Историјата се чува при автоматското зачувување на овој компјутер.">i</button></summary>
+            <div id="histList" class="ver-list"></div>
+          </details>
           <details class="pane" data-pane="view" open>
             <summary>Приказ<button class="info" type="button" data-tip="Остра слика изгледа подобро, но е побавна на послаби компјутери.">i</button></summary>
             <div class="list">

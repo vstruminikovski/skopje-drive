@@ -1,11 +1,10 @@
-// The document: the work you are editing. One saved version, and automatic backups.
-// - Save writes your work (the one saved version).
-// - Every 10 minutes a backup is kept when the work changed; the newest 5 are kept.
-// - Restore from backup opens a backup as your work (you still save it).
+// The document: the work you are editing.
+// - Save writes your work on your account (one saved version).
+// - Save a local version writes a file to this computer.
 // - Share makes a code for a friend. Open loads your work, a friend's code or a file.
+// - The administrator can deploy the work to the live game, with 5 seconds to cancel.
 import * as cloud from '../shared/cloud';
 import { mountAuthForm, verifyAccount } from '../shared/auth-form';
-import { shortDate } from '../shared/dates';
 import type { UserItem } from '../game/render/userItems';
 
 interface Options {
@@ -24,7 +23,6 @@ export interface Doc { kind: DocKind; work: string; owner: string; file: string 
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const WORK_KEY = 'builder.work';
-const BACKUP_EVERY = 10 * 60 * 1000;
 
 export interface DocApi {
   statusText(dirty: boolean): string;
@@ -32,17 +30,14 @@ export interface DocApi {
   start(): Promise<void>;
   /** A question with clear answers: the last label is the one that cancels. Resolves with the index chosen. */
   choose(title: string, text: string, labels: string[]): Promise<number>;
-  /** Five seconds to change your mind before a destructive action. Resolves true when it runs out. */
-  countdown(seconds: number): Promise<boolean>;
+  /** Seconds to change your mind before a destructive action. Resolves true when it runs out. */
+  countdown(seconds: number, title?: string, text?: string, goLabel?: string): Promise<boolean>;
   surveyor(): string;
 }
 
 export function initDocument(o: Options): DocApi {
   const doc: Doc = { kind: 'none', work: '', owner: '', file: '' };
   let me: { username: string; admin: boolean } | null = null;
-  let backups: cloud.BackupMeta[] = [];
-  /** The items as last written to the account (saved or backed up): a backup is only taken when this changed. */
-  let lastWritten = '';
   let form: ReturnType<typeof mountAuthForm> | null = null;
 
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
@@ -52,10 +47,10 @@ export function initDocument(o: Options): DocApi {
     try { me = await cloud.me(); } catch { me = null; }
     return me;
   };
-  /** Your own work: your username. The admin's own work is the published map. */
+  /** Your own work: your username. The live game is only changed by Deploy. */
   const defaultWork = async () => {
     const m = await whoAmI();
-    return !m ? '' : m.admin ? 'published' : m.username;
+    return m ? m.username : '';
   };
   const surveyor = () => cloud.account()?.username ?? 'builder';
 
@@ -77,10 +72,10 @@ export function initDocument(o: Options): DocApi {
       $('choiceDlg').hidden = false;
     });
   }
-  function countdown(seconds: number): Promise<boolean> {
+  function countdown(seconds: number, title = 'Бришење', text = 'Почнува по неколку секунди. Откажи за да останеш.', goLabel = 'Избриши'): Promise<boolean> {
     return new Promise((resolve) => {
-      $('choiceTitle').textContent = 'Бришење';
-      $('choiceText').textContent = 'Почнува по неколку секунди. Откажи за да останеш.';
+      $('choiceTitle').textContent = title;
+      $('choiceText').textContent = text;
       const box = $('choiceBtns');
       box.innerHTML = '';
       const go = document.createElement('button');
@@ -89,13 +84,13 @@ export function initDocument(o: Options): DocApi {
       cancel.type = 'button'; cancel.className = 'btn btn-primary btn-lg'; cancel.textContent = 'Откажи';
       box.append(cancel, go);
       let left = seconds;
-      go.textContent = `Избриши за ${left}…`;
+      go.textContent = `${goLabel} за ${left}…`;
       $('choiceDlg').hidden = false;
       const finish = (ok: boolean) => { clearInterval(timer); $('choiceDlg').hidden = true; resolve(ok); };
       const timer = window.setInterval(() => {
         left -= 1;
         if (left <= 0) finish(true);
-        else go.textContent = `Избриши за ${left}…`;
+        else go.textContent = `${goLabel} за ${left}…`;
       }, 1000);
       cancel.addEventListener('click', () => finish(false));
       go.addEventListener('click', () => finish(true));
@@ -123,10 +118,8 @@ export function initDocument(o: Options): DocApi {
     try {
       const w = await cloud.loadWorkspace(name);
       Object.assign(doc, { kind: 'work', work: w.name, owner: w.owner, file: '' });
-      backups = w.backups;
       const items = (w.data as { items?: UserItem[] } | null)?.items;
       o.setItems(Array.isArray(items) ? items : []);
-      lastWritten = JSON.stringify(o.getItems());
       localStorage.setItem(WORK_KEY, JSON.stringify({ user: a.username, work: name }));
       refresh();
       return true;
@@ -134,7 +127,6 @@ export function initDocument(o: Options): DocApi {
       if (e instanceof cloud.CloudError && e.status === 404) {
         // not saved yet: it is yours when it has your own name; the first save creates it
         Object.assign(doc, { kind: 'work', work: name, owner: name === (await defaultWork()) ? a.username : '', file: '' });
-        backups = [];
         localStorage.setItem(WORK_KEY, JSON.stringify({ user: a.username, work: name }));
         refresh();
         return true;
@@ -152,67 +144,43 @@ export function initDocument(o: Options): DocApi {
     if (!items) { o.msg('Датотеката не е проект ниту извоз.'); return; }
     o.setItems(items);
     Object.assign(doc, { kind: 'file', work: '', owner: '', file: file.name });
-    backups = [];
     refresh();
     o.msg(`Отворено: ${file.name} · ${items.length} ставки`);
   }
-  /** Opens one of the backups as your work. It is not saved until you save it. */
-  async function restoreBackup(id: string) {
-    try {
-      const w = await cloud.loadWorkspace(doc.work, id);
-      const items = (w.data as { items?: UserItem[] } | null)?.items;
-      o.setItems(Array.isArray(items) ? items : []);
-      o.setDirty(true);
-      refresh();
-      o.msg('Бекапот е вратен. Зачувај за да стане твојата работа.');
-    } catch (e) { fail(e); }
-  }
-  async function backupsMenu() {
-    if (doc.kind !== 'work') { o.msg('Бекапите се на зачувана работа.'); return; }
-    if (!backups.length) { o.msg('Уште нема бекапи. Се прават на секои 10 минути.'); return; }
-    if (o.isDirty() && !(await guard())) return;
-    const list = [...backups].reverse();
-    const i = await choose('Врати од бекап', 'Избери бекап. Ставките во отворената работа се заменуваат; потоа зачувај.', [...list.map((b) => `${shortDate(b.savedAt)} · ${b.count} ставки`), 'Откажи']);
-    if (i < list.length) await restoreBackup(list[i].id);
-  }
-
   // ---------- saving ----------
-  /** Writes the open items as the saved version of the work, or as a backup next to it. */
-  async function saveToAccount(backup = false): Promise<boolean> {
+  /** Writes the open items as the saved version of your work on your account. */
+  async function saveToAccount(): Promise<boolean> {
     const m = await whoAmI();
-    if (!m) { if (!backup) o.msg('Најави се за да зачуваш.'); return false; }
+    if (!m) { o.msg('Најави се за да зачуваш.'); return false; }
     const work = doc.kind === 'work' ? doc.work : await defaultWork();
-    const publishing = work === 'published' && !backup;
-    if (publishing && (await choose('Објавување', 'Ова ќе ја промени играта за сите играчи.', ['Објави', 'Откажи'])) !== 0) return false;
     const items = o.getItems();
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items };
     try {
-      await cloud.saveWorkspace(work, data, backup);
-      lastWritten = JSON.stringify(items);
-      if (backup) { await reloadBackups(work); return true; }
+      await cloud.saveWorkspace(work, data);
       Object.assign(doc, { kind: 'work', work, owner: doc.owner || m.username, file: '' });
       o.setDirty(false);
-      await reloadBackups(work);
       refresh();
-      o.msg(publishing ? 'Објавено за сите' : `Зачувано · ${items.length} ставки`);
+      o.msg(`Зачувано · ${items.length} ставки`);
       return true;
-    } catch (e) { if (!backup) fail(e); return false; }
+    } catch (e) { fail(e); return false; }
   }
-  async function reloadBackups(work: string) {
-    try { backups = (await cloud.loadWorkspace(work)).backups; } catch { /* the list is read again next time */ }
+  /** Administrator: the open items become the live game for everyone, after 5 seconds to cancel. */
+  async function deployLive(): Promise<void> {
+    const m = await whoAmI();
+    if (!m?.admin) { o.msg('Само администраторот може да објави за сите.'); return; }
+    const n = o.getItems().length;
+    const i = await choose('Деплој во живата игра', `Играта за сите играчи ќе ги има ${n} ставки. Во следните 5 секунди можеш да откажеш.`, ['Деплој', 'Откажи']);
+    if (i !== 0) return;
+    if (!(await countdown(5, 'Деплој во живата игра', 'Деплојот почнува за неколку секунди. Откажи за да останеш.', 'Деплој'))) { o.msg('Деплојот е откажан'); return; }
+    try {
+      await cloud.saveWorkspace('published', { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() });
+      o.msg(`Деплојувано за сите играчи · ${n} ставки`);
+    } catch (e) { fail(e); }
   }
-  /** Every 10 minutes: a backup of the work, when it changed. Never on the published game. */
-  async function autoBackup() {
-    if (doc.kind !== 'work' || doc.work === 'published' || !cloud.account()) return;
-    if (JSON.stringify(o.getItems()) === lastWritten) return;
-    await saveToAccount(true);
-  }
-  window.setInterval(() => void autoBackup(), BACKUP_EVERY);
-
   /** Save: the work on your account, or a file (saved again the same way). */
   async function save(): Promise<boolean> {
     if (doc.kind === 'file') { downloadFile(doc.file); o.setDirty(false); return true; }
-    return saveToAccount(false);
+    return saveToAccount();
   }
   /** Saves a copy on this computer: a plain JSON file with the items. */
   function downloadFile(name?: string) {
@@ -228,7 +196,7 @@ export function initDocument(o: Options): DocApi {
 
   // ---------- share: a code for a friend ----------
   async function openShare() {
-    if (doc.kind !== 'work' && !(await saveToAccount(false))) return;
+    if (doc.kind !== 'work' && !(await saveToAccount())) return;
     $('shareCodeBox').hidden = true; $('shareCopy').hidden = true; $('shareMake').hidden = false;
     $('shareText').textContent = `Создај код за „${doc.work}“ и испрати му го. Пријателот го внесува во Отвори → Со код од пријател. Кодот важи 7 дена.`;
     $('shareDlg').hidden = false;
@@ -337,12 +305,12 @@ export function initDocument(o: Options): DocApi {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (!['open', 'save', 'computer', 'backups', 'share', 'logout'].includes(act!)) return; // the builder handles the rest
+    if (!['open', 'save', 'computer', 'share', 'deploy', 'logout'].includes(act!)) return; // the builder handles the rest
     closeMenu();
     if (act === 'open') { $('openDlg').hidden = false; return; }
     if (act === 'save') { await save(); return; }
     if (act === 'computer') { downloadFile(); return; }
-    if (act === 'backups') { await backupsMenu(); return; }
+    if (act === 'deploy') { await deployLive(); return; }
     if (act === 'share') { await openShare(); return; }
     if (act === 'logout') { cloud.setAccount(null); location.reload(); }
   });
