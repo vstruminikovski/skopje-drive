@@ -39,6 +39,7 @@ async function refresh() {
   let admin = false;
   try {
     admin = (await cloud.me()).admin;
+    $('acctName').textContent = `${a.username}${admin ? ' · админ' : ''}`;
   } catch (e) {
     if (e instanceof cloud.CloudError && e.status === 401) {
       cloud.setAccount(null);
@@ -49,12 +50,12 @@ async function refresh() {
     loadRow('Нема врска со серверот', false);
     return;
   }
-  // the admin's game is the published one everyone plays; everyone else has their own
+  // your first document, the same for everyone
   try {
-    const w = await cloud.loadWorkspace(admin ? 'published' : a.username);
+    const w = await cloud.loadWorkspace(a.username);
     if (!isItemsFile(w.data)) { loadRow('Зачуваната игра е оштетена', false); return; }
     mine = w.data;
-    loadRow(`${admin ? 'Објавена · ' : ''}${mine.items.length} ставки · ${shortDate(w.savedAt)}`, true);
+    loadRow(`${mine.items.length} ставки · ${shortDate(w.savedAt)}`, true);
   } catch (e) {
     if (e instanceof cloud.CloudError && e.status === 404) loadRow('Уште нема зачувана игра', false);
     else loadRow('Не може да се вчита', false);

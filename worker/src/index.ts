@@ -320,9 +320,10 @@ export class Workspace extends DurableObject {
         if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         const title = typeof body.title === 'string' ? body.title.trim().slice(0, 60) : undefined;
         if (!ws) {
-          // your three documents are named after you: <username>, <username>-2, <username>-3; admins may use any name
+          // your three documents are named after you: <username>, <username>-2, <username>-3 (the same for everyone);
+          // the published game is the administrator's Deploy
           const own = body.name === user || body.name === `${user}-2` || body.name === `${user}-3`;
-          if (!own && !body.admins.includes(user)) return reply(403, { error: 'Новиот документ се создава со твоето корисничко име.' });
+          if (!own && !(body.name === 'published' && body.admins.includes(user))) return reply(403, { error: 'Новиот документ се создава со твоето корисничко име.' });
           const parts = await writeData(body.data, 0);
           await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [], title, count: itemCount(body.data), parts } as WsRec);
           return reply(200, { savedAt: now, backups: 0 });

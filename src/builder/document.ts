@@ -304,11 +304,11 @@ export function initDocument(o: Options): DocApi {
     $('gateSigned').hidden = !a;
     $('gateGo').hidden = !a;
     $('gateLead').textContent = a ? 'Твоите документи се на серверот и се отвораат на секој компјутер.' : 'Направи профил или најави се за да додаваш сообраќајни знаци.';
-    $('gateUser').textContent = a?.username ?? '';
+    $('gateUser').textContent = a ? `${a.username}${me?.admin ? ' · админ' : ''}` : '';
     $('gateAvatar').textContent = initial;
     ($('startBtn') as HTMLButtonElement).disabled = !a;
     ($('gateCode') as HTMLButtonElement).disabled = !a;
-    $('menuWho').textContent = a ? `Најавен си како ${a.username}` : '';
+    $('menuWho').textContent = a ? `Најавен си како ${a.username}${me?.admin ? ' · админ' : ''}` : '';
   }
   async function start() {
     const a = cloud.account();
@@ -318,7 +318,7 @@ export function initDocument(o: Options): DocApi {
     const last = (() => { try { return JSON.parse(localStorage.getItem(LAST_KEY) ?? 'null') as { user: string; name: string } | null; } catch { return null; } })();
     await open(last && last.user === a.username ? last.name : a.username);
   }
-  form = mountAuthForm($('authBoxB'), () => { who(); o.onSignedIn?.(); });
+  form = mountAuthForm($('authBoxB'), () => { who(); void whoAmI().then(who); o.onSignedIn?.(); });
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); me = null; who(); o.msg('Одјавен си'); });
 
   // ---------- wiring ----------
@@ -380,7 +380,7 @@ export function initDocument(o: Options): DocApi {
   document.addEventListener('visibilitychange', () => { if (document.hidden) void flush(); });
 
   who();
-  void verifyAccount().then(() => who());
+  void verifyAccount().then(async () => { await whoAmI(); who(); });
 
   return {
     changed,

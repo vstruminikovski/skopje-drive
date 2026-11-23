@@ -43,10 +43,11 @@
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
         <button type="button" role="menuitem" data-act="code">Отвори со код од пријател…</button>
         <div class="menu-sep"></div>
+        <button type="button" role="menuitem" data-act="exportGeo">Извези карта (GeoJSON)</button>
+        <button type="button" role="menuitem" data-act="exportMod">Извези основна игра (default.json)</button>
+        <div class="menu-sep"></div>
         <div class="admin-only" hidden>
           <button type="button" role="menuitem" data-act="deploy">Деплој во живата игра…</button>
-          <button type="button" role="menuitem" data-act="exportGeo">Извези карта (GeoJSON)</button>
-          <button type="button" role="menuitem" data-act="exportMod">Извези основна игра (default.json)</button>
           <div class="menu-sep"></div>
         </div>
         <button type="button" role="menuitem" data-act="clear" class="danger">Избриши ги сите ставки</button>
@@ -73,8 +74,8 @@
               <div class="irow"><span>Ширина</span><span class="unit"><input type="number" id="ins-width" class="field num" min="0.02" step="0.01">м</span></div>
               <div class="irow" id="row-timer"><span>Зелено · жолто · црвено<button class="info" type="button" data-tip="Колку секунди свети секое светло на семафорот.">i</button></span><span class="unit"><input type="number" id="ins-g" class="field num sm" min="1" step="1"><input type="number" id="ins-y" class="field num sm" min="0" step="0.5"><input type="number" id="ins-r" class="field num sm" min="1" step="1">с</span></div>
               <div class="irow" id="row-offset"><span>Почеток<button class="info" type="button" data-tip="Ја поместува смената на светлата, за соседните семафори да не светат исто.">i</button></span><span class="unit"><input type="number" id="ins-off" class="field num" min="0" step="1">с</span></div>
-              <label class="irow admin-only" hidden><span>Проверено на терен<button class="info" type="button" data-tip="Означи кога си ја проверил ставката на самото место во Скопје.">i</button></span><input type="checkbox" id="ins-verified" class="switch"></label>
-              <textarea id="ins-note" class="field ins-note admin-only" hidden rows="2" placeholder="Белешка"></textarea>
+              <label class="irow"><span>Проверено на терен<button class="info" type="button" data-tip="Означи кога си ја проверил ставката на самото место во Скопје.">i</button></span><input type="checkbox" id="ins-verified" class="switch"></label>
+              <textarea id="ins-note" class="field ins-note" rows="2" placeholder="Белешка"></textarea>
               <button id="delBtn" class="btn btn-danger ins-del">Избриши</button>
             </section>
 

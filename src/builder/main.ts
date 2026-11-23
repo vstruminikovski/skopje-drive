@@ -795,7 +795,7 @@ document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.
     })();
   }
 }));
-/** The administrator's tools (deploy, exports) show for the administrator only. */
+/** The one thing only the administrator has: Deploy to the live game. */
 function labelSave() {
   const admin = (on: boolean) => {
     document.querySelectorAll<HTMLElement>('.admin-only').forEach((el) => (el.hidden = !on));
