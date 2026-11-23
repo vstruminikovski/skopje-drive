@@ -1120,7 +1120,9 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyY' || e.shiftKey) redo(); else undo();
     return;
   }
-  keys.add(e.code);
+  // a save or open shortcut is not a movement key: it must not stay "held" (macOS does not report the release while Cmd is down)
+  const shortcut = (e.metaKey || e.ctrlKey) && ['KeyS', 'KeyO', 'KeyZ', 'KeyY'].includes(e.code);
+  if (!shortcut) keys.add(e.code);
   if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }
   else if (e.code === 'KeyK') { const it = ITEMS.find((q) => q.cat === 'axe')!; hand = it; markActive(); msg('Секира: насочи кон твоја ставка и кликни'); }
   else if (e.code === 'KeyC') toggleLook(); // C: mouse look on / free
@@ -1135,7 +1137,13 @@ window.addEventListener('keydown', (e) => {
     if (r) turnSelected(e.code === 'BracketRight' ? 1 : -1);
   }
 });
-window.addEventListener('keyup', (e) => keys.delete(e.code));
+window.addEventListener('keyup', (e) => {
+  keys.delete(e.code);
+  // releasing Cmd: macOS drops the releases of the keys held with it, so nothing stays pressed
+  if (e.key === 'Meta') keys.clear();
+});
+// leaving the window (another app, a dialog in the browser): nothing stays pressed
+window.addEventListener('blur', () => keys.clear());
 canvas()?.addEventListener('contextmenu', (e) => e.preventDefault());
 window.addEventListener('mousedown', (e) => { if (e.target instanceof HTMLCanvasElement && e.button === 2 && !locked) rightDrag = { x: e.clientX, y: e.clientY }; });
 window.addEventListener('mouseup', () => { rightDrag = null; });
