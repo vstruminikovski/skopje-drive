@@ -184,7 +184,7 @@ async function invite(env: Env, req: Request, name: string): Promise<Response> {
   const hash = await sha256(normalizeCode(code));
   const expires = Date.now() + INVITE_DAYS * 86_400_000;
   const r = await callDo(env.WORKSPACES, name, '/invite', { user, hash, expires });
-  if (r.status === 404) throw new HttpError(404, 'Нема таква работа.');
+  if (r.status === 404) throw new HttpError(404, 'Прво зачувај ја работата под твоето име, па создај код.');
   if (r.status === 403) throw new HttpError(403, 'Само сопственикот може да создава код.');
   await callDo(env.ACCOUNTS, `code:${hash}`, '/code-put', { name, expires });
   return json(env, { name, code, expiresAt: new Date(expires).toISOString() });

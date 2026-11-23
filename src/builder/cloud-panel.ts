@@ -36,10 +36,6 @@ export function initCloudPanel(o: Options) {
     $('cWork').hidden = !a;
     if (a && !$<HTMLInputElement>('cName').value) $<HTMLInputElement>('cName').value = a.username;
   };
-  const link = () => {
-    const n = $<HTMLInputElement>('cName').value.trim().toLowerCase();
-    $('cLink').textContent = n ? `${location.origin}${import.meta.env.BASE_URL}play/?ws=${n}` : '';
-  };
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
 
   // signing in or up: the shared form (rules first, one request at a time, messages inside the form)
@@ -47,7 +43,7 @@ export function initCloudPanel(o: Options) {
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си'); });
   $('cLogout').addEventListener('click', () => { cloud.setAccount(null); location.reload(); }); // signed out: back to the start sheet
 
-  $<HTMLInputElement>('cName').addEventListener('input', () => { version = 0; link(); });
+  $<HTMLInputElement>('cName').addEventListener('input', () => { version = 0; });
 
   $('cLoad').addEventListener('click', async () => {
     name = $<HTMLInputElement>('cName').value.trim().toLowerCase();
@@ -56,8 +52,7 @@ export function initCloudPanel(o: Options) {
       const f = w.data as { items?: UserItem[] } | null;
       version = w.version;
       if (f && Array.isArray(f.items)) o.onLoad(f.items);
-      link();
-      o.msg(`Вчитана „${name}“ · верзија ${w.version} од ${w.savedBy}`);
+          o.msg(`Вчитана „${name}“ · верзија ${w.version} од ${w.savedBy}`);
     } catch (e) { fail(e); }
   });
 
@@ -67,8 +62,7 @@ export function initCloudPanel(o: Options) {
     try {
       const r = await cloud.saveWorkspace(name, data, version);
       version = r.version;
-      link();
-      o.msg(`Зачувана „${name}“ · верзија ${r.version}`);
+          o.msg(`Зачувана „${name}“ · верзија ${r.version}`);
     } catch (e) {
       if (e instanceof cloud.CloudError && e.status === 409) o.msg('Некој зачувал во меѓувреме. Прво вчитај ја најновата верзија.');
       else fail(e);
@@ -101,15 +95,12 @@ export function initCloudPanel(o: Options) {
       const r = await cloud.joinWithCode(code);
       $<HTMLInputElement>('cCode').value = '';
       $<HTMLInputElement>('cName').value = r.name;
-      link();
-      $('cLoad').click();
+          $('cLoad').click();
     } catch (e) { fail(e); }
   };
   $('cJoin').addEventListener('click', joinNow);
   $<HTMLInputElement>('cCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') void joinNow(); });
 
-  $('cName').addEventListener('input', link);
   who();
-  link();
   void verifyAccount().then(() => who());
 }
