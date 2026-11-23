@@ -14,6 +14,8 @@ export interface Slot {
   histAt: number;
   /** changed since the last save to your account */
   unsaved: boolean;
+  /** the work on your account this workspace is saved to ('' when none) */
+  work?: string;
 }
 
 export async function readSlot(i: number): Promise<Slot | null> {

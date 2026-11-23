@@ -27,6 +27,10 @@ const WORK_KEY = 'builder.work';
 export interface DocApi {
   statusText(dirty: boolean): string;
   save(): Promise<boolean>;
+  /** the account work the open workspace is linked to ('' when none) */
+  currentWork(): string;
+  /** links the open workspace to an account work (or none) */
+  attach(work: string): void;
   /** A question with clear answers: the last label is the one that cancels. Resolves with the index chosen. */
   choose(title: string, text: string, labels: string[]): Promise<number>;
   /** Seconds to change your mind before a destructive action. Resolves true when it runs out. */
@@ -307,6 +311,13 @@ export function initDocument(o: Options): DocApi {
       return dirty ? 'Незачувано на профилот' : 'Зачувано на профилот';
     },
     save,
+    currentWork: () => doc.work,
+    attach(work) {
+      doc.kind = work ? 'work' : 'none';
+      doc.work = work;
+      doc.owner = work && me && work === me.username ? me.username : work ? doc.owner : '';
+      refresh();
+    },
     choose,
     countdown,
     surveyor,

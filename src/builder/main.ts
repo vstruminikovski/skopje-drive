@@ -909,7 +909,7 @@ function persistSoon() {
 }
 /** The open workspace as it is kept in this browser. */
 function slotState(name = wsName(slot)): Slot {
-  return { name, savedAt: new Date().toISOString(), recs: clone(recs), nextId, history: steps, histAt, unsaved };
+  return { name, savedAt: new Date().toISOString(), recs: clone(recs), nextId, history: steps, histAt, unsaved, work: docApi?.currentWork() ?? '' };
 }
 let statusError = '';
 /** The toolbar status: an error, unsaved changes, or what the document is. */
@@ -955,8 +955,21 @@ function applySlot(s: Slot | null) {
     histAt = 0;
   }
   unsaved = s ? s.unsaved : false;
+  docApi?.attach(s?.work ?? '');
   updateHistoryButtons();
   setStatus();
+}
+/** Local copy first; when nothing is pending, the newest version on your account replaces it. */
+async function syncFromServer() {
+  const cur = await readSlot(slot);
+  if (!cur?.work || cur.unsaved || !cloud.account()) return;
+  try {
+    const w = await cloud.loadWorkspace(cur.work);
+    const items = (w.data as { items?: unknown[] } | null)?.items;
+    if (!Array.isArray(items)) return;
+    applySlot({ ...cur, recs: items, history: [], histAt: 0, unsaved: false });
+    await persistNow();
+  } catch { /* offline: the local copy stays */ }
 }
 /** Shows these items as the open workspace, with a fresh history (a file or your account's work). */
 function setItems(list: Rec[]) {
@@ -981,6 +994,7 @@ async function restoreSession() {
     }
     applySlot(await readSlot(slot));
     restored = true;
+    await syncFromServer();
   } catch (e) {
     setStatus('Не може да се прочитаат работните површини', true);
     return;
@@ -995,6 +1009,7 @@ async function switchWorkspace(i: number) {
   localStorage.setItem('builder.slot', String(i));
   try {
     applySlot(await readSlot(i));
+    await syncFromServer();
     msg(`Работна површина: ${wsName(i)}`);
   } catch (e) { setStatus('Не може да се отвори работната површина', true); }
   renderWorkspaces();
