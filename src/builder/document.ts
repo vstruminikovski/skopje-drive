@@ -294,7 +294,8 @@ export function initDocument(o: Options): DocApi {
   }
 
   // ---------- wiring ----------
-  form = mountAuthForm($('authBoxB'), () => { refresh(); void start(); o.onSignedIn?.(); });
+  // signed in: the sign-in form goes away and the work opens
+  form = mountAuthForm($('authBoxB'), () => { who(); refresh(); void start(); o.onSignedIn?.(); });
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); me = null; who(); o.msg('Одјавен си'); });
 
   document.querySelectorAll<HTMLElement>('#saveAsWhere button').forEach((b) => b.addEventListener('click', () => setWhere(b.dataset.where as 'cloud' | 'computer')));
