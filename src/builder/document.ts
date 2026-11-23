@@ -4,7 +4,7 @@
 //   If the connection drops, the change waits in this browser and is sent when it can be.
 // - Export is the only "save as": a file on this computer. Import opens a file into the open document.
 // - Share makes a code for a friend; a code from a friend opens their document.
-// - The administrator can deploy the open document to the live game, with 5 seconds to cancel.
+// - Deploy sends the open document to your own game (everyone) or to the live game (the administrator), with 5 seconds to cancel.
 import * as cloud from '../shared/cloud';
 import { mountAuthForm, verifyAccount } from '../shared/auth-form';
 import { shortDate } from '../shared/dates';
@@ -282,16 +282,26 @@ export function initDocument(o: Options): DocApi {
   }
 
   // ---------- the live game (administrator) ----------
+  /** Your own game: every change already reaches the server (autosave), this sends what is pending now. */
+  async function deployMine(): Promise<void> {
+    if (!cur) return;
+    const ok = await flush();
+    o.msg(ok ? `Играта е ажурирана · ${o.getItems().length} ставки` : 'Нема врска · промената ќе се испрати кога ќе има врска');
+  }
   async function deployLive(): Promise<void> {
     const m = await whoAmI();
-    if (!m?.admin) { o.msg('Само администраторот може да објави за сите.'); return; }
+    if (!m) { o.msg('Најави се прво.'); return; }
+    if (!m.admin) { await deployMine(); return; }
+    // the administrator's deploy is the live game for everyone; anyone else deploys to their own game
+    const target = m.admin ? 'published' : `${m.username}-game`;
+    const where = m.admin ? 'живата игра за сите играчи' : 'твојата игра (ја играш на почетната страница, по најава)';
     const n = o.getItems().length;
-    const i = await choose('Деплој во живата игра?', `Играта за сите играчи ќе ги има ${n} ставки од „${cur?.title ?? ''}“. По 5 секунди се објавува; дотогаш можеш да откажеш.`, ['Продолжи', 'Откажи']);
+    const i = await choose(m.admin ? 'Деплој во живата игра?' : 'Деплој во мојата игра?', `Ќе се пратат ${n} ставки од „${cur?.title ?? ''}“ во ${where}. По 5 секунди се објавува; дотогаш можеш да откажеш.`, ['Продолжи', 'Откажи']);
     if (i !== 0) return;
-    if (!(await countdown(5, 'Деплој во живата игра', 'Деплојот почнува за неколку секунди. Откажи за да останеш.', 'Деплој'))) { o.msg('Деплојот е откажан'); return; }
+    if (!(await countdown(5, m.admin ? 'Деплој во живата игра' : 'Деплој во мојата игра', 'Деплојот почнува за неколку секунди. Откажи за да останеш.', 'Деплој'))) { o.msg('Деплојот е откажан'); return; }
     try {
-      await cloud.saveWorkspace('published', { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() });
-      o.msg(`Деплојувано за сите играчи · ${n} ставки`);
+      await cloud.saveWorkspace(target, { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() }, m.admin ? 'Жива игра' : 'Моја игра');
+      o.msg(m.admin ? `Деплојувано за сите играчи · ${n} ставки` : `Деплојувано во твојата игра · ${n} ставки`);
     } catch (e) { fail(e); }
   }
 
@@ -362,7 +372,7 @@ export function initDocument(o: Options): DocApi {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (!['rename', 'export', 'import', 'share', 'code', 'deploy', 'logout'].includes(act!)) return; // the builder handles the rest
+    if (!['rename', 'export', 'import', 'share', 'code', 'deploy', 'deployMine', 'logout'].includes(act!)) return; // the builder handles the rest
     closeMenu();
     if (act === 'rename') await rename();
     else if (act === 'export') exportFile();
@@ -370,6 +380,7 @@ export function initDocument(o: Options): DocApi {
     else if (act === 'share') openShare();
     else if (act === 'code') $('openDlg').hidden = false;
     else if (act === 'deploy') await deployLive();
+    else if (act === 'deployMine') await deployMine();
     else if (act === 'logout') { await flush(); cloud.setAccount(null); location.reload(); }
   });
   // Cmd+S sends the change now (it is saved anyway)

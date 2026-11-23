@@ -802,7 +802,11 @@ function labelSave() {
     document.querySelectorAll<HTMLElement>('.player-only').forEach((el) => (el.hidden = on));
   };
   admin(false);
-  if (cloud.account()) cloud.me().then((r) => admin(r.admin)).catch(() => {});
+  if (cloud.account()) cloud.me().then((r) => {
+    admin(r.admin);
+    const d = document.querySelector<HTMLElement>('[data-act=deploy]');
+    if (d) d.textContent = r.admin ? 'Деплој во живата игра…' : 'Деплој во мојата игра…';
+  }).catch(() => {});
 }
 labelSave();
 initTips();

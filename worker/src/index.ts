@@ -322,7 +322,8 @@ export class Workspace extends DurableObject {
         if (!ws) {
           // your three documents are named after you: <username>, <username>-2, <username>-3 (the same for everyone);
           // the published game is the administrator's Deploy
-          const own = body.name === user || body.name === `${user}-2` || body.name === `${user}-3`;
+          // and <username>-game is the game you deploy for yourself
+          const own = body.name === user || body.name === `${user}-2` || body.name === `${user}-3` || body.name === `${user}-game`;
           if (!own && !(body.name === 'published' && body.admins.includes(user))) return reply(403, { error: 'Новиот документ се создава со твоето корисничко име.' });
           const parts = await writeData(body.data, 0);
           await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [], title, count: itemCount(body.data), parts } as WsRec);
