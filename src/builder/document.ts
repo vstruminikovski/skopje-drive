@@ -39,6 +39,8 @@ export interface DocApi {
   signOut(): void;
   /** Lets other parts of the builder ask the same question the sheets ask. */
   choose(title: string, text: string, labels: string[]): Promise<number>;
+  /** Five seconds to change your mind before a destructive action. */
+  countdown(seconds: number): Promise<boolean>;
   surveyor(): string;
 }
 
@@ -447,6 +449,7 @@ export function initDocument(o: Options): DocApi {
     start,
     signOut() { cloud.setAccount(null); location.reload(); },
     choose,
+    countdown,
     surveyor,
   };
 }

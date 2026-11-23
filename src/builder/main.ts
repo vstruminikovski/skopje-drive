@@ -786,9 +786,14 @@ document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.
   else if (act === 'clear') {
     closeFileMenu();
     if (!recs.length) return;
-    void docApi!.choose('Избриши ги сите ставки?', 'Ги брише сите ставки што си ги поставил. Врати (⌘Z) ги враќа.', ['Избриши', 'Откажи']).then((i) => {
-      if (i === 0) { recs = []; select(null); rebuild(); save(); }
-    });
+    // a blank map is not the game: the same question and a 5-second countdown as a reset
+    void (async () => {
+      const i = await docApi!.choose('Избриши ги сите ставки?', 'Ова празни ја целата карта: сите модели, знаци, семафори и линии. Не е игра, туку празно платно. Врати (⌘Z) ги враќа.', ['Продолжи', 'Откажи']);
+      if (i !== 0) return;
+      if (!(await docApi!.countdown(5))) { msg('Бришењето е откажано'); return; }
+      recs = []; select(null); rebuild(); save();
+      msg('Сите ставки се избришани · Врати (⌘Z) ги враќа');
+    })();
   }
 }));
 document.getElementById('saveGame')!.addEventListener('click', () => { void docApi!.save(); });
