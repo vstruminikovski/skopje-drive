@@ -146,14 +146,42 @@ export function initDocument(o: Options): DocApi {
     if (o.isDirty() && !(await guard())) return;
     if (await openWork(doc.work, v)) o.msg(`Отворена е верзија ${v}`);
   }
-  async function openCopy() {
+  /** Hard reset: the open items become the published game. Your saved versions stay as they are. */
+  async function hardReset() {
+    const i = await choose('Ресетирај на објавената игра?', 'Ова ги заменува ставките во отворената работа со објавената игра. Зачуваните верзии на профилот остануваат.', ['Продолжи', 'Откажи']);
+    if (i !== 0) return;
+    if (!(await countdown(5))) { o.msg('Ресетирањето е откажано'); return; }
     const f = await loadItems();
-    if (!f) { o.msg('Објавената игра не е достапна.'); return false; }
+    if (!f) { o.msg('Објавената игра не е достапна.'); return; }
     o.setItems(f.items as UserItem[]);
     Object.assign(doc, { kind: 'copy', work: '', owner: '', version: 0, latest: 0, file: '', versions: [] });
     refresh();
-    o.msg('Отворена е копија од објавената игра. Зачувај како… за да ја зачуваш на твојот профил.');
-    return true;
+    o.msg('Ресетирано на објавената игра. Зачувај како… за да ја зачуваш.');
+  }
+  /** Five seconds to change your mind. Resolves true when it runs out; cancel resolves false. */
+  function countdown(seconds: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      $('choiceTitle').textContent = 'Ресетирање';
+      $('choiceText').textContent = 'Ресетирањето почнува по неколку секунди. Откажи за да останеш.';
+      const box = $('choiceBtns');
+      box.innerHTML = '';
+      const go = document.createElement('button');
+      go.type = 'button'; go.className = 'btn btn-lg btn-danger';
+      const cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.className = 'btn btn-primary btn-lg'; cancel.textContent = 'Откажи';
+      box.append(cancel, go);
+      let left = seconds;
+      go.textContent = `Ресетирај за ${left}…`;
+      $('choiceDlg').hidden = false;
+      const finish = (ok: boolean) => { clearInterval(timer); $('choiceDlg').hidden = true; resolve(ok); };
+      const timer = window.setInterval(() => {
+        left -= 1;
+        if (left <= 0) finish(true);
+        else go.textContent = `Ресетирај за ${left}…`;
+      }, 1000);
+      cancel.addEventListener('click', () => finish(false));
+      go.addEventListener('click', () => finish(true));
+    });
   }
   async function openFile(file: File) {
     let d: any;
@@ -322,11 +350,6 @@ export function initDocument(o: Options): DocApi {
     if (!(await guard())) return;
     await openWork(await defaultWork());
   });
-  $('openPublished').addEventListener('click', async () => {
-    $('openDlg').hidden = true;
-    if (!(await guard())) return;
-    await openCopy();
-  });
   $('openCodeGo').addEventListener('click', async () => {
     const code = ($('openCode') as HTMLInputElement).value;
     if (!code.trim()) { o.msg('Внеси код.'); return; }
@@ -365,7 +388,7 @@ export function initDocument(o: Options): DocApi {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (!['open', 'save', 'saveas', 'computer', 'share', 'logout'].includes(act!)) return; // the builder handles the rest
+    if (!['open', 'save', 'saveas', 'computer', 'share', 'logout', 'reset'].includes(act!)) return; // the builder handles the rest
     closeMenu();
     if (act === 'open') { openSheet(); return; }
     if (act === 'save') { await save(); return; }
@@ -373,6 +396,7 @@ export function initDocument(o: Options): DocApi {
     if (act === 'computer') { downloadFile(); return; }
     if (act === 'share') { await openShare(); return; }
     if (act === 'logout') { cloud.setAccount(null); location.reload(); }
+    if (act === 'reset') { await hardReset(); return; }
   });
   // the shortcuts of the same actions
   window.addEventListener('keydown', (e) => {
