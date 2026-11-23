@@ -18,7 +18,7 @@ export interface Env {
 }
 
 const TOKEN_DAYS = 30;
-const MAX_BODY = 1_500_000; // bytes: a workspace is well under the 2 MB storage value limit
+const MAX_BODY = 7_000_000; // bytes: a document (about 28,000 items) stays under the 8 MB storage value limit
 const USER_RE = /^[a-z0-9_]{3,20}$/;
 const WS_RE = /^[a-z0-9_-]{3,32}$/;
 const LOCK_AFTER_FAILS = 10;
@@ -258,7 +258,9 @@ export class Account extends DurableObject {
 /** A work has one saved version (what you save) and up to 5 automatic backups (taken every 10 minutes). */
 const MAX_BACKUPS = 5;
 interface BackupMeta { id: string; savedAt: string; savedBy: string; count: number }
-interface WsRec { owner: string; members: string[]; savedAt: string; savedBy: string; backups: BackupMeta[]; title?: string; count?: number }
+interface WsRec { owner: string; members: string[]; savedAt: string; savedBy: string; backups: BackupMeta[]; title?: string; count?: number; parts?: number }
+/** A stored value has a size limit (about 2 MB), so a document is kept in pieces of at most this many characters. */
+const PART_CHARS = 500_000;
 const itemCount = (data: unknown) => (data && Array.isArray((data as { items?: unknown[] }).items) ? (data as { items: unknown[] }).items.length : 0);
 
 export class Workspace extends DurableObject {
@@ -268,6 +270,21 @@ export class Workspace extends DurableObject {
     return this.ctx.blockConcurrencyWhile(async () => {
       const reply = (status: number, data: unknown = {}) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
       const st = this.ctx.storage;
+      // the document's items, in pieces: data:0, data:1, … (an older document keeps them under 'data')
+      const readData = async (rec: WsRec): Promise<unknown> => {
+        if (!rec.parts) return st.get('data');
+        const parts: string[] = [];
+        for (let i = 0; i < rec.parts; i++) parts.push((await st.get<string>(`data:${i}`)) ?? '');
+        return JSON.parse(parts.join(''));
+      };
+      const writeData = async (data: unknown, before: number): Promise<number> => {
+        const text = JSON.stringify(data ?? null);
+        const n = Math.max(1, Math.ceil(text.length / PART_CHARS));
+        for (let i = 0; i < n; i++) await st.put(`data:${i}`, text.slice(i * PART_CHARS, (i + 1) * PART_CHARS));
+        for (let i = n; i < before; i++) await st.delete(`data:${i}`);
+        await st.delete('data');
+        return n;
+      };
       let ws = await st.get<any>('ws');
       // an older record (several versions, or the data inside the record): keep its newest version as the saved work
       if (ws && (ws.versions || 'data' in ws)) {
@@ -288,7 +305,7 @@ export class Workspace extends DurableObject {
           if (!(ws as WsRec).backups.some((b) => b.id === body.backup)) return reply(404);
           return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, data: await st.get(`b:${body.backup}`), backup: body.backup });
         }
-        return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, title: ws.title ?? '', data: await st.get('data') });
+        return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, title: ws.title ?? '', data: await readData(ws as WsRec) });
       }
       if (path === '/meta') {
         // for the document list: what the document is called, when it was saved, how many items
@@ -306,8 +323,8 @@ export class Workspace extends DurableObject {
           // your three documents are named after you: <username>, <username>-2, <username>-3; admins may use any name
           const own = body.name === user || body.name === `${user}-2` || body.name === `${user}-3`;
           if (!own && !body.admins.includes(user)) return reply(403, { error: 'Новиот документ се создава со твоето корисничко име.' });
-          await st.put('data', body.data);
-          await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [], title, count: itemCount(body.data) } as WsRec);
+          const parts = await writeData(body.data, 0);
+          await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [], title, count: itemCount(body.data), parts } as WsRec);
           return reply(200, { savedAt: now, backups: 0 });
         }
         if (ws.owner !== user && !ws.members.includes(user)) return reply(403, { error: 'Немаш пристап до оваа работа.' });
@@ -319,8 +336,8 @@ export class Workspace extends DurableObject {
           await st.put('ws', { ...ws, backups });
           return reply(200, { savedAt: now, backups: backups.length });
         }
-        await st.put('data', body.data);
-        await st.put('ws', { ...ws, savedAt: now, savedBy: user, count: itemCount(body.data), ...(title !== undefined ? { title } : {}) });
+        const parts = await writeData(body.data, (ws as WsRec).parts ?? 0);
+        await st.put('ws', { ...ws, savedAt: now, savedBy: user, count: itemCount(body.data), parts, ...(title !== undefined ? { title } : {}) });
         return reply(200, { savedAt: now, backups: ws.backups.length });
       }
       if (path === '/invite') {

@@ -37,7 +37,7 @@ export interface DocApi {
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const LAST_KEY = 'builder.doc';
-const SEND_AFTER = 1500; // ms after the last change
+const SEND_AFTER = 5000; // ms after the last change: fewer writes to the server, the change is in this browser at once
 const RETRY_AFTER = 20_000; // ms, when the server could not be reached
 
 export function initDocument(o: Options): DocApi {
