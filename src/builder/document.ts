@@ -6,7 +6,7 @@
 // - Share makes a code for a friend. Open loads your work, a friend's code or a file.
 import * as cloud from '../shared/cloud';
 import { mountAuthForm, verifyAccount } from '../shared/auth-form';
-import { shortDate } from '../shared/dates';
+import { shortDate, clock } from '../shared/dates';
 import type { UserItem } from '../game/render/userItems';
 
 interface Options {
@@ -45,6 +45,8 @@ export interface DocApi {
 export function initDocument(o: Options): DocApi {
   const doc: Doc = { kind: 'none', work: '', owner: '', version: 0, latest: 0, file: '', versions: [] };
   let me: { username: string; admin: boolean } | null = null;
+  /** The items last written to the account: an automatic backup is only made when something changed since. */
+  let lastWritten = '';
   let form: ReturnType<typeof mountAuthForm> | null = null;
 
   const fail = (e: unknown) => o.msg(e instanceof cloud.CloudError ? e.message : 'Нешто не е во ред.');
@@ -124,6 +126,7 @@ export function initDocument(o: Options): DocApi {
       Object.assign(doc, { kind: 'work', work: w.name, owner: w.owner, version: w.version, latest: w.latest, file: '', versions: w.versions });
       const items = (w.data as { items?: UserItem[] } | null)?.items;
       o.setItems(Array.isArray(items) ? items : []);
+      lastWritten = JSON.stringify(o.getItems());
       localStorage.setItem(WORK_KEY, JSON.stringify({ user: a.username, work: name }));
       refresh();
       return true;
@@ -185,23 +188,33 @@ export function initDocument(o: Options): DocApi {
 
   // ---------- saving ----------
   /** Writes the open items to the work as a new version. A name is optional. */
-  async function saveToAccount(label?: string): Promise<boolean> {
+  async function saveToAccount(label?: string, quiet = false): Promise<boolean> {
     const m = await whoAmI();
-    if (!m) { o.msg('Најави се за да зачуваш.'); return false; }
+    if (!m) { if (!quiet) o.msg('Најави се за да зачуваш.'); return false; }
     const work = doc.kind === 'work' ? doc.work : await defaultWork();
     const publishing = work === 'published';
     if (publishing && !(await confirmPublish())) return false;
-    const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() };
+    const items = o.getItems();
+    const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items };
     try {
       const r = await cloud.saveWorkspace(work, data, label);
+      lastWritten = JSON.stringify(items);
       Object.assign(doc, { kind: 'work', work, owner: doc.owner || m.username, version: r.version, latest: r.version, file: '' });
       await reloadList();
       o.markClean();
+      if (quiet) return true;
       const dropped = r.dropped ? ` · најстарата неименувана верзија (${r.dropped}) е избришана` : '';
       o.msg(publishing ? `Објавено за сите · верзија ${r.version}` : `Зачувана е верзија ${r.version}${dropped}`);
       return true;
-    } catch (e) { fail(e); return false; }
+    } catch (e) { if (!quiet) fail(e); return false; }
   }
+  /** Every 10 minutes: a backup version of your work, when it changed. Never on the published game. */
+  async function autoBackup() {
+    if (doc.kind !== 'work' || doc.work === 'published' || !cloud.account()) return;
+    if (JSON.stringify(o.getItems()) === lastWritten) return;
+    await saveToAccount(`Автозачувување ${clock()}`, true);
+  }
+  window.setInterval(() => void autoBackup(), 10 * 60 * 1000);
   /** The newest versions from the server (names, dates, counts). */
   async function reloadList() {
     if (doc.kind !== 'work') return;
