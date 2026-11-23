@@ -18,8 +18,8 @@ interface Options {
   onSignedIn?: () => void;
 }
 
-export type DocKind = 'none' | 'work' | 'file';
-export interface Doc { kind: DocKind; work: string; owner: string; file: string }
+export type DocKind = 'none' | 'work';
+export interface Doc { kind: DocKind; work: string; owner: string }
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const WORK_KEY = 'builder.work';
@@ -27,7 +27,6 @@ const WORK_KEY = 'builder.work';
 export interface DocApi {
   statusText(dirty: boolean): string;
   save(): Promise<boolean>;
-  start(): Promise<void>;
   /** A question with clear answers: the last label is the one that cancels. Resolves with the index chosen. */
   choose(title: string, text: string, labels: string[]): Promise<number>;
   /** Seconds to change your mind before a destructive action. Resolves true when it runs out. */
@@ -36,7 +35,7 @@ export interface DocApi {
 }
 
 export function initDocument(o: Options): DocApi {
-  const doc: Doc = { kind: 'none', work: '', owner: '', file: '' };
+  const doc: Doc = { kind: 'none', work: '', owner: '' };
   let me: { username: string; admin: boolean } | null = null;
   let form: ReturnType<typeof mountAuthForm> | null = null;
 
@@ -106,8 +105,7 @@ export function initDocument(o: Options): DocApi {
 
   // ---------- what the toolbar and the menu show ----------
   function refresh() {
-    $('docName').textContent = doc.kind === 'work' ? doc.work : doc.kind === 'file' ? doc.file : 'Нова работа';
-    $('docName').title = doc.kind !== 'work' ? '' : doc.owner === me?.username ? 'твоја работа' : doc.owner ? `споделена од ${doc.owner}` : '';
+    $('docName').title = doc.kind === 'work' ? (doc.owner === me?.username ? 'Зачувано на твојот профил' : `Зачувано на профилот на ${doc.owner}`) : '';
     o.onChange();
   }
 
@@ -117,7 +115,7 @@ export function initDocument(o: Options): DocApi {
     if (!a) { o.msg('Најави се прво.'); return false; }
     try {
       const w = await cloud.loadWorkspace(name);
-      Object.assign(doc, { kind: 'work', work: w.name, owner: w.owner, file: '' });
+      Object.assign(doc, { kind: 'work', work: w.name, owner: w.owner });
       const items = (w.data as { items?: UserItem[] } | null)?.items;
       o.setItems(Array.isArray(items) ? items : []);
       localStorage.setItem(WORK_KEY, JSON.stringify({ user: a.username, work: name }));
@@ -126,7 +124,7 @@ export function initDocument(o: Options): DocApi {
     } catch (e) {
       if (e instanceof cloud.CloudError && e.status === 404) {
         // not saved yet: it is yours when it has your own name; the first save creates it
-        Object.assign(doc, { kind: 'work', work: name, owner: name === (await defaultWork()) ? a.username : '', file: '' });
+        Object.assign(doc, { kind: 'work', work: name, owner: name === (await defaultWork()) ? a.username : '' });
         localStorage.setItem(WORK_KEY, JSON.stringify({ user: a.username, work: name }));
         refresh();
         return true;
@@ -143,10 +141,11 @@ export function initDocument(o: Options): DocApi {
     else if (d && d.format === 'mapng-mod' && Array.isArray(d.items)) items = d.items;
     if (!items) { o.msg('Датотеката не е проект ниту извоз.'); return; }
     o.setItems(items);
-    Object.assign(doc, { kind: 'file', work: '', owner: '', file: file.name });
+    doc.kind = 'none'; doc.work = ''; doc.owner = '';
     refresh();
     o.msg(`Отворено: ${file.name} · ${items.length} ставки`);
   }
+
   // ---------- saving ----------
   /** Writes the open items as the saved version of your work on your account. */
   async function saveToAccount(): Promise<boolean> {
@@ -157,7 +156,7 @@ export function initDocument(o: Options): DocApi {
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items };
     try {
       await cloud.saveWorkspace(work, data);
-      Object.assign(doc, { kind: 'work', work, owner: doc.owner || m.username, file: '' });
+      Object.assign(doc, { kind: 'work', work, owner: doc.owner || m.username });
       o.setDirty(false);
       refresh();
       o.msg(`Зачувано · ${items.length} ставки`);
@@ -177,21 +176,9 @@ export function initDocument(o: Options): DocApi {
       o.msg(`Деплојувано за сите играчи · ${n} ставки`);
     } catch (e) { fail(e); }
   }
-  /** Save: the work on your account, or a file (saved again the same way). */
+  /** Save: your work on your account (the one saved version). */
   async function save(): Promise<boolean> {
-    if (doc.kind === 'file') { downloadFile(doc.file); o.setDirty(false); return true; }
     return saveToAccount();
-  }
-  /** Saves a copy on this computer: a plain JSON file with the items. */
-  function downloadFile(name?: string) {
-    const s = { format: 'krug-builder-session', version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId: 1, recs: o.getItems() };
-    const file = name || `krug_${surveyor().replace(/\W+/g, '_')}_${new Date().toISOString().slice(0, 10)}.json`;
-    const url = URL.createObjectURL(new Blob([JSON.stringify(s)], { type: 'application/json' }));
-    const a = document.createElement('a');
-    a.href = url; a.download = file; a.style.display = 'none';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    o.msg(`Зачувано на компјутерот · ${file}`);
   }
 
   // ---------- share: a code for a friend ----------
@@ -226,7 +213,7 @@ export function initDocument(o: Options): DocApi {
   }
 
   // ---------- the sign-in start ----------
-  form = mountAuthForm($('authBoxB'), () => { who(); refresh(); void start(); o.onSignedIn?.(); });
+  form = mountAuthForm($('authBoxB'), () => { who(); refresh(); o.onSignedIn?.(); });
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); me = null; who(); o.msg('Одјавен си'); });
   function who() {
     const a = cloud.account();
@@ -242,15 +229,6 @@ export function initDocument(o: Options): DocApi {
     ($('gateCode') as HTMLButtonElement).disabled = !a;
     $('menuWho').textContent = a ? `Најавен си како ${a.username}` : '';
   }
-  /** Once the map is ready: open your work, or the one you had open last. */
-  async function start() {
-    const a = cloud.account();
-    if (!a) return;
-    const saved = (() => { try { return JSON.parse(localStorage.getItem(WORK_KEY) ?? 'null') as { user: string; work: string } | null; } catch { return null; } })();
-    const name = saved && saved.user === a.username ? saved.work : await defaultWork();
-    await openWork(name);
-  }
-
   // ---------- the visible ways in: the Open and Share buttons, and the start sheet ----------
   $('openBtn').addEventListener('click', () => { $('openDlg').hidden = false; });
   $('shareBtn').addEventListener('click', () => void openShare());
@@ -305,11 +283,10 @@ export function initDocument(o: Options): DocApi {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (!['open', 'save', 'computer', 'share', 'deploy', 'logout'].includes(act!)) return; // the builder handles the rest
+    if (!['open', 'save', 'share', 'deploy', 'logout'].includes(act!)) return; // the builder handles the rest
     closeMenu();
     if (act === 'open') { $('openDlg').hidden = false; return; }
     if (act === 'save') { await save(); return; }
-    if (act === 'computer') { downloadFile(); return; }
     if (act === 'deploy') { await deployLive(); return; }
     if (act === 'share') { await openShare(); return; }
     if (act === 'logout') { cloud.setAccount(null); location.reload(); }
@@ -327,13 +304,9 @@ export function initDocument(o: Options): DocApi {
 
   return {
     statusText(dirty) {
-      if (dirty) return 'Незачувано';
-      if (doc.kind === 'work') return 'Зачувано';
-      if (doc.kind === 'file') return 'На компјутерот';
-      return '';
+      return dirty ? 'Незачувано на профилот' : 'Зачувано на профилот';
     },
     save,
-    start,
     choose,
     countdown,
     surveyor,

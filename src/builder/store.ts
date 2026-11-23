@@ -1,31 +1,30 @@
-// The builder's own work (items, versions, surveyor) between visits. Kept in the app's shared store.
+// The three local workspaces of the builder. Each keeps its items and its history in this browser
+// (IndexedDB), so it is still there after a reload, and changes are kept as you work.
 import { kvGet, kvSet } from '../shared/db';
 
-export interface Session {
-  format: 'krug-builder-session';
-  version: 1;
+export const SLOT_COUNT = 3;
+
+export interface Slot {
+  name: string;
   savedAt: string;
-  surveyor: string;
-  nextId: number;
   recs: unknown[];
-  /** true while the items are not saved to the account or a file: offered back after a crash */
-  dirty?: boolean;
-  /** the undo history of unsaved work, and the step you are on */
-  history?: unknown[];
-  histAt?: number;
+  nextId: number;
+  /** the steps of the history, and the step you are on */
+  history: unknown[];
+  histAt: number;
+  /** changed since the last save to your account */
+  unsaved: boolean;
 }
 
-const KEY = 'session';
-
-export function isSession(v: unknown): v is Session {
-  return !!v && typeof v === 'object' && (v as Session).format === 'krug-builder-session' && Array.isArray((v as Session).recs);
+export async function readSlot(i: number): Promise<Slot | null> {
+  return kvGet<Slot>(`slot:${i}`);
 }
 
-export async function writeSession(s: Session): Promise<void> {
-  await kvSet(KEY, s);
+export async function writeSlot(i: number, s: Slot): Promise<void> {
+  await kvSet(`slot:${i}`, s);
 }
 
-export async function readSession(): Promise<Session | null> {
-  const v = await kvGet<Session>(KEY);
-  return isSession(v) ? v : null;
+/** A project file the builder can open: the format and a list of items. */
+export function isSession(v: unknown): v is { format: 'krug-builder-session'; recs: unknown[] } {
+  return !!v && typeof v === 'object' && (v as { format?: string }).format === 'krug-builder-session' && Array.isArray((v as { recs?: unknown }).recs);
 }

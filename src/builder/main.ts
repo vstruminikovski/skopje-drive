@@ -15,8 +15,8 @@ import { initDocument, type DocApi } from './document';
 let docApi: DocApi | undefined;
 import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoints, lampOf, surfaceOnScene, type UserItem } from '../game/render/userItems';
 import type { Lamp } from '../game/traffic/signals';
-import { writeSession, readSession, type Session } from './store';
-import { kvDel } from '../shared/db';
+import { readSlot, writeSlot, SLOT_COUNT, type Slot } from './store';
+import { clock } from '../shared/dates';
 import { drawItemIcon } from './icons';
 import { infoButton, initTips } from '../shared/tips';
 import { makeFloating } from './floating';
@@ -783,7 +783,9 @@ function exportGame() {
 function closeFileMenu() { document.getElementById('fileMenu')!.hidden = true; document.getElementById('fileBtn')!.setAttribute('aria-expanded', 'false'); }
 document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.addEventListener('click', () => {
   const act = b.dataset.act;
-  if (act === 'exportGeo') { closeFileMenu(); exportMap(); }
+  if (act === 'saveasws') { closeFileMenu(); void saveAsWorkspace(); }
+  else if (act === 'localver') { closeFileMenu(); localVersion(); }
+  else if (act === 'exportGeo') { closeFileMenu(); exportMap(); }
   else if (act === 'exportMod') { closeFileMenu(); exportGame(); }
   else if (act === 'clear') {
     closeFileMenu();
@@ -799,6 +801,10 @@ document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.
   }
 }));
 document.getElementById('saveGame')!.addEventListener('click', () => { void docApi!.save(); });
+// Cmd+Shift+S: save as a workspace
+window.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'KeyS') { e.preventDefault(); void saveAsWorkspace(); }
+});
 
 /** The save button and the admin's tools: the admin publishes the game for everyone. */
 function labelSave() {
@@ -849,22 +855,16 @@ window.addEventListener('popstate', () => {
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
 
-// ---------- the open document: kept in this browser until it is saved, and recovered after a crash ----------
-const SESSION_FORMAT = 'krug-builder-session';
+// ---------- workspaces: three local workspaces, each with its own items and history, kept in this browser ----------
 let persistTimer: number | undefined;
-let restored = false; // nothing is written until the saved session has been read: an empty start must never overwrite it
-let unsaved = false; // changed since the last save (to your account or a file)
-let emergencyRestored = false; // you chose the unsaved copy from a crash: the account's copy does not replace it
-let accountLoaded = false;
-let pendingAccountLoad = false;
-/** Opens your work once the map is ready. */
-async function loadAccountGame() {
-  if (!cloud.account() || accountLoaded || emergencyRestored) return;
-  if (!ctx || !restored) { pendingAccountLoad = true; return; }
-  accountLoaded = true;
-  await docApi!.start();
-}
-/** A change to the items: a new named step in the steps, and unsaved until you save. */
+let restored = false; // nothing is written before the saved workspaces are read: an empty start must never overwrite them
+let unsaved = false; // changed since the last save to your account
+let slot = 1; // the workspace you are in (1 to 3)
+const slotInfo: { name: string; count: number }[] = [];
+const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
+const wsName = (i: number) => slotInfo[i - 1]?.name || `Работна површина ${i}`;
+
+/** A change to the items: a new named step in the history, and unsaved until you save to your account. */
 function save() {
   const cur = JSON.stringify({ recs, nextId });
   if (lastState && cur !== lastState) {
@@ -907,8 +907,9 @@ function persistSoon() {
   window.clearTimeout(persistTimer);
   persistTimer = window.setTimeout(() => void persistNow(), 300);
 }
-function sessionOf(): Session {
-  return { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: JSON.parse(JSON.stringify(recs)), dirty: unsaved, history: steps, histAt };
+/** The open workspace as it is kept in this browser. */
+function slotState(name = wsName(slot)): Slot {
+  return { name, savedAt: new Date().toISOString(), recs: clone(recs), nextId, history: steps, histAt, unsaved };
 }
 let statusError = '';
 /** The toolbar status: an error, unsaved changes, or what the document is. */
@@ -918,25 +919,48 @@ function setStatus(text = '', bad = false) {
   el.classList.toggle('bad', !!statusError);
   el.classList.toggle('dirty', !statusError && unsaved);
   el.textContent = statusError || docApi?.statusText(unsaved) || '';
-  el.title = statusError ? '' : unsaved ? 'Промените се само на овој компјутер додека не зачуваш.' : '';
+  el.title = statusError ? '' : unsaved ? 'Работата е на овој компјутер, но не е зачувана на профилот.' : '';
 }
 async function persistNow() {
   window.clearTimeout(persistTimer);
   if (!restored) return;
+  const s = slotState();
   try {
-    await writeSession(sessionOf());
+    await writeSlot(slot, s);
+    slotInfo[slot - 1] = { name: s.name, count: recs.length };
+    renderWorkspaces();
     setStatus();
   } catch (e) {
     setStatus('Не се чува локално', true);
-    msg('Прелистувачот не дозволува чување. Зачувај на профилот или на компјутерот.');
+    msg('Прелистувачот не дозволува чување на овој компјутер.');
   }
 }
-/** Shows these items as the open document. Clears the undo steps and marks them as saved. */
-function setItems(list: Rec[]) {
-  recs = (list as Rec[]).filter((q) => q && typeof q.id === 'number' && typeof q.cat === 'string').map((q) => {
+function cleanRecs(list: unknown[]): Rec[] {
+  return (list as Rec[]).filter((q) => q && typeof q.id === 'number' && typeof q.cat === 'string').map((q) => {
     if (q.cat === 'pole') { q.orient = 'vert'; q.yaw = q.yaw ?? 0; q.len = POLE_L; q.thick = POLE_W; }
     return q;
   });
+}
+/** Shows a workspace's items and its history (a fresh one when it is empty). */
+function applySlot(s: Slot | null) {
+  recs = s ? cleanRecs(s.recs) : [];
+  nextId = Math.max(1, ...recs.map((q) => q.id + 1));
+  select(null); rebuild();
+  lastState = JSON.stringify({ recs, nextId });
+  if (s && s.history?.length) {
+    steps = s.history as HistStep[];
+    histAt = Math.min(Math.max(0, s.histAt), steps.length - 1);
+  } else {
+    steps = [{ json: lastState, label: 'Отворено' }];
+    histAt = 0;
+  }
+  unsaved = s ? s.unsaved : false;
+  updateHistoryButtons();
+  setStatus();
+}
+/** Shows these items as the open workspace, with a fresh history (a file or your account's work). */
+function setItems(list: Rec[]) {
+  recs = cleanRecs(list);
   nextId = Math.max(1, ...recs.map((q) => q.id + 1));
   select(null); rebuild();
   lastState = JSON.stringify({ recs, nextId });
@@ -946,36 +970,87 @@ function setItems(list: Rec[]) {
   setStatus();
   persistSoon();
 }
-/** Asks once after a crash, when the last items were not saved. */
+/** Starts: reads the three workspaces, and opens the one you were in. */
 async function restoreSession() {
-  let s: Session | null = null;
+  const last = Number(localStorage.getItem('builder.slot'));
+  slot = last >= 1 && last <= SLOT_COUNT ? last : 1;
   try {
-    s = await readSession();
+    for (let k = 1; k <= SLOT_COUNT; k++) {
+      const s = await readSlot(k);
+      slotInfo[k - 1] = { name: s?.name || `Работна површина ${k}`, count: s?.recs.length ?? 0 };
+    }
+    applySlot(await readSlot(slot));
+    restored = true;
   } catch (e) {
-    setStatus('Не може да се прочита зачуваното', true);
+    setStatus('Не може да се прочитаат работните површини', true);
     return;
   }
-  restored = true;
-  if (s && s.dirty && s.recs.length) {
-    const i = await docApi!.choose('Незачувана работа', `Пронајдена е незачувана работа од прекината сесија (${s.recs.length} ставки). Да ја вратам?`, ['Врати ја', 'Отфрли ја']);
-    if (i === 0) {
-      emergencyRestored = true;
-      setItems(s.recs as Rec[]);
-      if (Array.isArray(s.history) && s.history.length && typeof s.histAt === "number") {
-        steps = s.history as HistStep[];
-        histAt = Math.min(Math.max(0, s.histAt), steps.length - 1);
-      }
-      unsaved = true;
-      setStatus();
-      persistSoon();
-      return;
-    }
-    await kvDel('session').catch(() => undefined);
-  }
-  lastState = JSON.stringify({ recs, nextId });
-  if (!steps.length) { steps = [{ json: lastState, label: 'Отворено' }]; histAt = 0; }
+  renderWorkspaces();
+}
+/** Goes to another workspace: this one is kept as it is. */
+async function switchWorkspace(i: number) {
+  if (i === slot) return;
+  await persistNow();
+  slot = i;
+  localStorage.setItem('builder.slot', String(i));
+  try {
+    applySlot(await readSlot(i));
+    msg(`Работна површина: ${wsName(i)}`);
+  } catch (e) { setStatus('Не може да се отвори работната површина', true); }
+  renderWorkspaces();
+}
+/** Save as workspace: a copy of this one, with its own name and history, in another workspace (you go to it). */
+async function saveAsWorkspace() {
+  const name = prompt('Име на работната површина', wsName(slot));
+  if (!name || !name.trim()) return;
+  const i = await docApi!.choose('Зачувај како работна површина', 'Избери во која. Ако таа веќе има работа, заменува се.', [
+    ...[1, 2, 3].map((k) => `${k}. ${wsName(k)}`), 'Откажи',
+  ]);
+  if (i >= SLOT_COUNT) return;
+  const target = i + 1;
+  await persistNow();
+  const s = slotState(name.trim());
+  await writeSlot(target, s);
+  slotInfo[target - 1] = { name: s.name, count: recs.length };
+  slot = target;
+  localStorage.setItem('builder.slot', String(target));
+  applySlot(s);
+  renderWorkspaces();
+  msg(`Зачувано како „${s.name}“`);
+}
+/** Local version: a named step in the history, without a file. */
+function localVersion() {
+  const name = prompt('Име на локалната верзија', `Верзија ${clock()}`);
+  if (!name || !name.trim()) return;
+  const cur = JSON.stringify({ recs, nextId });
+  steps = steps.slice(0, histAt + 1);
+  steps.push({ json: cur, label: `Локална верзија: ${name.trim()}` });
+  if (steps.length > HISTORY_MAX) steps.shift();
+  histAt = steps.length - 1;
+  lastState = cur;
   updateHistoryButtons();
-  setStatus();
+  persistSoon();
+  msg(`Локалната верзија „${name.trim()}“ е зачувана во историјата`);
+}
+/** The three workspaces in the panel: the one you are in is marked. */
+function renderWorkspaces() {
+  document.getElementById('docName')!.textContent = wsName(slot);
+  const list = document.getElementById('wsList');
+  if (!list) return;
+  list.innerHTML = '';
+  for (let k = 1; k <= SLOT_COUNT; k++) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ver-row';
+    b.setAttribute('aria-current', String(k === slot));
+    const t = document.createElement('span'); t.className = 'ver-title';
+    t.textContent = wsName(k);
+    const sub = document.createElement('small'); sub.className = 'ver-sub';
+    sub.textContent = `${slotInfo[k - 1]?.count ?? 0} ставки${k === slot ? ' · отворена' : ''}`;
+    b.append(t, sub);
+    b.addEventListener('click', () => void switchWorkspace(k));
+    list.appendChild(b);
+  }
 }
 /** Shows a step of the steps: the items become that state. */
 function applyState(json: string) {
@@ -1237,7 +1312,6 @@ startGame({
     // the builder draws at normal resolution by default: on high-density screens the full resolution is 4× the pixels
     applyQuality(c.renderer, (localStorage.getItem('builder.quality') as string) || '1');
     await restoreSession();
-    if (cloud.account() || pendingAccountLoad) void loadAccountGame();
     buildInventory();
     // start where the game starts: the parking at the spawn point
     const sp = c.level.route.start.p;
@@ -1337,7 +1411,7 @@ if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bld = 
 
 // the document: the File menu, Save, Save as, Share and Open
 docApi = initDocument({
-  onSignedIn: () => { labelSave(); void loadAccountGame(); },
+  onSignedIn: () => { labelSave(); },
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
   setItems: (items) => setItems(items as Rec[]),
   isDirty: () => unsaved,
