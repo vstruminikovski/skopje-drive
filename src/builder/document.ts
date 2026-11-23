@@ -98,6 +98,7 @@ export function initDocument(o: Options): DocApi {
       box.innerHTML = '';
       const go = document.createElement('button');
       go.type = 'button'; go.className = 'btn btn-lg btn-danger';
+      go.disabled = true; // the countdown cannot be skipped: an accidental click does nothing, only Cancel works
       const cancel = document.createElement('button');
       cancel.type = 'button'; cancel.className = 'btn btn-primary btn-lg'; cancel.textContent = 'Откажи';
       box.append(cancel, go);
@@ -111,7 +112,6 @@ export function initDocument(o: Options): DocApi {
         else go.textContent = `${goLabel} за ${left}…`;
       }, 1000);
       cancel.addEventListener('click', () => finish(false));
-      go.addEventListener('click', () => finish(true));
     });
   }
 
@@ -286,7 +286,7 @@ export function initDocument(o: Options): DocApi {
     const m = await whoAmI();
     if (!m?.admin) { o.msg('Само администраторот може да објави за сите.'); return; }
     const n = o.getItems().length;
-    const i = await choose('Деплој во живата игра', `Играта за сите играчи ќе ги има ${n} ставки од „${cur?.title ?? ''}“. Во следните 5 секунди можеш да откажеш.`, ['Деплој', 'Откажи']);
+    const i = await choose('Деплој во живата игра?', `Играта за сите играчи ќе ги има ${n} ставки од „${cur?.title ?? ''}“. По 5 секунди се објавува; дотогаш можеш да откажеш.`, ['Продолжи', 'Откажи']);
     if (i !== 0) return;
     if (!(await countdown(5, 'Деплој во живата игра', 'Деплојот почнува за неколку секунди. Откажи за да останеш.', 'Деплој'))) { o.msg('Деплојот е откажан'); return; }
     try {

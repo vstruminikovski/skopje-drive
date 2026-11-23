@@ -786,11 +786,10 @@ document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.
   else if (act === 'clear') {
     closeFileMenu();
     if (!recs.length) return;
-    // a blank map is not the game: the same question and a 5-second countdown as a reset
+    // one question is enough: the history of actions brings everything back (Врати / ⌘Z)
     void (async () => {
-      const i = await docApi!.choose('Избриши ги сите ставки?', 'Ова празни ја целата карта: сите модели, знаци, семафори и линии. Не е игра, туку празно платно. Врати (⌘Z) ги враќа.', ['Продолжи', 'Откажи']);
+      const i = await docApi!.choose('Избриши ги сите ставки?', 'Ова празни ја целата карта: сите модели, знаци, семафори и линии. Врати (⌘Z) или Историјата ги враќа.', ['Избриши', 'Откажи']);
       if (i !== 0) return;
-      if (!(await docApi!.countdown(5))) { msg('Бришењето е откажано'); return; }
       recs = []; select(null); rebuild(); save();
       msg('Сите ставки се избришани · Врати (⌘Z) ги враќа');
     })();
