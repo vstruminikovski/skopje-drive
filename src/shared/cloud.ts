@@ -6,10 +6,10 @@ const ACCOUNT_KEY = 'skopje.account';
 
 export interface Account { username: string; token: string }
 /** One saved version of a work. A work keeps its newest 5. */
-export interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number; label?: string }
-/** A work as the server gives it: `data` is the version asked for (the newest by default), `latest` the newest number. */
-export interface Workspace { name: string; owner: string; members: string[]; latest: number; version: number; savedAt: string; savedBy: string; data: unknown; versions: VersionMeta[] }
-
+/** An automatic backup of a work: a copy taken while you worked (the newest 5 are kept). */
+export interface BackupMeta { id: string; savedAt: string; savedBy: string; count: number }
+/** A work: its one saved version (`data`), and its backups. */
+export interface Workspace { name: string; owner: string; members: string[]; savedAt: string; savedBy: string; data: unknown; backups: BackupMeta[] }
 export class CloudError extends Error {
   constructor(message: string, public status: number) { super(message); }
 }
@@ -48,15 +48,15 @@ export function register(username: string, password: string, turnstile?: string)
 export function login(username: string, password: string, turnstile?: string) {
   return call<{ username: string; token: string }>('/api/login', { method: 'POST', body: JSON.stringify({ username, password, turnstile }) });
 }
-/** Opens a work. Without `version` it gives the newest version. */
-export function loadWorkspace(name: string, version?: number) {
-  const q = version ? `?v=${version}` : '';
+/** Opens a work: its saved version, or one of its backups when `backup` is given. */
+export function loadWorkspace(name: string, backup?: string) {
+  const q = backup ? `?backup=${encodeURIComponent(backup)}` : '';
   return call<Workspace>(`/api/ws/${encodeURIComponent(name)}${q}`, { headers: auth() });
 }
-/** Saves the items as a new version of a work (the newest one). The newest versions are kept, up to 5. */
-export function saveWorkspace(name: string, data: unknown, label?: string) {
-  return call<{ name: string; version: number; savedAt: string; dropped?: number }>(`/api/ws/${encodeURIComponent(name)}`, {
-    method: 'PUT', headers: auth(), body: JSON.stringify({ data, label }),
+/** Saves the items: as the saved version (default), or as a backup next to it. */
+export function saveWorkspace(name: string, data: unknown, backup = false) {
+  return call<{ name: string; savedAt: string; backups: number }>(`/api/ws/${encodeURIComponent(name)}`, {
+    method: 'PUT', headers: auth(), body: JSON.stringify({ data, backup }),
   });
 }
 /** A join code for one work: only its owner can make one, and a new one replaces the old. */

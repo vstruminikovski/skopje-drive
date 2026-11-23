@@ -142,10 +142,9 @@ async function login(env: Env, req: Request): Promise<Response> {
 async function getWorkspace(env: Env, req: Request, name: string): Promise<Response> {
   // the published map is what everyone plays; every other work is open only to its owner and members
   const user = await userFromToken(env, req);
-  const v = new URL(req.url).searchParams.get('v');
-  const version = v === null ? 0 : Number(v);
-  if (v !== null && (!Number.isInteger(version) || version < 1)) throw new HttpError(400, 'Невалидна верзија.');
-  const r = await callDo(env.WORKSPACES, name, '/get', { user, public: name === 'published', version });
+  const backup = new URL(req.url).searchParams.get('backup');
+  if (backup !== null && !/^\d{5,20}$/.test(backup)) throw new HttpError(400, 'Невалиден бекап.');
+  const r = await callDo(env.WORKSPACES, name, '/get', { user, public: name === 'published', backup });
   if (r.status === 403) throw new HttpError(401, user ? 'Немаш пристап до оваа работа.' : 'Најави се за да ја отвориш оваа работа.');
   if (r.status !== 200) throw new HttpError(404, 'Нема таква работа.');
   return json(env, { name, ...r.data });
@@ -158,7 +157,7 @@ async function saveWorkspace(env: Env, req: Request, name: string): Promise<Resp
   const body = await readBody(req);
   const admins = env.ADMINS.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
   const r = await callDo(env.WORKSPACES, name, '/put', {
-    user, name, admins, data: body.data, savedAt: now(), label: body.label,
+    user, name, admins, data: body.data, savedAt: now(), backup: body.backup === true,
   });
   if (r.status === 403) throw new HttpError(403, r.data.error ?? 'Немаш пристап до оваа работа.');
   if (r.status !== 200) throw new HttpError(500, 'Не успеав да зачувам.');
@@ -244,10 +243,10 @@ export class Account extends DurableObject {
   }
 }
 
-/** Each work keeps its newest 5 versions. The versions list is small; each version's items are kept under "v<n>". */
-const MAX_VERSIONS = 5;
-interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number; label?: string }
-interface WsRec { owner: string; members: string[]; version: number; versions: VersionMeta[] }
+/** A work has one saved version (what you save) and up to 5 automatic backups (taken every 10 minutes). */
+const MAX_BACKUPS = 5;
+interface BackupMeta { id: string; savedAt: string; savedBy: string; count: number }
+interface WsRec { owner: string; members: string[]; savedAt: string; savedBy: string; backups: BackupMeta[] }
 const itemCount = (data: unknown) => (data && Array.isArray((data as { items?: unknown[] }).items) ? (data as { items: unknown[] }).items.length : 0);
 
 export class Workspace extends DurableObject {
@@ -257,52 +256,52 @@ export class Workspace extends DurableObject {
     return this.ctx.blockConcurrencyWhile(async () => {
       const reply = (status: number, data: unknown = {}) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
       const st = this.ctx.storage;
-      let ws = await st.get<WsRec & { data?: unknown; savedAt?: string; savedBy?: string }>('ws');
-      // a work saved before versions existed: its one version becomes version 1 of the list
-      if (ws && 'data' in ws) {
-        const { data, savedAt = new Date().toISOString(), savedBy = ws.owner, ...rest } = ws;
-        await st.put(`v${rest.version}`, data);
-        ws = { ...rest, versions: [{ version: rest.version, savedAt, savedBy, count: itemCount(data) }] };
+      let ws = await st.get<any>('ws');
+      // an older record (several versions, or the data inside the record): keep its newest version as the saved work
+      if (ws && (ws.versions || 'data' in ws)) {
+        let data: unknown = ws.data;
+        if (ws.versions) {
+          data = await st.get(`v${ws.version}`);
+          for (const v of ws.versions) await st.delete(`v${v.version}`);
+        }
+        ws = { owner: ws.owner, members: ws.members ?? [], savedAt: ws.savedAt ?? new Date().toISOString(), savedBy: ws.savedBy ?? ws.owner, backups: [] } as WsRec;
+        await st.put('data', data);
         await st.put('ws', ws);
       }
       if (path === '/get') {
         if (!ws) return reply(404);
         const allowed = body.public || body.user === ws.owner || ws.members.includes(body.user);
         if (!allowed) return reply(403);
-        const shown = body.version ? Number(body.version) : ws.version;
-        const meta = ws.versions.find((x) => x.version === shown);
-        if (!meta) return reply(404);
-        const data = await st.get(`v${shown}`);
-        return reply(200, { owner: ws.owner, members: ws.members, latest: ws.version, version: shown, savedAt: meta.savedAt, savedBy: meta.savedBy, data, versions: ws.versions });
+        if (body.backup) {
+          if (!(ws as WsRec).backups.some((b) => b.id === body.backup)) return reply(404);
+          return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, data: await st.get(`b:${body.backup}`), backup: body.backup });
+        }
+        return reply(200, { owner: ws.owner, members: ws.members, savedAt: ws.savedAt, savedBy: ws.savedBy, backups: ws.backups, data: await st.get('data') });
       }
       if (path === '/put') {
-        // every save is a new version: the newest one is the work. No version check, so a save never conflicts.
+        // Save writes the saved version. A backup keeps a copy next to it (the newest 5), and the saved version stays as it is.
         const user: string = body.user;
         const now = body.savedAt;
-        const label = typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 60) : undefined;
         if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         if (!ws) {
           // a new workspace takes your own username as its name; admins may use any name (e.g. player)
           if (user !== body.name && !body.admins.includes(user)) return reply(403, { error: 'Новата работа се создава со твоето корисничко име.' });
-          await st.put('v1', body.data);
-          const rec: WsRec = { owner: user, members: [], version: 1, versions: [{ version: 1, savedAt: now, savedBy: user, count: itemCount(body.data), label }] };
-          await st.put('ws', rec);
-          return reply(200, { version: 1, savedAt: now, dropped: 0 });
+          await st.put('data', body.data);
+          await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [] } as WsRec);
+          return reply(200, { savedAt: now, backups: 0 });
         }
         if (ws.owner !== user && !ws.members.includes(user)) return reply(403, { error: 'Немаш пристап до оваа работа.' });
-        const next = ws.version + 1;
-        await st.put(`v${next}`, body.data);
-        const versions = [...ws.versions, { version: next, savedAt: now, savedBy: user, count: itemCount(body.data), label }];
-        // over the limit: the oldest version without a name goes first, then the oldest of all
-        let dropped = 0;
-        while (versions.length > MAX_VERSIONS) {
-          const i = versions.findIndex((v) => !v.label);
-          const [old] = versions.splice(i >= 0 ? i : 0, 1);
-          await st.delete(`v${old.version}`);
-          dropped++;
+        if (body.backup) {
+          const id = String(Date.now());
+          await st.put(`b:${id}`, body.data);
+          const backups = [...ws.backups, { id, savedAt: now, savedBy: user, count: itemCount(body.data) }];
+          while (backups.length > MAX_BACKUPS) { const old = backups.shift()!; await st.delete(`b:${old.id}`); }
+          await st.put('ws', { ...ws, backups });
+          return reply(200, { savedAt: now, backups: backups.length });
         }
-        await st.put('ws', { ...ws, version: next, versions });
-        return reply(200, { version: next, savedAt: now, dropped });
+        await st.put('data', body.data);
+        await st.put('ws', { ...ws, savedAt: now, savedBy: user });
+        return reply(200, { savedAt: now, backups: ws.backups.length });
       }
       if (path === '/invite') {
         if (!ws) return reply(404);

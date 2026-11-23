@@ -1290,7 +1290,7 @@ docApi = initDocument({
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
   setItems: (items) => setItems(items as Rec[]),
   isDirty: () => unsaved,
-  markClean: () => { unsaved = false; setStatus(); persistSoon(); },
+  setDirty: (v) => { unsaved = v; setStatus(); persistSoon(); },
   onChange: () => setStatus(),
   msg,
 });

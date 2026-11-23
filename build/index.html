@@ -34,13 +34,13 @@
         <button id="shareBtn" class="btn" type="button" title="Сподели со пријател (код или линк)">Сподели</button>
         <button id="saveGame" class="btn btn-primary" type="button" title="Зачувај (⌘S)">Зачувај</button>
       </header>
-      <!-- the File menu: everything about saving and opening the document -->
+      <!-- the File menu: saving, opening, sharing, backups -->
       <div id="fileMenu" class="menu glass" role="menu" hidden>
         <div class="menu-who" id="menuWho"></div>
         <button type="button" role="menuitem" data-act="open">Отвори…<kbd>⌘O</kbd></button>
         <button type="button" role="menuitem" data-act="save">Зачувај<kbd>⌘S</kbd></button>
-        <button type="button" role="menuitem" data-act="saveas">Зачувај како…<kbd>⇧⌘S</kbd></button>
         <button type="button" role="menuitem" data-act="computer">Зачувај на компјутерот…</button>
+        <button type="button" role="menuitem" data-act="backups">Врати од бекап…</button>
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
         <div class="menu-sep"></div>
         <div class="admin-only" hidden>
@@ -77,12 +77,6 @@
               <button id="delBtn" class="btn btn-danger ins-del">Избриши</button>
             </section>
 
-          <details class="pane" data-pane="versions" open>
-            <summary>Верзии<button class="info" type="button" data-tip="Именувани верзии на твојата работа (најмногу 5). Кликни на верзија за да ја отвориш. Зачувај ја старата верзија и ќе се создаде нова.">i</button></summary>
-            <div class="ver-head"><b id="docTitle">—</b><small id="docWho"></small></div>
-            <div id="verList" class="ver-list"></div>
-            <p id="verEmpty" class="foot"></p>
-          </details>
           <details class="pane" data-pane="view" open>
             <summary>Приказ<button class="info" type="button" data-tip="Остра слика изгледа подобро, но е побавна на послаби компјутери.">i</button></summary>
             <div class="list">
@@ -141,26 +135,6 @@
           <h2 id="choiceTitle"></h2>
           <p id="choiceText"></p>
           <div id="choiceBtns" class="stack"></div>
-        </div>
-      </div>
-
-      <!-- Save as: a named version on your account, or a file on this computer -->
-      <div id="saveAsDlg" class="scrim" hidden>
-        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="saveAsTitle">
-          <h2 id="saveAsTitle">Зачувај како</h2>
-          <p>Име на верзијата (незадолжително). Именуваните верзии не се бришат кога ќе се создадат нови.</p>
-          <label class="field-label" for="saveAsName">Име</label>
-          <input id="saveAsName" class="field" placeholder="Пример: Пред кружниот тек" maxlength="60" autocomplete="off">
-          <label class="field-label">Каде да се зачува</label>
-          <div class="seg" id="saveAsWhere" role="tablist">
-            <button type="button" data-where="cloud" role="tab">На мојот профил</button>
-            <button type="button" data-where="computer" role="tab">На компјутерот</button>
-          </div>
-          <p id="saveAsNote" class="foot"></p>
-          <div class="stack">
-            <button id="saveAsGo" class="btn btn-primary btn-lg" type="button">Зачувај</button>
-            <button id="saveAsCancel" class="btn btn-lg btn-plain" type="button">Откажи</button>
-          </div>
         </div>
       </div>
 
