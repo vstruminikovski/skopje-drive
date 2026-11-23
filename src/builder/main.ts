@@ -18,6 +18,7 @@ import { kvDel } from '../shared/db';
 import { clock } from '../shared/dates';
 import { drawItemIcon } from './icons';
 import { infoButton, initTips } from '../shared/tips';
+import { makeFloating, rememberPanes } from './floating';
 
 // ---------- desktop only ----------
 // A mouse-and-keyboard screen at least 900 px wide. Phones and touch tablets never get the builder.
@@ -59,7 +60,7 @@ const TEMPLATES: { key: string; name: string; width: number; strokes: [number, n
   // European bus stop: yellow box with the word BUS painted inside (letters 1 m tall, 0.5 m wide). Sizes vary by country: check on site.
   // give-way triangle: a white outline, apex towards the traffic. Drivers wait here, before the stop line, at the pedestrian crossing
   { key: 'give_way_triangle', name: 'Триаголник за отстапување', width: 0.12, strokes: [[[-0.5, -0.433], [0.5, -0.433], [0, 0.433], [-0.5, -0.433]]] },
-  { key: 'bus_stop', name: 'Автобуска стојалка', width: 0.12, material: 'm_line_yellow', strokes: [
+  { key: 'bus_stop', name: 'Автобуска постојка', width: 0.12, material: 'm_line_yellow', strokes: [
     [[-1.5, -1], [1.5, -1], [1.5, 1], [-1.5, 1], [-1.5, -1]],
     // B
     [[-1.15, -0.5], [-1.15, 0.5], [-0.85, 0.5], [-0.75, 0.35], [-0.85, 0.05], [-1.15, 0.05]],
@@ -168,7 +169,8 @@ function freeCamera(camera: THREE.PerspectiveCamera, dt: number) {
     const onGround = pos.y <= groundY + EYE + 0.01;
     if (onGround && keys.has('Space')) vel.y = JUMP;
     vel.y -= GRAVITY * dt;
-    const pace = WALK * (sprint ? 1.8 : 1);
+    if (dir.lengthSq() > 0) moveAt = performance.now();
+    const pace = WALK * Math.sqrt(moveSpeed / 4.8) * (sprint ? 1.8 : 1);
     const want = dir.lengthSq() > 0 ? dir.normalize().multiplyScalar(pace) : new THREE.Vector3();
     vel.x += (want.x - vel.x) * (1 - Math.exp(-(onGround ? 12 : 3) * dt));
     vel.z += (want.z - vel.z) * (1 - Math.exp(-(onGround ? 12 : 3) * dt));
@@ -179,6 +181,7 @@ function freeCamera(camera: THREE.PerspectiveCamera, dt: number) {
     if (keys.has('Space')) dir.add(new THREE.Vector3(0, 1, 0));
     if (keys.has('ShiftLeft') || keys.has('ShiftRight')) dir.sub(new THREE.Vector3(0, 1, 0));
     const moving = dir.lengthSq() > 0;
+    if (moving) moveAt = performance.now();
     held = moving ? held + dt : 0;
     const ramp = 1 + Math.min(1, held / 4);
     const target = moving ? dir.normalize().multiplyScalar(moveSpeed * ramp * (sprint ? 2 : 1)) : new THREE.Vector3();
@@ -609,7 +612,7 @@ function updateAxe(camera: THREE.PerspectiveCamera) {
   if (axeHover === null) axeHi.visible = false;
 }
 function axeChop() {
-  if (axeHover === null) { msg('Насочи кон твоја ставка (се црвени) и кликни.'); return; }
+  if (axeHover === null) { msg('Насочи кон своја ставка (означени се со црвено) и кликни.'); return; }
   removeRec(axeHover);
   axeHover = null; axeHi.visible = false;
   msg('Избришано · ⌘Z враќа');
@@ -814,7 +817,7 @@ document.getElementById('openProj')!.addEventListener('change', async (e) => {
   input.value = '';
   if (!file) return;
   let d: any;
-  try { d = JSON.parse(await file.text()); } catch (err) { msg('Датотеката не е валидна.'); return; }
+  try { d = JSON.parse(await file.text()); } catch (err) { msg('Датотеката не е исправна.'); return; }
   let s: Session | null = null;
   if (d && d.format === SESSION_FORMAT && Array.isArray(d.recs)) s = d as Session;
   else if (d && d.format === 'mapng-mod' && Array.isArray(d.items)) s = { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: d.surveyor || '', nextId: 1, recs: d.items, versions: [] };
@@ -847,7 +850,7 @@ async function saveToAccount(): Promise<boolean> {
     return true;
   } catch (e) {
     if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
-    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој зачувал меѓувреме. Вчитај ја најновата верзија и пробај повторно.');
+    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој зачувал во меѓувреме. Вчитај ја најновата верзија и обиди се повторно.');
     else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да зачувам.');
     return false;
   }
@@ -1044,7 +1047,7 @@ async function restoreSession() {
   }
   restored = true;
   // an emergency copy from a session that did not close properly: offer it back, do not load it silently
-  if (s && s.recs.length && !(emergencyRestored = confirm(`Пронајдена е незачувана работа од прекинатa сесија (${s.recs.length} ставки). Да ја вратам?`))) {
+  if (s && s.recs.length && !(emergencyRestored = confirm(`Пронајдена е незачувана работа од прекината сесија (${s.recs.length} ставки). Да ја вратам?`))) {
     s = null;
     await kvDel('session').catch(() => undefined);
   }
@@ -1117,21 +1120,73 @@ function info(camera: THREE.PerspectiveCamera) {
     : it.cat === 'mark' ? (pending ? 'кликни крајна точка · X откажи' : 'кликни почетна точка')
     : it.cat === 'pole' || it.cat === 'tree' || it.cat === 'lamp' ? 'кликни за да поставиш · Q / E сврти'
     : 'кликни за да поставиш';
+  document.getElementById('snapChip')!.setAttribute('aria-hidden', String(!aim || it.cat === 'axe' || it.cat === 'pole'));
   const el = document.getElementById('info')!;
   const html = `<b>${label}</b> · ${aim ? how : 'насочи кон земјата'}`;
   if (el.innerHTML !== html) el.innerHTML = html;
   void camera;
 }
 
-// ---------- the "more" panel ----------
-const drawer = document.getElementById('drawer')!;
-const menuToggle = document.getElementById('menuToggle')!;
-function setDrawer(open: boolean) {
-  drawer.hidden = !open;
-  menuToggle.setAttribute('aria-expanded', String(open));
-  document.getElementById('bld')!.classList.toggle('drawer-open', open);
+// ---------- floating windows ----------
+makeFloating(document.getElementById('lib')!);
+makeFloating(document.getElementById('panel')!);
+rememberPanes(document.getElementById('panel')!);
+
+// ---------- movement controls: shown while you move, the wheel scrolls or the mouse is over them ----------
+const moveHud = document.getElementById('moveHud')!;
+const moveMode = document.getElementById('moveMode')!;
+const speedRange = document.getElementById('speedRange') as HTMLInputElement;
+const sensRange = document.getElementById('sensRange') as HTMLInputElement;
+const SPEED_MAX = 120, SENS_MIN = 0.0003, SENS_MAX = 0.004;
+let moveAt = 0;
+let hudHover = false;
+function setSpeed(v: number) {
+  moveSpeed = Math.max(1, Math.min(SPEED_MAX, v));
+  speedRange.value = String(Math.round((100 * Math.log(moveSpeed)) / Math.log(SPEED_MAX)));
 }
-menuToggle.addEventListener('click', () => setDrawer(drawer.hidden));
+speedRange.addEventListener('input', () => { moveSpeed = Math.max(1, SPEED_MAX ** (Number(speedRange.value) / 100)); moveAt = performance.now(); });
+sensRange.addEventListener('input', () => { mouseSens = SENS_MIN * (SENS_MAX / SENS_MIN) ** (Number(sensRange.value) / 100); moveAt = performance.now(); });
+sensRange.value = String(Math.round((100 * Math.log(mouseSens / SENS_MIN)) / Math.log(SENS_MAX / SENS_MIN)));
+setSpeed(moveSpeed);
+moveHud.addEventListener('pointerenter', () => { hudHover = true; });
+moveHud.addEventListener('pointerleave', () => { hudHover = false; });
+// ---------- turning: Q / E turn the tool in your hand, [ ] the selected item, both by the chosen step ----------
+const rotChip = document.getElementById('rotChip')!;
+const rotVal = document.getElementById('rotVal')!;
+let rotStep = 1;
+const norm360 = (a: number) => ((a % 360) + 360) % 360;
+const toolTurns = () => hand.cat === 'tpl' || hand.cat === 'tree' || hand.cat === 'lamp' || hand.cat === 'pole';
+function turnTool(dir: number) {
+  const d = dir * rotStep;
+  if (hand.cat === 'tpl') tplRot = norm360(tplRot + d);
+  else if (hand.cat === 'tree' || hand.cat === 'lamp') propTurn = norm360(propTurn + d);
+  else if (hand.cat === 'pole') poleTurn = norm360(poleTurn + d);
+}
+function turnSelected(dir: number) {
+  const r = recs.find((q) => q.id === selectedId);
+  if (!r) return;
+  turnRec(r, dir * rotStep); rebuild(); select(r.id); save();
+}
+/** The buttons turn the selected item when there is one, otherwise the tool. */
+const turnEither = (dir: number) => (recs.some((q) => q.id === selectedId) ? turnSelected(dir) : turnTool(dir));
+document.getElementById('rotL')!.addEventListener('click', () => turnEither(-1));
+document.getElementById('rotR')!.addEventListener('click', () => turnEither(1));
+(document.getElementById('rotStep') as HTMLSelectElement).addEventListener('change', (e) => { rotStep = Number((e.target as HTMLSelectElement).value); });
+
+function contextControls() {
+  moveHud.classList.toggle('on', hudHover || performance.now() - moveAt < 2500);
+  const sel = recs.find((q) => q.id === selectedId);
+  const turnable = !!sel || toolTurns(); // every placed item can be turned
+  rotChip.setAttribute('aria-hidden', String(!turnable));
+  if (turnable) {
+    const deg = sel ? (sel.cat === 'pole' ? sel.yaw ?? 0 : sel.cat === 'mark' ? null : sel.facing ?? 0)
+      : hand.cat === 'tpl' ? tplRot : hand.cat === 'pole' ? poleTurn : propTurn;
+    const text = deg === null ? 'сврти' : `${Math.round(deg)}°`;
+    if (rotVal.textContent !== text) rotVal.textContent = text;
+  }
+}
+// first use: point at C
+try { if (!localStorage.getItem('builder.coach')) document.getElementById('coach')!.hidden = false; } catch (e) {}
 
 // ---------- controls and keys ----------
 // A clicked button or menu keeps keyboard focus, so Space would click it again. Clicks drop the focus,
@@ -1149,23 +1204,35 @@ document.addEventListener('keydown', (e) => {
 const gate = document.getElementById('gate')!;
 // start with the mouse free, so the top bar and the exit button can always be clicked (C locks the view)
 document.getElementById('startBtn')!.addEventListener('click', () => { gate.style.display = 'none'; });
-function lockView() {
-  // Browsers refuse the mouse lock for a moment after Esc, and need a click after that: say so instead of failing silently
-  const c = canvas();
-  if (!c) return;
-  const p = c.requestPointerLock() as unknown as Promise<void> | undefined;
-  if (p && typeof p.catch === 'function') p.catch(() => msg('Прелистувачот го блокира глушецот: притисни C повторно.'));
+// C: look mode. The view turns as the mouse moves and keeps turning while the pointer is at the window's edge.
+// It does not use the browser's mouse capture, so the browser shows no "press Esc" banner; only C switches it.
+const lookLabel = document.getElementById('lookLabel')!;
+let pointer = { x: innerWidth / 2, y: innerHeight / 2, inside: true };
+function setLook(on: boolean) {
+  locked = on;
+  rightDrag = null;
+  document.body.classList.toggle('looking', on);
+  lookBtn.classList.toggle('on', on);
+  lookBtn.setAttribute('aria-pressed', String(on));
+  lookLabel.textContent = on ? 'Гледаш' : 'Гледај';
+  if (on) { document.getElementById('coach')!.hidden = true; try { localStorage.setItem('builder.coach', '1'); } catch (e) {} }
 }
-document.addEventListener('pointerlockerror', () => msg('Прелистувачот го блокира глушецот: притисни C повторно.'));
-// the button is the switch: one click turns mouse look on, the next frees the mouse
-// the top-bar label only shows the mode; switching is done with C (look and free) and Esc (free)
-document.addEventListener('pointerlockchange', () => {
-  locked = document.pointerLockElement === canvas();
-  lookBtn.textContent = locked ? 'Гледање · C' : 'Слободен глушец · C';
-  lookBtn.classList.toggle('on', locked);
-});
+lookBtn.addEventListener('click', () => setLook(!locked));
+window.addEventListener('blur', () => setLook(false)); // another app or tab: the mouse is yours again
+document.addEventListener('mouseleave', () => { pointer.inside = false; });
+document.addEventListener('mouseenter', () => { pointer.inside = true; });
+/** While looking, the pointer near a window edge keeps turning the view, faster the closer it is. */
+function edgeTurn(dt: number) {
+  if (!locked || !pointer.inside) return;
+  const zone = 70, rate = 1.8; // radians per second at the very edge
+  const push = (d: number) => Math.max(0, (zone - d) / zone);
+  yaw += (push(pointer.x) - push(innerWidth - pointer.x)) * rate * dt;
+  pitch += (push(pointer.y - 64) - push(innerHeight - pointer.y)) * rate * 0.6 * dt;
+  pitch = Math.max(-1.5, Math.min(1.5, pitch));
+}
 window.addEventListener('mousemove', (e) => {
-  // without the locked mouse, right-drag turns the camera too (same sensitivity)
+  pointer = { x: e.clientX, y: e.clientY, inside: true };
+  // without look mode, right-drag turns the camera too (same sensitivity)
   if (!locked && rightDrag) {
     yaw -= (e.clientX - rightDrag.x) * mouseSens; pitch -= (e.clientY - rightDrag.y) * mouseSens;
     pitch = Math.max(-1.5, Math.min(1.5, pitch));
@@ -1176,7 +1243,12 @@ window.addEventListener('mousemove', (e) => {
   yaw -= e.movementX * mouseSens; pitch -= e.movementY * mouseSens;
   pitch = Math.max(-1.5, Math.min(1.5, pitch));
 });
-window.addEventListener('wheel', (e) => { if (locked) moveSpeed = Math.max(2, Math.min(120, moveSpeed * (e.deltaY < 0 ? 1.2 : 1 / 1.2))); }, { passive: true });
+// the wheel over the view sets the movement speed (and shows it)
+window.addEventListener('wheel', (e) => {
+  if (!locked && !(e.target instanceof HTMLCanvasElement)) return;
+  setSpeed(moveSpeed * (e.deltaY < 0 ? 1.2 : 1 / 1.2));
+  moveAt = performance.now();
+}, { passive: true });
 window.addEventListener('keydown', (e) => {
   if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement).tagName)) return;
   // Ctrl+Z undo, Ctrl+Shift+Z or Ctrl+Y redo
@@ -1188,28 +1260,22 @@ window.addEventListener('keydown', (e) => {
   keys.add(e.code);
   if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }
   else if (e.code === 'KeyK') { const it = ITEMS.find((q) => q.cat === 'axe')!; hand = it; markActive(); msg('Секира: насочи кон твоја ставка и кликни'); }
-  else if (e.code === 'KeyC') { if (locked) document.exitPointerLock(); else lockView(); } // C: mouse look on / free
+  else if (e.code === 'KeyC') setLook(!locked); // C: look mode on / off
   else if (e.code === 'Enter') { if (poly.length) finishPoly(); }
   else if (e.code === 'Backspace') { if (poly.length) poly.pop(); }  // only undoes the last point of a line being drawn
   else if (e.code === 'Delete') { if (selectedId !== null) removeRec(selectedId); }
-  else if (e.code === 'KeyQ' || e.code === 'KeyE') {
-    const d = e.code === 'KeyE' ? 1 : -1; // one degree per press
-    if (hand.cat === 'tpl') tplRot = (((tplRot + d) % 360) + 360) % 360;
-    if (hand.cat === 'tree' || hand.cat === 'lamp') propTurn = (((propTurn + d) % 360) + 360) % 360;
-    if (hand.cat === 'pole') poleTurn = (((poleTurn + d) % 360) + 360) % 360;
-  }
-  else if (e.code === 'KeyV') { walkMode = !walkMode; vel.set(0, 0, 0); msg(walkMode ? 'Одење · Space скока' : 'Летање · Space и Shift за горе и долу'); }
+  else if (e.code === 'KeyQ' || e.code === 'KeyE') turnTool(e.code === 'KeyE' ? 1 : -1); // by the chosen step
+  else if (e.code === 'KeyV') { walkMode = !walkMode; vel.set(0, 0, 0); moveMode.textContent = walkMode ? 'Одење' : 'Летање'; moveAt = performance.now(); }
   else if (e.code === 'KeyF') { const id = aim ? nearestRec(aim, 3) : null; select(id); }
   else if (e.code === 'BracketLeft' || e.code === 'BracketRight') {
     const r = recs.find((q) => q.id === selectedId);
-    if (r) { turnRec(r, e.code === 'BracketRight' ? 1 : -1); rebuild(); select(r.id); save(); }
+    if (r) turnSelected(e.code === 'BracketRight' ? 1 : -1);
   }
 });
 window.addEventListener('keyup', (e) => keys.delete(e.code));
 canvas()?.addEventListener('contextmenu', (e) => e.preventDefault());
 window.addEventListener('mousedown', (e) => { if (e.target instanceof HTMLCanvasElement && e.button === 2 && !locked) rightDrag = { x: e.clientX, y: e.clientY }; });
 window.addEventListener('mouseup', () => { rightDrag = null; });
-(document.getElementById('sensSel') as HTMLSelectElement).addEventListener('change', (e) => (mouseSens = parseFloat((e.target as HTMLSelectElement).value)));
 window.addEventListener('mousedown', (e) => {
   // only clicks on the 3D view place, lock or remove: clicks on the menus and the sign list are left to those controls
   if (!(e.target instanceof HTMLCanvasElement)) return;
@@ -1220,13 +1286,13 @@ window.addEventListener('mousedown', (e) => {
 });
 (document.getElementById('snap') as HTMLSelectElement).addEventListener('change', (e) => (snap = parseFloat((e.target as HTMLSelectElement).value)));
 (document.getElementById('compassSel') as HTMLSelectElement).addEventListener('change', (e) => (compassStep = parseFloat((e.target as HTMLSelectElement).value)));
-(document.getElementById('speedSel') as HTMLSelectElement).addEventListener('change', (e) => (moveSpeed = parseFloat((e.target as HTMLSelectElement).value)));
 document.getElementById('undoBtn')!.addEventListener('click', undo);
 document.getElementById('redoBtn')!.addEventListener('click', redo);
 
 // ---------- hooks into the game boot ----------
 startGame({
   drive(camera, dt) {
+    edgeTurn(dt);
     freeCamera(camera, dt);
     // depth precision: the near plane follows the altitude, so thin markings stay visible from high up
     const alt = ctx ? camera.position.y - ctx.heightAt(camera.position.x, -camera.position.z) : 2;
@@ -1242,6 +1308,7 @@ startGame({
       for (const u of lightUpdaters) u.update((id) => { const r = u.recs[-1 - id]; return r && r.cat === 'light' ? lampOf(r, t) : 'off'; });
     }
     info(camera);
+    contextControls();
   },
   focus(camera) { return [camera.position.x, -camera.position.z]; },
   async ready(c) {

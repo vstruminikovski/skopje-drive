@@ -26,7 +26,7 @@ export function initCloudPanel(o: Options) {
     if (!a) form?.show();
     $('gateSigned').hidden = !a;
     $('gateGo').hidden = !a;
-    $('gateLead').textContent = a ? 'Твојата игра се отвора од профилот.' : 'Направи акаунт или најави се за да додаваш сообраќајни знаци.';
+    $('gateLead').textContent = a ? 'Твојата игра се отвора од профилот.' : 'Направи профил или најави се за да додаваш сообраќајни знаци.';
     $('gateUser').textContent = a?.username ?? '';
     $('gateAvatar').textContent = initial;
     ($('startBtn') as HTMLButtonElement).disabled = !a; // no building without a sign-in
@@ -70,7 +70,7 @@ export function initCloudPanel(o: Options) {
       link();
       o.msg(`Зачувана „${name}“ · верзија ${r.version}`);
     } catch (e) {
-      if (e instanceof cloud.CloudError && e.status === 409) o.msg('Некој зачувал меѓувреме. Прво вчитај ја најновата верзија.');
+      if (e instanceof cloud.CloudError && e.status === 409) o.msg('Некој зачувал во меѓувреме. Прво вчитај ја најновата верзија.');
       else fail(e);
     }
   });

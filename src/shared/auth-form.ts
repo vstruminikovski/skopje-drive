@@ -155,7 +155,7 @@ export function mountAuthForm(host: HTMLElement, onSignedIn: (a: cloud.Account) 
     busy = true;
     submit.disabled = true;
     const label = submit.textContent;
-    submit.textContent = 'Се праќа…';
+    submit.textContent = 'Се испраќа…';
     say('', '');
     const username = normalizeUser(user.value);
     try {

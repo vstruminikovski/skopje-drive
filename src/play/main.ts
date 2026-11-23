@@ -93,7 +93,6 @@ function start() {
   $('logout').addEventListener('click', () => { cloud.setAccount(null); void refresh(); });
   $('signinClose').addEventListener('click', closeSignin);
   $('signin').addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) closeSignin(); });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('signin').hidden) closeSignin(); });
 
   void refresh();
 }
