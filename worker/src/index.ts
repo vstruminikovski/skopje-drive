@@ -163,17 +163,31 @@ async function saveWorkspace(env: Env, req: Request, name: string): Promise<Resp
   return json(env, { name, version: r.data.version, savedAt: r.data.savedAt });
 }
 
-async function share(env: Env, req: Request, name: string): Promise<Response> {
+/** A link token is 256 random bits: unguessable, unique, and only its hash is stored. Old links stop working when a new one is made. */
+const INVITE_DAYS = 7;
+const sha256 = async (text: string) => b64(new Uint8Array(await crypto.subtle.digest('SHA-256', enc.encode(text))));
+const newToken = () => b64(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+async function invite(env: Env, req: Request, name: string): Promise<Response> {
   const user = await userFromToken(env, req);
   if (!user) throw new HttpError(401, 'Најави се.');
-  const who = String((await readBody(req)).username ?? '').toLowerCase().trim();
-  if (!USER_RE.test(who)) throw new HttpError(404, 'Нема таков корисник.');
-  const exists = await callDo(env.ACCOUNTS, who, '/exists');
-  if (!exists.data.exists) throw new HttpError(404, 'Нема таков корисник.');
-  const r = await callDo(env.WORKSPACES, name, '/share', { user, target: who });
+  const token = newToken();
+  const expires = Date.now() + INVITE_DAYS * 86_400_000;
+  const r = await callDo(env.WORKSPACES, name, '/invite', { user, hash: await sha256(token), expires });
   if (r.status === 404) throw new HttpError(404, 'Нема таква работа.');
-  if (r.status === 403) throw new HttpError(403, 'Само сопственикот може да споделува.');
-  return json(env, { name, members: r.data.members });
+  if (r.status === 403) throw new HttpError(403, 'Само сопственикот може да прави линк.');
+  return json(env, { name, token, expiresAt: new Date(expires).toISOString() });
+}
+
+async function join(env: Env, req: Request, name: string): Promise<Response> {
+  const user = await userFromToken(env, req);
+  if (!user) throw new HttpError(401, 'Најави се за да ја отвориш работата.');
+  const token = String((await readBody(req)).token ?? '');
+  if (!/^[A-Za-z0-9_-]{30,80}$/.test(token)) throw new HttpError(400, 'Линкот не е исправен.');
+  const r = await callDo(env.WORKSPACES, name, '/join', { user, hash: await sha256(token) });
+  if (r.status === 404) throw new HttpError(404, 'Нема таква работа.');
+  if (r.status === 403) throw new HttpError(403, 'Линкот не е важечки или е истечен.');
+  return json(env, { name });
 }
 
 export class Account extends DurableObject {
@@ -241,11 +255,20 @@ export class Workspace extends DurableObject {
         await this.ctx.storage.put('ws', next);
         return reply(200, { version: next.version, savedAt: next.savedAt });
       }
-      if (path === '/share') {
+      if (path === '/invite') {
         if (!ws) return reply(404);
         if (ws.owner !== body.user) return reply(403);
-        if (!ws.members.includes(body.target)) ws.members.push(body.target);
-        await this.ctx.storage.put('ws', ws);
+        await this.ctx.storage.put('invite', { hash: body.hash, expires: body.expires });
+        return reply(200);
+      }
+      if (path === '/join') {
+        if (!ws) return reply(404);
+        const inv = await this.ctx.storage.get<{ hash: string; expires: number }>('invite');
+        if (!inv || inv.hash !== body.hash || inv.expires < Date.now()) return reply(403);
+        if (ws.owner !== body.user && !ws.members.includes(body.user)) {
+          ws.members.push(body.user);
+          await this.ctx.storage.put('ws', ws);
+        }
         return reply(200, { members: ws.members });
       }
       return reply(404);
@@ -287,8 +310,11 @@ export default {
         if (req.method === 'GET') return await getWorkspace(env, req, name);
         if (req.method === 'PUT') return await saveWorkspace(env, req, name);
       }
-      if (parts[1] === 'ws' && parts.length === 4 && parts[3] === 'share' && req.method === 'POST') {
-        return await share(env, req, parts[2].toLowerCase());
+      if (parts[1] === 'ws' && parts.length === 4 && parts[3] === 'invite' && req.method === 'POST') {
+        return await invite(env, req, parts[2].toLowerCase());
+      }
+      if (parts[1] === 'ws' && parts.length === 4 && parts[3] === 'join' && req.method === 'POST') {
+        return await join(env, req, parts[2].toLowerCase());
       }
       throw new HttpError(404, 'Не постои.');
     } catch (e) {

@@ -53,9 +53,16 @@ export function saveWorkspace(name: string, data: unknown, baseVersion: number) 
     method: 'PUT', headers: auth(), body: JSON.stringify({ data, baseVersion }),
   });
 }
-export function shareWorkspace(name: string, username: string) {
-  return call<{ name: string; members: string[] }>(`/api/ws/${encodeURIComponent(name)}/share`, {
-    method: 'POST', headers: auth(), body: JSON.stringify({ username }),
+/** A magic link for one work: only its owner can make one, and a new one replaces the old. */
+export function createInvite(name: string) {
+  return call<{ name: string; token: string; expiresAt: string }>(`/api/ws/${encodeURIComponent(name)}/invite`, {
+    method: 'POST', headers: auth(), body: '{}',
+  });
+}
+/** Opens a magic link: adds the signed-in user as a member of the work. */
+export function joinWorkspace(name: string, token: string) {
+  return call<{ name: string }>(`/api/ws/${encodeURIComponent(name)}/join`, {
+    method: 'POST', headers: auth(), body: JSON.stringify({ token }),
   });
 }
 export function me() {
