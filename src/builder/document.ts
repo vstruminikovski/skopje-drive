@@ -25,7 +25,6 @@ export interface Doc { kind: DocKind; work: string; owner: string; version: numb
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const WORK_KEY = 'builder.work';
-const BASE = import.meta.env.BASE_URL;
 
 export interface DocApi {
   state(): Doc;
@@ -308,7 +307,7 @@ export function initDocument(o: Options): DocApi {
   async function openShare() {
     // a friend can only join a work on your account: an unsaved document is saved to it first
     if (doc.kind !== 'work' && !(await saveAs())) return;
-    $('shareCodeBox').hidden = true; $('shareCopy').hidden = true; $('shareLink').hidden = true;
+    $('shareCodeBox').hidden = true; $('shareCopy').hidden = true;
     $('shareMake').hidden = false;
     $('shareText').textContent = `Создај код за „${doc.work}“ и испрати го. Пријателот го внесува во Отвори → Со код од пријател и ја добива работата. Кодот важи 7 дена.`;
     $('shareDlg').hidden = false;
@@ -321,7 +320,7 @@ export function initDocument(o: Options): DocApi {
       shareCode = r.code;
       $('shareCode').textContent = r.code;
       $('shareCodeBox').hidden = false;
-      $('shareCopy').hidden = false; $('shareLink').hidden = false; $('shareMake').hidden = true;
+      $('shareCopy').hidden = false; $('shareMake').hidden = true;
       $('shareText').textContent = 'Кодот важи 7 дена. Нов код го поништува стариот.';
     } catch (e) {
       if (e instanceof cloud.CloudError && e.status === 404) o.msg('Прво зачувај ја работата, па создај код.');
@@ -366,7 +365,6 @@ export function initDocument(o: Options): DocApi {
 
   $('shareMake').addEventListener('click', () => void makeCode());
   $('shareCopy').addEventListener('click', () => void copy(shareCode, 'Кодот е копиран'));
-  $('shareLink').addEventListener('click', () => void copy(`${location.origin}${BASE}build/?join=${encodeURIComponent(shareCode)}`, 'Линкот е копиран. Пријателот се најавува и го внесува кодот.'));
   $('shareClose').addEventListener('click', () => { $('shareDlg').hidden = true; });
   $('shareDlg').addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) $('shareDlg').hidden = true; });
 
