@@ -9,13 +9,14 @@ fixLinks();
 import * as THREE from 'three';
 import { startGame, type BuilderContext } from '../game/boot';
 import * as cloud from '../shared/cloud';
-import { loadItems, type ItemsFile } from '../game/items';
-import { initCloudPanel } from './cloud-panel';
+import { initDocument, type DocApi } from './document';
+
+// the document is created at the end of this file; anything that runs earlier (startup) checks it first
+let docApi: DocApi | undefined;
 import { buildUserItems, POLE_W, POLE_L, poleBox, poleRotY, strokesOf, markPoints, lampOf, surfaceOnScene, type UserItem } from '../game/render/userItems';
 import type { Lamp } from '../game/traffic/signals';
 import { writeSession, readSession, type Session } from './store';
 import { kvDel } from '../shared/db';
-import { clock } from '../shared/dates';
 import { drawItemIcon } from './icons';
 import { infoButton, initTips } from '../shared/tips';
 import { makeFloating } from './floating';
@@ -761,108 +762,38 @@ function download(name: string, obj: unknown, type = 'application/json') {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
-document.getElementById('exportBtn')!.addEventListener('click', () => {
+// ---------- exports for the map and the game (admin), and the File menu actions that belong to the builder ----------
+/** The mod file the game applies as the published default (public/items/default.json). */
+function modOf(list: Rec[], name: string) {
+  return { format: 'mapng-mod', version: 2, name, label: `${list.length} items`, createdAt: new Date().toISOString(), surveyor: surveyor(), items: JSON.parse(JSON.stringify(list)) as UserItem[] };
+}
+function exportMap() {
   // the survey file keeps everything already in it, and appends what you placed
   download('prviot_krug.geojson', { ...surveyRaw, type: 'FeatureCollection', features: [...surveyRaw.features, ...surveyFeatures()] });
   const mk = markingsFile();
   if (mk.length) download('markings.geojson', { type: 'FeatureCollection', features: mk });
-});
-document.getElementById('clearBtn')!.addEventListener('click', () => { if (confirm('Да ги избришам ставките што си ги додал? Резерва останува во Верзии.')) { backupBeforeReplace('бришење'); recs = []; select(null); rebuild(); save(); } });
-
-// ---------- mod export: a file the game applies (public/mods/active.json) ----------
-interface Version { id: number; name: string; savedAt: string; recs: Rec[]; nextId: number }
-/** The mod file (version 2): every item exactly as the builder has it. The game draws the same items. */
-function modOf(list: Rec[], name: string) {
-  const who = surveyor();
-  return {
-    format: 'mapng-mod', version: 2, name, label: `${list.length} items`, createdAt: new Date().toISOString(),
-    surveyor: who,
-    items: JSON.parse(JSON.stringify(list)) as UserItem[],
-  };
+  msg('Картата е извезена (GeoJSON)');
 }
-let versionList: Version[] = [];
-function versions(): Version[] { return versionList; }
-function setVersions(v: Version[]) { versionList = v; persistSoon(); }
-function refreshVersions(keep?: number) {
-  const sel = document.getElementById('verSel') as HTMLSelectElement;
-  const list = versions();
-  sel.innerHTML = list.length ? '' : '<option value="">Нема верзии</option>';
-  list.forEach((v) => { const o = document.createElement('option'); o.value = String(v.id); o.textContent = `${v.name} · ${v.recs.length}`; sel.appendChild(o); });
-  if (keep !== undefined) sel.value = String(keep);
+function exportGame() {
+  download('default.json', modOf(recs, 'current'));
+  msg('default.json е готов. Стави го во public/items/ за да го видат сите.');
 }
-function selectedVersion(): Version | null { const id = Number((document.getElementById('verSel') as HTMLSelectElement).value); return versions().find((v) => v.id === id) ?? null; }
-document.getElementById('saveVer')!.addEventListener('click', () => {
-  const list = versions();
-  const name = prompt('Име на верзијата', `Верзија ${list.length + 1}`);
-  if (!name) return;
-  const v: Version = { id: Date.now(), name, savedAt: new Date().toISOString(), recs: JSON.parse(JSON.stringify(recs)), nextId };
-  setVersions([...list, v]); refreshVersions(v.id); msg(`Зачувана е „${name}“`);
-});
-document.getElementById('loadVer')!.addEventListener('click', () => {
-  const v = selectedVersion(); if (!v) return;
-  if (!confirm(`Да ја вратам „${v.name}“? Сегашната работа останува како резерва.`)) return;
-  backupBeforeReplace('вчитување верзија');
-  recs = JSON.parse(JSON.stringify(v.recs)); nextId = v.nextId; select(null); rebuild(); save(); msg(`Вратена е „${v.name}“`);
-});
-document.getElementById('delVer')!.addEventListener('click', () => {
-  const v = selectedVersion(); if (!v) return;
-  if (!confirm(`Да ја избришам верзијата „${v.name}“?`)) return;
-  setVersions(versions().filter((q) => q.id !== v.id)); refreshVersions();
-});
-document.getElementById('saveProj')!.addEventListener('click', () => {
-  // the project file holds the items only (the local backups stay in this browser): small and quick to write
-  const s = { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: recs as Rec[] };
-  const who = (s.surveyor || 'project').replace(/\W+/g, '_');
-  download(`krug_project_${who}_${new Date().toISOString().slice(0, 10)}.json`, s);
-  msg(`Проектот е зачуван · ${recs.length} ставки`);
-});
-document.getElementById('openProjBtn')!.addEventListener('click', () => (document.getElementById('openProj') as HTMLInputElement).click());
-document.getElementById('openProj')!.addEventListener('change', async (e) => {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  input.value = '';
-  if (!file) return;
-  let d: any;
-  try { d = JSON.parse(await file.text()); } catch (err) { msg('Датотеката не е исправна.'); return; }
-  let s: Session | null = null;
-  if (d && d.format === SESSION_FORMAT && Array.isArray(d.recs)) s = d as Session;
-  else if (d && d.format === 'mapng-mod' && Array.isArray(d.items)) s = { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: d.surveyor || '', nextId: 1, recs: d.items, versions: [] };
-  if (!s) { msg('Датотеката не е проект ниту извоз.'); return; }
-  if (!confirm(`Да се отвори „${file.name}“ со ${s.recs.length} ставки? Твоите сегашни ставки остануваат како резерва во Верзии.`)) return;
-  backupBeforeReplace('отворање датотека');
-  applySession(s, true);
-  void persistNow();
-  msg(`Отворено: ${file.name} · ${recs.length} ставки.`);
-});
-document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
-/** Saves a new version of the open work (admin on the published map: publishes it for everyone). Returns true when saved. */
-async function saveToAccount(): Promise<boolean> {
-  const a = cloud.account();
-  if (!a) { msg('Најави се за да зачуваш.'); return false; }
-  let admin = false;
-  try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
-  const publishing = cloudApi.work() === 'published';
-  if (admin && publishing && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return false;
-  try {
-    await persistNow();
-    const r = await cloudApi.save(JSON.parse(JSON.stringify(recs)) as Rec[]);
-    unsaved = false;
-    onAccount = true;
-    setStatus();
-    const dropped = r.dropped ? ` · најстарата верзија (${r.dropped}) е избришана, лимит 5` : '';
-    msg(publishing ? `Објавено за сите · верзија ${r.version}${dropped}` : `Зачувана верзија ${r.version} · ${recs.length} ставки${dropped}`);
-    return true;
-  } catch (e) {
-    if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
-    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој зачувал во меѓувреме. Отвори ја најновата верзија и обиди се повторно.');
-    else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да зачувам.');
-    return false;
+function closeFileMenu() { document.getElementById('fileMenu')!.hidden = true; document.getElementById('fileBtn')!.setAttribute('aria-expanded', 'false'); }
+document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.addEventListener('click', () => {
+  const act = b.dataset.act;
+  if (act === 'exportGeo') { closeFileMenu(); exportMap(); }
+  else if (act === 'exportMod') { closeFileMenu(); exportGame(); }
+  else if (act === 'clear') {
+    closeFileMenu();
+    if (!recs.length) return;
+    void docApi!.choose('Избриши ги сите ставки?', 'Ги брише сите ставки што си ги поставил. Врати (⌘Z) ги враќа.', ['Избриши', 'Откажи']).then((i) => {
+      if (i === 0) { recs = []; select(null); rebuild(); save(); }
+    });
   }
-}
-document.getElementById('saveGame')!.addEventListener('click', () => { void saveToAccount(); });
-// ⌘S saves too
-window.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') { e.preventDefault(); void saveToAccount(); } });
-/** The save button says what it does for this account: the admin publishes, everyone else saves. */
+}));
+document.getElementById('saveGame')!.addEventListener('click', () => { void docApi!.save(); });
+
+/** The save button and the admin's tools: the admin publishes the game for everyone. */
 function labelSave() {
   const b = document.getElementById('saveGame')!;
   b.textContent = 'Зачувај';
@@ -872,31 +803,26 @@ function labelSave() {
   };
   admin(false);
   if (cloud.account()) cloud.me().then((r) => {
-    b.textContent = r.admin ? 'Објави' : 'Зачувај';
-    b.title = r.admin ? 'Ја менува играта за сите играчи (⌘S)' : 'Зачувај на твојот профил (⌘S)';
+    b.title = r.admin ? 'Зачувај (⌘S). Администраторот објавува за сите играчи.' : 'Зачувај (⌘S)';
     admin(r.admin);
   }).catch(() => {});
 }
 labelSave();
 initTips();
 
-// ---------- leaving: unsaved work asks first (buttons, the exit link, the back button, closing the tab) ----------
-const leaveDlg = document.getElementById('leaveDlg')!;
+// ---------- leaving with unsaved work: the page asks first (buttons, the exit link, the back button, closing the tab) ----------
 let leaveTo: string | null = null;
 function askLeave(to: string) {
   leaveTo = to;
-  leaveDlg.hidden = false;
+  void docApi!.choose('Незачувани промени', 'Зачувај ја работата пред да излезеш?', ['Зачувај и излези', 'Излези без зачувување', 'Остани']).then(async (i) => {
+    if (i === 0) { if (await docApi!.save() && leaveTo) goNow(leaveTo); return; }
+    if (i === 1 && leaveTo) goNow(leaveTo);
+  });
 }
 function goNow(to: string) {
   unsaved = false; // the copy on this computer is already kept
   location.replace(to);
 }
-document.getElementById('dlgStay')!.addEventListener('click', () => { leaveDlg.hidden = true; leaveTo = null; });
-document.getElementById('dlgLeave')!.addEventListener('click', () => { if (leaveTo) goNow(leaveTo); });
-document.getElementById('dlgSave')!.addEventListener('click', async () => {
-  const ok = await saveToAccount();
-  if (ok && leaveTo) goNow(leaveTo);
-});
 // links out of the builder
 window.addEventListener('click', (e) => {
   const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-go]');
@@ -914,55 +840,24 @@ window.addEventListener('popstate', () => {
   history.pushState({ builder: true }, '');
   askLeave(`${import.meta.env.BASE_URL}play/`);
 });
+document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
 
-// autosave: every change is already kept on this computer; every 10 minutes a snapshot goes into Versions
-setInterval(() => {
-  if (!restored || !recs.length) return;
-  const snap = JSON.stringify(recs);
-  if (snap === lastSnapshot) return;
-  lastSnapshot = snap;
-  const v: Version = { id: Date.now(), name: `автозачувување ${clock()}`, savedAt: new Date().toISOString(), recs: JSON.parse(snap), nextId };
-  const auto = versionList.filter((q) => q.name.startsWith('автозачувување '));
-  let list = [...versionList, v];
-  if (auto.length >= 6) { const drop = new Set(auto.slice(0, auto.length - 5).map((q) => q.id)); list = list.filter((q) => !drop.has(q.id)); }
-  setVersions(list);
-}, 10 * 60 * 1000);
-let lastSnapshot = '';
-
-document.getElementById('loadGame')!.addEventListener('click', async () => {
-  const f = await loadItems();
-  if (!f) { msg('Играта нема ставки за вчитување.'); return; }
-  if (!confirm(`Да ги вчитам ${f.items.length} ставки што ги покажува играта? Твоите сегашни ставки остануваат како резерва во Верзии.`)) return;
-  backupBeforeReplace('вчитување од играта');
-  applySession(gameSession(f), true);
-  void persistNow();
-  msg(`Вчитани се ${recs.length} ставки од играта.`);
-});
-document.getElementById('modBtn')!.addEventListener('click', () => {
-  const v = selectedVersion();
-  const mod = v ? modOf(v.recs, v.name) : modOf(recs, 'current');
-  // the published default for everyone: commit it as public/items/default.json
-  download('default.json', mod);
-  msg('Датотеката default.json е готова. Стави ја во public/items/ за да ја видат сите.');
-});
-
-// ---------- your work: kept in this browser, and as a project file you can save and open ----------
+// ---------- the open document: kept in this browser until it is saved, and recovered after a crash ----------
 const SESSION_FORMAT = 'krug-builder-session';
 let persistTimer: number | undefined;
 let restored = false; // nothing is written until the saved session has been read: an empty start must never overwrite it
-let unsaved = false; // changed since the last save to your account
-let emergencyRestored = false; // you chose the emergency copy: do not replace it with the account's game
+let unsaved = false; // changed since the last save (to your account or a file)
+let emergencyRestored = false; // you chose the unsaved copy from a crash: the account's copy does not replace it
 let accountLoaded = false;
-/** Opens the signed-in account's saved game (the admin: the published game). Waits until the map is ready. */
+let pendingAccountLoad = false;
+/** Opens your work once the map is ready. */
 async function loadAccountGame() {
-  const a = cloud.account();
-  if (!a || accountLoaded || emergencyRestored) return;
+  if (!cloud.account() || accountLoaded || emergencyRestored) return;
   if (!ctx || !restored) { pendingAccountLoad = true; return; }
   accountLoaded = true;
-  await cloudApi.open();
-  unsaved = false;
+  await docApi!.start();
 }
-let pendingAccountLoad = false;
+/** A change to the items: undo keeps it, and it is unsaved until you save. */
 function save() {
   const cur = JSON.stringify({ recs, nextId });
   if (lastState && cur !== lastState) {
@@ -981,100 +876,77 @@ function persistSoon() {
   persistTimer = window.setTimeout(() => void persistNow(), 300);
 }
 function sessionOf(): Session {
-  return {
-    format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(),
-    surveyor: surveyor(),
-    nextId, recs: JSON.parse(JSON.stringify(recs)), versions: JSON.parse(JSON.stringify(versionList)),
-  };
+  return { format: SESSION_FORMAT, version: 1, savedAt: new Date().toISOString(), surveyor: surveyor(), nextId, recs: JSON.parse(JSON.stringify(recs)), dirty: unsaved };
 }
 let statusError = '';
-let onAccount = false; // what is open is exactly what your account has (opened from it, or saved to it)
-/** The toolbar status: an error, unsaved changes, or saved. Every change is also kept on this computer. */
+/** The toolbar status: an error, unsaved changes, or what the document is. */
 function setStatus(text = '', bad = false) {
   statusError = bad ? text : '';
   const el = document.getElementById('saveStatus')!;
   el.classList.toggle('bad', !!statusError);
   el.classList.toggle('dirty', !statusError && unsaved);
-  el.textContent = statusError || (unsaved ? 'Незачувано' : onAccount ? 'Зачувано' : '');
-  el.title = statusError ? '' : unsaved ? 'Промените се на овој компјутер. Притисни „Зачувај“ за профилот.' : '';
+  el.textContent = statusError || docApi?.statusText(unsaved) || '';
+  el.title = statusError ? '' : unsaved ? 'Промените се само на овој компјутер додека не зачуваш.' : '';
 }
 async function persistNow() {
   window.clearTimeout(persistTimer);
   if (!restored) return;
-  const s = sessionOf();
   try {
-    await writeSession(s);
+    await writeSession(sessionOf());
     setStatus();
   } catch (e) {
     setStatus('Не се чува локално', true);
-    msg('Прелистувачот не дозволува чување. Зачувај на профилот или сними проект.');
+    msg('Прелистувачот не дозволува чување. Зачувај на профилот или на компјутерот.');
   }
 }
-/** Puts a session's items (and, when merging, its versions) back in the builder. */
-function applySession(s: Session, mergeVersions: boolean) {
-  recs = (s.recs as Rec[]).filter((q) => q && typeof q.id === 'number' && typeof q.cat === 'string').map((q) => {
+/** Shows these items as the open document. Clears the undo history and marks them as saved. */
+function setItems(list: Rec[]) {
+  recs = (list as Rec[]).filter((q) => q && typeof q.id === 'number' && typeof q.cat === 'string').map((q) => {
     if (q.cat === 'pole') { q.orient = 'vert'; q.yaw = q.yaw ?? 0; q.len = POLE_L; q.thick = POLE_W; }
     return q;
   });
-  nextId = Math.max(Number(s.nextId) || 1, ...recs.map((q) => q.id + 1));
-  const incoming = Array.isArray(s.versions) ? (s.versions as Version[]) : [];
-  const seen = new Set<number>();
-  versionList = (mergeVersions ? [...versionList, ...incoming] : incoming).filter((v) => (seen.has(v.id) ? false : (seen.add(v.id), true)));
+  nextId = Math.max(1, ...recs.map((q) => q.id + 1));
   undoStack = []; redoStack = [];
-  select(null); rebuild(); refreshVersions();
+  select(null); rebuild();
   lastState = JSON.stringify({ recs, nextId });
+  unsaved = false;
   updateHistoryButtons();
+  setStatus();
+  persistSoon();
 }
-/** The game's items as a builder session (so the builder starts from what the game shows). */
-function gameSession(f: ItemsFile): Session {
-  return { format: 'krug-builder-session', version: 1, savedAt: f.savedAt, surveyor: f.surveyor, nextId: 1, recs: f.items, versions: [] };
-}
-/** Opens the newest session saved in this browser. If it cannot be read, nothing is written over it. */
+/** Asks once after a crash, when the last items were not saved. */
 async function restoreSession() {
   let s: Session | null = null;
   try {
     s = await readSession();
   } catch (e) {
     setStatus('Не може да се прочита зачуваното', true);
-    refreshVersions();
     return;
   }
   restored = true;
-  // an emergency copy from a session that did not close properly: offer it back, do not load it silently
-  if (s && s.recs.length && !(emergencyRestored = confirm(`Пронајдена е незачувана работа од прекината сесија (${s.recs.length} ставки). Да ја вратам?`))) {
-    s = null;
+  if (s && s.dirty && s.recs.length) {
+    const i = await docApi!.choose('Незачувана работа', `Пронајдена е незачувана работа од прекината сесија (${s.recs.length} ставки). Да ја вратам?`, ['Врати ја', 'Отфрли ја']);
+    if (i === 0) {
+      emergencyRestored = true;
+      setItems(s.recs as Rec[]);
+      unsaved = true;
+      setStatus();
+      persistSoon();
+      return;
+    }
     await kvDel('session').catch(() => undefined);
   }
-  if (!s) {
-    const f = await loadItems();
-    if (f) s = gameSession(f);
-  }
-  if (!s) {
-    refreshVersions();
-    lastState = JSON.stringify({ recs, nextId });
-    updateHistoryButtons();
-    setStatus();
-    return;
-  }
-  applySession(s, false);
-  if (emergencyRestored) unsaved = true; // a rescued copy is not on your account yet
+  lastState = JSON.stringify({ recs, nextId });
+  updateHistoryButtons();
   setStatus();
-  persistSoon();
-}
-/** Before a non-empty map is replaced, keep it as a backup in Versions (the 20 newest backups are kept). */
-function backupBeforeReplace(why: string) {
-  if (!recs.length) return;
-  const v: Version = { id: Date.now(), name: `резерва ${clock()} · ${why}`, savedAt: new Date().toISOString(), recs: JSON.parse(JSON.stringify(recs)), nextId };
-  let list = [...versionList, v];
-  const auto = list.filter((q) => q.name.startsWith('резерва '));
-  if (auto.length > 20) { const drop = new Set(auto.slice(0, auto.length - 20).map((q) => q.id)); list = list.filter((q) => !drop.has(q.id)); }
-  setVersions(list); refreshVersions(v.id);
 }
 function applyState(json: string) {
   const d = JSON.parse(json);
   recs = d.recs; nextId = d.nextId;
   lastState = json;
   select(null); rebuild();
+  unsaved = true;
+  setStatus();
   persistSoon();
   updateHistoryButtons();
 }
@@ -1399,16 +1271,13 @@ if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bld = 
   select(id: number | null) { select(id); },
 };
 
-// the cloud panel: shared workspaces with their own logins
-const cloudApi = initCloudPanel({
+// the document: the File menu, Save, Save as, Share and Open
+docApi = initDocument({
   onSignedIn: () => { labelSave(); void loadAccountGame(); },
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
-  getSurveyor: () => surveyor(),
+  setItems: (items) => setItems(items as Rec[]),
+  isDirty: () => unsaved,
+  markClean: () => { unsaved = false; setStatus(); persistSoon(); },
+  onChange: () => setStatus(),
   msg,
-  onLoad: (items) => {
-    backupBeforeReplace('вчитување од облакот');
-    applySession(gameSession({ format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: '', items } as ItemsFile), true);
-    void persistNow();
-  },
 });
-

@@ -8,7 +8,8 @@ export interface Session {
   surveyor: string;
   nextId: number;
   recs: unknown[];
-  versions: unknown[];
+  /** true while the items are not saved to the account or a file: offered back after a crash */
+  dirty?: boolean;
 }
 
 const KEY = 'session';

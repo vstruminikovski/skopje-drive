@@ -19,17 +19,38 @@
     <div id="bld" class="ui">
       <!-- toolbar -->
       <header id="top" class="glass">
-        <a class="tb-back" data-go="home" href="#" title="Назад кон почетната страница">‹</a>
-        <span class="tb-title">Градител</span>
+        <a class="tb-back" data-go="home" href="#" title="Назад кон почетната страница" aria-label="Назад">‹</a>
+        <button id="fileBtn" class="doc-btn" type="button" aria-haspopup="menu" aria-expanded="false" title="Датотека: зачувај, отвори, сподели">
+          <span id="docName">Градител</span><span class="doc-chev" aria-hidden="true">▾</span>
+        </button>
+        <span id="saveStatus" class="tb-status"></span>
         <span class="tb-div"></span>
         <button id="undoBtn" class="tb-icon" title="Врати (⌘Z)" aria-label="Врати" disabled>↶</button>
-        <button id="redoBtn" class="tb-icon" title="Повтори (⇧⌘Z)" aria-label="Повтори" disabled>↷</button>
+        <button id="redoBtn" class="tb-icon" title="Напред (⇧⌘Z)" aria-label="Напред" disabled>↷</button>
         <span class="spacer"></span>
         <button id="lookBtn" class="look-btn" type="button" aria-pressed="false" title="Гледај со глушецот и поставувај со нишанот (C)"><kbd>C</kbd><span id="lookLabel">Гледај</span></button>
         <span class="spacer"></span>
-        <span id="saveStatus" class="tb-status"></span><button class="info tb-info" type="button" data-tip="Незачувано: промените се само на овој компјутер. Зачувано: исто е како на твојот профил. ⌘S зачувува.">i</button>
-        <button id="saveGame" class="btn btn-primary">Зачувај</button>
+        <button id="shareBtn" class="btn" type="button" title="Сподели со пријател (код или линк)">Сподели</button>
+        <button id="saveGame" class="btn btn-primary" type="button" title="Зачувај (⌘S)">Зачувај</button>
       </header>
+      <!-- the File menu: everything about saving and opening the document -->
+      <div id="fileMenu" class="menu glass" role="menu" hidden>
+        <div class="menu-who" id="menuWho"></div>
+        <button type="button" role="menuitem" data-act="open">Отвори…<kbd>⌘O</kbd></button>
+        <button type="button" role="menuitem" data-act="save">Зачувај<kbd>⌘S</kbd></button>
+        <button type="button" role="menuitem" data-act="saveas">Зачувај како…<kbd>⇧⌘S</kbd></button>
+        <button type="button" role="menuitem" data-act="computer">Зачувај на компјутерот…</button>
+        <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
+        <div class="menu-sep"></div>
+        <div class="admin-only" hidden>
+          <button type="button" role="menuitem" data-act="exportGeo">Извези карта (GeoJSON)</button>
+          <button type="button" role="menuitem" data-act="exportMod">Извези основна игра (default.json)</button>
+          <div class="menu-sep"></div>
+        </div>
+        <button type="button" role="menuitem" data-act="clear" class="danger">Избриши ги сите ставки</button>
+        <div class="menu-sep"></div>
+        <button type="button" role="menuitem" data-act="logout">Одјави се</button>
+      </div>
 
       <!-- floating window: library -->
       <aside id="lib" class="glass fw" data-fw="lib">
@@ -42,56 +63,24 @@
 
       <!-- floating window: the selected item and the project, everything in view -->
       <aside id="panel" class="glass fw" data-fw="panel">
-        <div class="fw-head"><span class="fw-title">Проект</span><button class="fw-min" type="button" aria-label="Собери или рашири" title="Собери">–</button></div>
+        <div class="fw-head"><span class="fw-title">Панел</span><button class="fw-min" type="button" aria-label="Собери или рашири" title="Собери">–</button></div>
         <div class="fw-body">
-          <section id="side">
-            <h3 id="ins-title">Ништо не е избрано</h3>
-            <div class="irow"><span>Насока<button class="info" type="button" data-tip="Во која насока гледа ставката, во степени. [ и ] вртат за чекорот што ќе го избереш долу.">i</button></span><span class="unit"><input type="number" id="ins-facing" class="field num" min="0" max="359.9" step="1">°</span></div>
-            <div class="irow"><span>Ширина</span><span class="unit"><input type="number" id="ins-width" class="field num" min="0.02" step="0.01">м</span></div>
-            <div class="irow" id="row-timer"><span>Зелено · жолто · црвено<button class="info" type="button" data-tip="Колку секунди свети секое светло на семафорот.">i</button></span><span class="unit"><input type="number" id="ins-g" class="field num sm" min="1" step="1"><input type="number" id="ins-y" class="field num sm" min="0" step="0.5"><input type="number" id="ins-r" class="field num sm" min="1" step="1">с</span></div>
-            <div class="irow" id="row-offset"><span>Почеток<button class="info" type="button" data-tip="Ја поместува смената на светлата, за соседните семафори да не светат исто.">i</button></span><span class="unit"><input type="number" id="ins-off" class="field num" min="0" step="1">с</span></div>
-            <label class="irow admin-only" hidden><span>Проверено на терен<button class="info" type="button" data-tip="Означи кога си ја проверил ставката на самото место во Скопје.">i</button></span><input type="checkbox" id="ins-verified" class="switch"></label>
-            <textarea id="ins-note" class="field ins-note admin-only" hidden rows="2" placeholder="Белешка"></textarea>
-            <button id="delBtn" class="btn btn-danger ins-del">Избриши</button>
-          </section>
+            <section id="side">
+              <h3 id="ins-title">Ништо не е избрано</h3>
+              <div class="irow"><span>Насока<button class="info" type="button" data-tip="Во која насока гледа ставката, во степени. [ и ] вртат за чекорот што ќе го избереш долу.">i</button></span><span class="unit"><input type="number" id="ins-facing" class="field num" min="0" max="359.9" step="1">°</span></div>
+              <div class="irow"><span>Ширина</span><span class="unit"><input type="number" id="ins-width" class="field num" min="0.02" step="0.01">м</span></div>
+              <div class="irow" id="row-timer"><span>Зелено · жолто · црвено<button class="info" type="button" data-tip="Колку секунди свети секое светло на семафорот.">i</button></span><span class="unit"><input type="number" id="ins-g" class="field num sm" min="1" step="1"><input type="number" id="ins-y" class="field num sm" min="0" step="0.5"><input type="number" id="ins-r" class="field num sm" min="1" step="1">с</span></div>
+              <div class="irow" id="row-offset"><span>Почеток<button class="info" type="button" data-tip="Ја поместува смената на светлата, за соседните семафори да не светат исто.">i</button></span><span class="unit"><input type="number" id="ins-off" class="field num" min="0" step="1">с</span></div>
+              <label class="irow admin-only" hidden><span>Проверено на терен<button class="info" type="button" data-tip="Означи кога си ја проверил ставката на самото место во Скопје.">i</button></span><input type="checkbox" id="ins-verified" class="switch"></label>
+              <textarea id="ins-note" class="field ins-note admin-only" hidden rows="2" placeholder="Белешка"></textarea>
+              <button id="delBtn" class="btn btn-danger ins-del">Избриши</button>
+            </section>
 
-          <details class="pane" id="cWork" data-pane="shared" open hidden>
-            <summary>Заедничка работа<button class="info" type="button" data-tip="Работата се вика како твоето корисничко име. Зачувај нова верзија: до 5 верзии. Отвори верзија: избери ја од листата. Создај код: испрати го на другиот корисник, а тој го внесува овде.">i</button></summary>
-            <div class="list pad">
-              <div class="work-head"><span class="field-label">Работа</span><b id="cWorkName">—</b><small id="cWorkWho"></small></div>
-              <label class="field-label" for="cVersion">Верзија (најмногу 5)</label>
-              <select id="cVersion" class="field"></select>
-              <button id="cSaveVer" class="btn btn-primary btn-full">Зачувај нова верзија</button>
-              <label class="field-label">Код за другиот корисник</label>
-              <div class="btn-row"><button id="cLinkBtn" class="btn">Создај код</button><button id="cCopy" class="btn">Копирај</button></div>
-              <div class="code-box"><span id="cLink" class="code-text"></span></div>
-              <label class="field-label" for="cCode">Внеси код од другиот корисник</label>
-              <div class="btn-row"><input id="cCode" class="field" placeholder="ABCD-EFGH-JKLM-..." autocomplete="off" spellcheck="false"><button id="cJoin" class="btn">Отвори</button></div>
-            </div>
-          </details>
-          <details class="pane" data-pane="profile" open>
-            <summary>Профил<button class="info" type="button" data-tip="„Зачувај“ ја става твојата игра на профилот. Ја отвораш од кој било компјутер со „Вчитај моја игра“.">i</button></summary>
-            <div class="list">
-              <div class="row"><span class="avatar" id="cAvatar"></span><span class="row-main"><span class="row-title" id="cWho"></span><span class="row-sub" id="cRole">Профил</span></span><button id="cLogout" class="btn btn-plain">Одјави се</button></div>
-            </div>
-          </details>
-          <details class="pane" data-pane="files" open>
-            <summary>Датотека<button class="info" type="button" data-tip="Резервна копија како датотека на твојот компјутер. Можеш да ја отвориш подоцна или на друг компјутер.">i</button></summary>
-            <div class="list">
-              <button id="openProjBtn" class="row"><span class="row-main">Отвори проект…</span></button>
-              <button id="saveProj" class="row"><span class="row-main">Сними проект на компјутерот</span></button>
-              <button id="loadGame" class="row player-only"><span class="row-main">Почни од објавената игра</span></button>
-              <button id="exportBtn" class="row admin-only" hidden><span class="row-main">Извези за мапата</span></button>
-              <button id="modBtn" class="row admin-only" hidden><span class="row-main">Извези основна игра</span></button>
-            </div>
-            <input type="file" id="openProj" accept=".json,application/json" hidden>
-          </details>
           <details class="pane" data-pane="versions" open>
-            <summary>Резерви на овој компјутер<button class="info" type="button" data-tip="Резерви што ги чува овој компјутер: една на секои 10 минути и една пред секое вчитување. Не се на профилот.">i</button></summary>
-            <div class="list pad">
-              <select id="verSel" class="field"></select>
-              <div class="btn-row"><button id="saveVer" class="btn">Нова</button><button id="loadVer" class="btn">Врати</button><button id="delVer" class="btn btn-danger">Избриши</button></div>
-            </div>
+            <summary>Верзии<button class="info" type="button" data-tip="Именувани верзии на твојата работа (најмногу 5). Кликни на верзија за да ја отвориш. Зачувај ја старата верзија и ќе се создаде нова.">i</button></summary>
+            <div class="ver-head"><b id="docTitle">—</b><small id="docWho"></small></div>
+            <div id="verList" class="ver-list"></div>
+            <p id="verEmpty" class="foot"></p>
           </details>
           <details class="pane" data-pane="view" open>
             <summary>Приказ<button class="info" type="button" data-tip="Остра слика изгледа подобро, но е побавна на послаби компјутери.">i</button></summary>
@@ -114,12 +103,6 @@
               <dt>K</dt><dd>секира</dd>
               <dt>⌘Z · ⇧⌘Z</dt><dd>врати · повтори</dd>
             </dl>
-          </details>
-          <details class="pane" data-pane="danger" open>
-            <summary>Бришење<button class="info" type="button" data-tip="Ги брише сите ставки што си ги поставил. Резерва останува во Верзии, па можеш да ги вратиш.">i</button></summary>
-            <div class="list">
-              <button id="clearBtn" class="row danger"><span class="row-main">Избриши ги сите мои ставки</span></button>
-            </div>
           </details>
         </div>
       </aside>
@@ -151,15 +134,62 @@
       <div id="crosshair"></div>
       <div id="msg" class="toast glass" role="status"></div>
 
-      <!-- leaving with unsaved work -->
-      <div id="leaveDlg" class="scrim" hidden>
-        <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="leaveTitle">
-          <h2 id="leaveTitle">Незачувани промени</h2>
-          <p>Зачувај на профилот за да ја имаш на секој компјутер.</p>
+      <!-- a question with clear answers (save, leave, cancel) -->
+      <div id="choiceDlg" class="scrim" hidden>
+        <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="choiceTitle">
+          <h2 id="choiceTitle"></h2>
+          <p id="choiceText"></p>
+          <div id="choiceBtns" class="stack"></div>
+        </div>
+      </div>
+
+      <!-- Save as: a named version on your account, or a file on this computer -->
+      <div id="saveAsDlg" class="scrim" hidden>
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="saveAsTitle">
+          <h2 id="saveAsTitle">Зачувај како</h2>
+          <p>Име на верзијата (незадолжително). Именуваните верзии не се бришат кога ќе се создадат нови.</p>
+          <label class="field-label" for="saveAsName">Име</label>
+          <input id="saveAsName" class="field" placeholder="Пример: Пред кружниот тек" maxlength="60" autocomplete="off">
+          <label class="field-label">Каде да се зачува</label>
+          <div class="seg" id="saveAsWhere" role="tablist">
+            <button type="button" data-where="cloud" role="tab">На мојот профил</button>
+            <button type="button" data-where="computer" role="tab">На компјутерот</button>
+          </div>
+          <p id="saveAsNote" class="foot"></p>
           <div class="stack">
-            <button id="dlgSave" class="btn btn-primary btn-lg">Зачувај и излези</button>
-            <button id="dlgLeave" class="btn btn-lg btn-danger">Излези без зачувување</button>
-            <button id="dlgStay" class="btn btn-lg btn-plain">Откажи</button>
+            <button id="saveAsGo" class="btn btn-primary btn-lg" type="button">Зачувај</button>
+            <button id="saveAsCancel" class="btn btn-lg btn-plain" type="button">Откажи</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Share: a code for a friend, and a link that puts the code in the builder -->
+      <div id="shareDlg" class="scrim" hidden>
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+          <h2 id="shareTitle">Сподели со пријател</h2>
+          <p id="shareText">Создај код и испрати му го. Пријателот го внесува во Отвори → Со код од пријател и ја добива работата. Кодот важи 7 дена.</p>
+          <div id="shareCodeBox" class="share-code" hidden><span id="shareCode"></span></div>
+          <div class="stack">
+            <button id="shareMake" class="btn btn-primary btn-lg" type="button">Создај код</button>
+            <button id="shareCopy" class="btn btn-lg" type="button" hidden>Копирај код</button>
+            <button id="shareLink" class="btn btn-lg" type="button" hidden>Копирај линк</button>
+            <button id="shareClose" class="btn btn-lg btn-plain" type="button">Затвори</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Open: your work, the published game, a code from a friend, or a file -->
+      <div id="openDlg" class="scrim" hidden>
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="openTitle">
+          <h2 id="openTitle">Отвори</h2>
+          <div class="stack">
+            <button id="openMine" class="btn btn-lg" type="button">Мојата работа (последна верзија)</button>
+            <button id="openPublished" class="btn btn-lg" type="button">Објавената игра (копија)</button>
+            <label class="field-label" for="openCode">Со код од пријател</label>
+            <div class="btn-row"><input id="openCode" class="field" placeholder="ABCD-EFGH-JKLM-..." autocomplete="off" spellcheck="false"><button id="openCodeGo" class="btn btn-primary" type="button">Отвори</button></div>
+            <button id="openFile" class="btn btn-lg" type="button">Од датотека на компјутерот…</button>
+            <input type="file" id="openFileInput" accept=".json,application/json" hidden>
+            <button id="openClose" class="btn btn-lg btn-plain" type="button">Откажи</button>
           </div>
         </div>
       </div>

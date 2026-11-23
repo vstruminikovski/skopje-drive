@@ -6,7 +6,7 @@ const ACCOUNT_KEY = 'skopje.account';
 
 export interface Account { username: string; token: string }
 /** One saved version of a work. A work keeps its newest 5. */
-export interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number }
+export interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number; label?: string }
 /** A work as the server gives it: `data` is the version asked for (the newest by default), `latest` the newest number. */
 export interface Workspace { name: string; owner: string; members: string[]; latest: number; version: number; savedAt: string; savedBy: string; data: unknown; versions: VersionMeta[] }
 
@@ -53,9 +53,11 @@ export function loadWorkspace(name: string, version?: number) {
   const q = version ? `?v=${version}` : '';
   return call<Workspace>(`/api/ws/${encodeURIComponent(name)}${q}`, { headers: auth() });
 }
-export function saveWorkspace(name: string, data: unknown, baseVersion: number) {
+/** Save overwrites the newest version of a work; "new" adds a named version (up to 5 are kept). */
+export interface SaveMode { mode: 'overwrite' | 'new'; label?: string }
+export function saveWorkspace(name: string, data: unknown, baseVersion: number, how: SaveMode = { mode: 'overwrite' }) {
   return call<{ name: string; version: number; savedAt: string; dropped?: number }>(`/api/ws/${encodeURIComponent(name)}`, {
-    method: 'PUT', headers: auth(), body: JSON.stringify({ data, baseVersion }),
+    method: 'PUT', headers: auth(), body: JSON.stringify({ data, baseVersion, mode: how.mode, label: how.label }),
   });
 }
 /** A join code for one work: only its owner can make one, and a new one replaces the old. */

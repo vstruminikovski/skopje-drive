@@ -158,7 +158,7 @@ async function saveWorkspace(env: Env, req: Request, name: string): Promise<Resp
   const body = await readBody(req);
   const admins = env.ADMINS.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
   const r = await callDo(env.WORKSPACES, name, '/put', {
-    user, name, admins, baseVersion: Number(body.baseVersion ?? 0), data: body.data, savedAt: now(),
+    user, name, admins, baseVersion: Number(body.baseVersion ?? 0), data: body.data, savedAt: now(), mode: body.mode, label: body.label,
   });
   if (r.status === 409) return json(env, { error: 'Некој зачувал меѓувреме.', version: r.data.version }, 409);
   if (r.status === 403) throw new HttpError(403, r.data.error ?? 'Немаш пристап до оваа работа.');
@@ -247,7 +247,7 @@ export class Account extends DurableObject {
 
 /** Each work keeps its newest 5 versions. The versions list is small; each version's items are kept under "v<n>". */
 const MAX_VERSIONS = 5;
-interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number }
+interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number; label?: string }
 interface WsRec { owner: string; members: string[]; version: number; versions: VersionMeta[] }
 const itemCount = (data: unknown) => (data && Array.isArray((data as { items?: unknown[] }).items) ? (data as { items: unknown[] }).items.length : 0);
 
@@ -279,23 +279,38 @@ export class Workspace extends DurableObject {
       if (path === '/put') {
         const user: string = body.user;
         const now = body.savedAt;
+        const label = typeof body.label === 'string' && body.label.trim() ? body.label.trim().slice(0, 60) : undefined;
+        const overwrite = body.mode === 'overwrite';
         if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         if (!ws) {
           // a new workspace takes your own username as its name; admins may use any name (e.g. player)
           if (user !== body.name && !body.admins.includes(user)) return reply(403, { error: 'Новата работа се создава со твоето корисничко име.' });
           if (body.baseVersion !== 0) return reply(409, { version: 0 });
           await st.put('v1', body.data);
-          const rec: WsRec = { owner: user, members: [], version: 1, versions: [{ version: 1, savedAt: now, savedBy: user, count: itemCount(body.data) }] };
+          const rec: WsRec = { owner: user, members: [], version: 1, versions: [{ version: 1, savedAt: now, savedBy: user, count: itemCount(body.data), label }] };
           await st.put('ws', rec);
           return reply(200, { version: 1, savedAt: now });
         }
         if (ws.owner !== user && !ws.members.includes(user)) return reply(403, { error: 'Немаш пристап до оваа работа.' });
         if (body.baseVersion !== ws.version) return reply(409, { version: ws.version });
+        // Save overwrites the newest version (like saving a document); Save as adds a named version
+        if (overwrite) {
+          await st.put(`v${ws.version}`, body.data);
+          const versions = ws.versions.map((v) => (v.version === ws.version ? { ...v, savedAt: now, savedBy: user, count: itemCount(body.data) } : v));
+          await st.put('ws', { ...ws, versions, savedAt: now, savedBy: user } as WsRec);
+          return reply(200, { version: ws.version, savedAt: now, dropped: 0 });
+        }
         const next = ws.version + 1;
         await st.put(`v${next}`, body.data);
-        const versions = [...ws.versions, { version: next, savedAt: now, savedBy: user, count: itemCount(body.data) }];
+        const versions = [...ws.versions, { version: next, savedAt: now, savedBy: user, count: itemCount(body.data), label }];
+        // over the limit: the oldest version without a name goes first, then the oldest of all
         let dropped = 0;
-        while (versions.length > MAX_VERSIONS) { const old = versions.shift()!; await st.delete(`v${old.version}`); dropped++; }
+        while (versions.length > MAX_VERSIONS) {
+          const i = versions.findIndex((v) => !v.label);
+          const [old] = versions.splice(i >= 0 ? i : 0, 1);
+          await st.delete(`v${old.version}`);
+          dropped++;
+        }
         await st.put('ws', { ...ws, version: next, versions });
         return reply(200, { version: next, savedAt: now, dropped });
       }
