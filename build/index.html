@@ -26,7 +26,7 @@
         <button id="redoBtn" class="tb-icon" title="Повтори (⇧⌘Z)" aria-label="Повтори" disabled>↷</button>
         <span class="spacer"></span>
         <span id="lookBtn" class="tb-chip">Слободен глушец · C</span>
-        <span id="saveStatus" class="tb-status"></span>
+        <span id="saveStatus" class="tb-status"></span><button class="info tb-info" type="button" data-tip="Незачувано: промените се само на овој компјутер. Зачувано: исто е како на твојот профил. ⌘S зачувува.">i</button>
         <button id="menuToggle" class="tb-icon" aria-label="Повеќе" aria-expanded="false" title="Повеќе">⋯</button>
         <button id="saveGame" class="btn btn-primary">Зачувај</button>
       </header>
@@ -43,14 +43,11 @@
           <h3 id="ins-title">Ништо не е избрано</h3>
           <span id="ins-code"></span>
         </div>
-        <div class="irow"><span>Насока</span><span class="unit"><input type="number" id="ins-facing" class="field num" min="0" max="359.9" step="1">°</span></div>
+        <div class="irow"><span>Насока<button class="info" type="button" data-tip="Во која насока гледа ставката, во степени. Брзо: [ и ] вртат за 1°.">i</button></span><span class="unit"><input type="number" id="ins-facing" class="field num" min="0" max="359.9" step="1">°</span></div>
         <div class="irow"><span>Ширина</span><span class="unit"><input type="number" id="ins-width" class="field num" min="0.02" step="0.01">м</span></div>
-        <div class="irow" id="row-plen"><span>Должина</span><span class="unit"><input type="number" id="ins-plen" class="field num" min="0.02" step="0.05">м</span></div>
-        <div class="irow" id="row-pthick"><span>Дебелина</span><span class="unit"><input type="number" id="ins-pthick" class="field num" min="0.02" step="0.01">м</span></div>
-        <div class="irow" id="row-pz"><span>Висина</span><span class="unit"><input type="number" id="ins-pz" class="field num" step="0.05">м</span></div>
-        <div class="irow" id="row-timer"><span>Зелено · жолто · црвено</span><span class="unit"><input type="number" id="ins-g" class="field num sm" min="1" step="1"><input type="number" id="ins-y" class="field num sm" min="0" step="0.5"><input type="number" id="ins-r" class="field num sm" min="1" step="1">с</span></div>
-        <div class="irow" id="row-offset"><span>Почеток</span><span class="unit"><input type="number" id="ins-off" class="field num" min="0" step="1">с</span></div>
-        <label class="irow"><span>Проверено на терен</span><input type="checkbox" id="ins-verified" class="switch"></label>
+        <div class="irow" id="row-timer"><span>Зелено · жолто · црвено<button class="info" type="button" data-tip="Колку секунди свети секое светло на семафорот.">i</button></span><span class="unit"><input type="number" id="ins-g" class="field num sm" min="1" step="1"><input type="number" id="ins-y" class="field num sm" min="0" step="0.5"><input type="number" id="ins-r" class="field num sm" min="1" step="1">с</span></div>
+        <div class="irow" id="row-offset"><span>Почеток<button class="info" type="button" data-tip="Ја поместува смената на светлата, за соседните семафори да не светат исто.">i</button></span><span class="unit"><input type="number" id="ins-off" class="field num" min="0" step="1">с</span></div>
+        <label class="irow"><span>Проверено на терен<button class="info" type="button" data-tip="Означи кога си ја проверил ставката на самото место во Скопје.">i</button></span><input type="checkbox" id="ins-verified" class="switch"></label>
         <textarea id="ins-note" class="field ins-note" rows="2" placeholder="Белешка"></textarea>
         <button id="delBtn" class="btn btn-danger ins-del">Избриши <kbd>Del</kbd></button>
       </aside>
@@ -58,30 +55,29 @@
       <!-- everything else, in one place -->
       <aside id="drawer" class="glass" hidden>
         <section>
-          <span class="label">Профил</span>
+          <span class="label">Профил<button class="info" type="button" data-tip="„Зачувај“ ја става твојата игра на профилот. Ја отвораш од кој било компјутер со „Вчитај моја игра“.">i</button></span>
           <div class="list">
             <div class="row"><span class="avatar" id="cAvatar"></span><span class="row-main"><span class="row-title" id="cWho"></span><span class="row-sub" id="cRole">Профил</span></span><button id="cLogout" class="btn btn-plain">Одјави се</button></div>
           </div>
         </section>
         <section>
-          <span class="label">Датотека</span>
+          <span class="label">Датотека<button class="info" type="button" data-tip="Резервна копија како датотека на твојот компјутер. Можеш да ја отвориш подоцна или на друг компјутер.">i</button></span>
           <div class="list">
             <button id="openProjBtn" class="row"><span class="row-main">Отвори проект…</span></button>
             <button id="saveProj" class="row"><span class="row-main">Сними проект на компјутерот</span></button>
-            <button id="loadGame" class="row"><span class="row-main">Почни од објавената игра</span></button>
+            <button id="loadGame" class="row player-only"><span class="row-main">Почни од објавената игра</span></button>
           </div>
           <input type="file" id="openProj" accept=".json,application/json" hidden>
         </section>
         <section>
-          <span class="label">Верзии</span>
+          <span class="label">Верзии<button class="info" type="button" data-tip="Снимки од работата во овој прелистувач. „Нова“ прави снимка, „Врати“ ја враќа. Резерва се прави сама на 10 минути и пред секое вчитување.">i</button></span>
           <div class="list pad">
             <select id="verSel" class="field"></select>
             <div class="btn-row"><button id="saveVer" class="btn">Нова</button><button id="loadVer" class="btn">Врати</button><button id="delVer" class="btn btn-danger">Избриши</button></div>
           </div>
-          <small class="foot">Резерва се прави сама на секои 10 минути и пред секое вчитување.</small>
         </section>
         <section id="cWork" hidden>
-          <span class="label">Заедничка работа</span>
+          <span class="label">Заедничка работа<button class="info" type="button" data-tip="Работа со име што ја уредуваат повеќе луѓе. „Сподели“ дава пристап на друг корисник, а линкот ја пушта во играта.">i</button></span>
           <div class="list pad">
             <div class="btn-row"><input id="cName" class="field" placeholder="Име на работата"><button id="cLoad" class="btn">Вчитај</button><button id="cSave" class="btn">Зачувај</button></div>
             <div class="btn-row"><input id="cShare" class="field" placeholder="Корисничко име"><button id="cShareBtn" class="btn">Сподели</button></div>
@@ -89,18 +85,17 @@
           </div>
         </section>
         <section>
-          <span class="label">Поставки</span>
+          <span class="label">Поставки<button class="info" type="button" data-tip="Мрежа: на колку се порамнува поставувањето. Агол на линија: чекор на насоката додека црташ. Глушец и движење: брзина на камерата. Квалитет: острина или брзина.">i</button></span>
           <div class="list">
             <label class="row set"><span class="row-main">Мрежа</span><select id="snap" class="field"><option value="0.1" selected>0,1 м</option><option value="0.3">0,3 м</option><option value="0.5">0,5 м</option><option value="1">1 м</option></select></label>
             <label class="row set"><span class="row-main">Агол на линија</span><select id="compassSel" class="field"><option value="0">слободно</option><option value="1">1°</option><option value="2">2°</option><option value="3">3°</option><option value="5">5°</option><option value="10">10°</option><option value="15" selected>15°</option><option value="22.5">22,5°</option><option value="30">30°</option><option value="45">45°</option><option value="90">90°</option></select></label>
             <label class="row set"><span class="row-main">Глушец</span><select id="sensSel" class="field"><option value="0.0005">многу прецизно</option><option value="0.001">прецизно</option><option value="0.0015" selected>нормално</option><option value="0.003">брзо</option></select></label>
             <label class="row set"><span class="row-main">Движење</span><select id="speedSel" class="field"><option value="1.6">бавно</option><option value="4.8" selected>нормално</option><option value="12">брзо</option><option value="32">многу брзо</option></select></label>
             <label class="row set"><span class="row-main">Квалитет</span><select id="qualitySel" class="field"><option value="1" selected>брзо</option><option value="1.5">средно</option><option value="2">остро</option></select></label>
-            <label class="row set"><span class="row-main">Име за извоз</span><input type="text" id="surveyor" class="field" placeholder="твоето име"></label>
           </div>
         </section>
         <section>
-          <span class="label">Кратенки</span>
+          <span class="label">Кратенки<button class="info" type="button" data-tip="Тастатурата во градителот. C го вклучува и исклучува гледањето со глушецот.">i</button></span>
           <dl class="keys">
             <dt>W A S D</dt><dd>движење</dd>
             <dt>Space · Shift</dt><dd>горе · долу</dd>
@@ -117,10 +112,10 @@
           </dl>
         </section>
         <section>
-          <span class="label">Напредно</span>
+          <span class="label">Напредно<button class="info" type="button" data-tip="Извозите се за администраторот: податоци за мапата и основната игра. Бришењето остава резерва во Верзии.">i</button></span>
           <div class="list">
-            <button id="exportBtn" class="row"><span class="row-main">Извези за мапата (GeoJSON)</span></button>
-            <button id="modBtn" class="row"><span class="row-main">Извези основна игра (default.json)</span></button>
+            <button id="exportBtn" class="row admin-only" hidden><span class="row-main">Извези за мапата (GeoJSON)</span></button>
+            <button id="modBtn" class="row admin-only" hidden><span class="row-main">Извези основна игра (default.json)</span></button>
             <button id="clearBtn" class="row danger"><span class="row-main">Избриши ги сите мои ставки</span></button>
           </div>
         </section>
@@ -159,7 +154,6 @@
           <div id="cAuth"><div id="authBoxB"></div></div>
           <div id="gateGo" class="stack gate-go" hidden>
             <button id="startBtn" class="btn btn-primary btn-lg" disabled>Почни</button>
-            <button id="gateOpen" class="btn btn-plain" type="button" disabled>Отвори проект од датотека</button>
           </div>
         </div>
       </div>

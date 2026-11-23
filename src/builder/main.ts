@@ -16,6 +16,8 @@ import type { Lamp } from '../game/traffic/signals';
 import { writeSession, readSession, type Session } from './store';
 import { kvDel } from '../shared/db';
 import { clock } from '../shared/dates';
+import { drawItemIcon } from './icons';
+import { infoButton, initTips } from '../shared/tips';
 
 // ---------- desktop only ----------
 // A mouse-and-keyboard screen at least 900 px wide. Phones and touch tablets never get the builder.
@@ -27,9 +29,8 @@ if (!isDesktop) {
 }
 
 const BASE = import.meta.env.BASE_URL;
-const surveyorInput = document.getElementById('surveyor') as HTMLInputElement;
-/** Whose work this is, for the exports: the name you typed, else your account name. */
-const surveyor = () => surveyorInput.value.trim() || cloud.account()?.username || 'builder';
+/** Whose work this is, for the exports: your account name. */
+const surveyor = () => cloud.account()?.username || 'builder';
 const SURVEY_URL = `${BASE}survey/prviot_krug.geojson`.replace(/\/+/g, '/');
 
 // ---------- inventory: the city's own sign and marking types ----------
@@ -49,15 +50,15 @@ interface MarkItem { key: string; name: string; kind: 'marking' | 'zebra'; mater
 // Placeholders: drawn once at the cursor and turned with Q / E. Local strokes: x right, y forward (metres).
 // Shapes are approximate, not drawn to the Rulebook; check them on site before using them for anything official.
 const TEMPLATES: { key: string; name: string; width: number; strokes: [number, number][][]; material?: string }[] = [
-  { key: 'arrow_straight', name: 'Стрелка: право', width: 0.5, strokes: [[[0, -2], [0, 1.4]], [[-0.6, 0.8], [0, 1.6], [0.6, 0.8]]] },
-  { key: 'arrow_right', name: 'Стрелка: десно', width: 0.5, strokes: [[[0, -2], [0, 0.2], [0.9, 0.2]], [[0.6, -0.3], [1.3, 0.2], [0.6, 0.7]]] },
-  { key: 'arrow_left', name: 'Стрелка: лево', width: 0.5, strokes: [[[0, -2], [0, 0.2], [-0.9, 0.2]], [[-0.6, -0.3], [-1.3, 0.2], [-0.6, 0.7]]] },
+  { key: 'arrow_straight', name: 'Право', width: 0.5, strokes: [[[0, -2], [0, 1.4]], [[-0.6, 0.8], [0, 1.6], [0.6, 0.8]]] },
+  { key: 'arrow_right', name: 'Десно', width: 0.5, strokes: [[[0, -2], [0, 0.2], [0.9, 0.2]], [[0.6, -0.3], [1.3, 0.2], [0.6, 0.7]]] },
+  { key: 'arrow_left', name: 'Лево', width: 0.5, strokes: [[[0, -2], [0, 0.2], [-0.9, 0.2]], [[-0.6, -0.3], [-1.3, 0.2], [-0.6, 0.7]]] },
   { key: 'arrow_straight_right', name: 'Право или десно', width: 0.5, strokes: [[[0, -2], [0, 1.4]], [[-0.5, 0.9], [0, 1.5], [0.5, 0.9]], [[0, -0.6], [0.2, 0.2], [0.9, 0.8]], [[0.6, 0.6], [0.9, 0.8], [0.8, 0.4]]] },
   { key: 'arrow_straight_left', name: 'Право или лево', width: 0.5, strokes: [[[0, -2], [0, 1.4]], [[-0.5, 0.9], [0, 1.5], [0.5, 0.9]], [[0, -0.6], [-0.2, 0.2], [-0.9, 0.8]], [[-0.6, 0.6], [-0.9, 0.8], [-0.8, 0.4]]] },
   { key: 'arrow_uturn', name: 'Пресврт', width: 0.5, strokes: [[[0, -2], [0, 0.8], [-0.7, 1.3], [-0.7, 0.4]], [[-1.1, 0.7], [-0.7, 0.2], [-0.3, 0.7]]] },
   // European bus stop: yellow box with the word BUS painted inside (letters 1 m tall, 0.5 m wide). Sizes vary by country: check on site.
   // give-way triangle: a white outline, apex towards the traffic. Drivers wait here, before the stop line, at the pedestrian crossing
-  { key: 'give_way_triangle', name: 'Триаголник: уступи', width: 0.12, strokes: [[[-0.5, -0.433], [0.5, -0.433], [0, 0.433], [-0.5, -0.433]]] },
+  { key: 'give_way_triangle', name: 'Триаголник за уступување', width: 0.12, strokes: [[[-0.5, -0.433], [0.5, -0.433], [0, 0.433], [-0.5, -0.433]]] },
   { key: 'bus_stop', name: 'Автобуска стојалка', width: 0.12, material: 'm_line_yellow', strokes: [
     [[-1.5, -1], [1.5, -1], [1.5, 1], [-1.5, 1], [-1.5, -1]],
     // B
@@ -96,8 +97,8 @@ const POLE_ITEMS = [
 type Cat = 'sign' | 'sfloat' | 'light' | 'mark' | 'tree' | 'lamp' | 'pole' | 'tpl' | 'axe';
 // traffic light kinds: glued to a pole block you built, with its own pole, or floating with no pole
 const LIGHT_ITEMS = [
-  { key: 'glue', name: 'Семафор: залепен на коцка', sub: 'насочи кон коцка и кликни' },
-  { key: 'pole', name: 'Семафор со свој столб', sub: 'стави каде било' },
+  { key: 'glue', name: 'На столбче-коцка', sub: 'насочи кон коцка и кликни' },
+  { key: 'pole', name: 'Со свој столб', sub: 'стави каде било' },
 ];
 const ITEMS: { cat: Cat; key: string }[] = [
   ...SIGNS.map((s) => ({ cat: 'sign' as const, key: s.type })),
@@ -481,33 +482,33 @@ function nearestRec(p: [number, number], maxM: number): number | null {
 }
 
 // ---------- inventory panel ----------
-function drawSign(g: CanvasRenderingContext2D, type: string) {
-  const r = 24;
-  const tri = (s: number) => { g.beginPath(); g.moveTo(-s, -s * 0.6); g.lineTo(s, -s * 0.6); g.lineTo(0, s); g.closePath(); g.fill(); };
-  if (type === 'give_way') { g.fillStyle = '#c0392b'; tri(r); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(-r * .6, -r * .4); g.lineTo(r * .6, -r * .4); g.lineTo(0, r * .65); g.closePath(); g.fill(); }
-  else if (type === 'noentry') { g.fillStyle = '#c0392b'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#fff'; g.fillRect(-r * .6, -r * .12, r * 1.2, r * .24); }
-  else if (type === 'one_way') { g.fillStyle = '#2456a6'; g.fillRect(-r, -r, 2 * r, 2 * r); g.fillStyle = '#fff'; g.fillRect(-r * .6, -r * .12, r * .9, r * .24); g.beginPath(); g.moveTo(r * .2, -r * .4); g.lineTo(r * .7, 0); g.lineTo(r * .2, r * .4); g.closePath(); g.fill(); }
-  else if (type === 'priorityroad') { g.fillStyle = '#fff'; g.beginPath(); g.moveTo(0, -r); g.lineTo(r, 0); g.lineTo(0, r); g.lineTo(-r, 0); g.closePath(); g.fill(); g.fillStyle = '#e8b923'; g.beginPath(); g.moveTo(0, -r * .75); g.lineTo(r * .75, 0); g.lineTo(0, r * .75); g.lineTo(-r * .75, 0); g.closePath(); g.fill(); }
-  else if (type.startsWith('speed')) { g.fillStyle = '#c0392b'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, r * .8, 0, 7); g.fill(); g.fillStyle = '#111'; g.font = 'bold 22px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(type === 'speed_50' ? '50' : '30', 0, 1); }
-  else { g.fillStyle = '#2456a6'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = '#fff'; g.fillRect(-r * .5, -r * .1, r * .8, r * .2); }
-}
 /** Signs go on a post by default; the switch in the signs header places the plate alone. */
 let signsFloat = false;
+const TIPS: Record<string, string> = {
+  'Знаци': 'Сообраќајни знаци. „Со столб“ стои на земја; „Без столб“ се лепи на столбче-коцка или семафор.',
+  'Семафори': '„На столбче-коцка“: насочи кон коцка и кликни. „Со свој столб“: стави каде било. Времињата ги менуваш кога ќе го избереш.',
+  'Линии на коловоз': 'Полна, испрекината и двојна линија се цртаат точка по точка, Enter завршува. Застанувањето и пешачкиот имаат почеток и крај.',
+  'Стрелки и симболи': 'Се ставаат со еден клик. Q и E ги вртат пред поставување.',
+  'Столбчиња': 'Коцки од 0,2 м. Кликни на земјата или на страна од коцка за да надоградиш. На нив се лепат знаци и семафори.',
+  'Дрвја и светилки': 'Кликни за да поставиш. Q и E вртат пред поставување.',
+  'Алатки': 'Секирата (K) брише само ставки што ти си ги поставил. ⌘Z враќа.',
+};
 function buildInventory() {
   const inv = document.getElementById('inv')!;
   inv.innerHTML = '';
   let n = 0;
-  type Row = { cat: Cat; key: string; name: string; sub: string; draw: (g: CanvasRenderingContext2D) => void };
+  type Row = { cat: Cat; key: string; name: string; sub?: string };
   const section = (title: string, rows: Row[], extra?: HTMLElement) => {
     const h = document.createElement('div'); h.className = 'inv-sec';
     const l = document.createElement('span'); l.className = 'label'; l.textContent = title; h.appendChild(l);
+    if (TIPS[title]) l.appendChild(infoButton(TIPS[title]));
     if (extra) h.appendChild(extra);
     inv.appendChild(h);
     for (const row of rows) {
       const el = document.createElement('div'); el.className = 'item'; el.dataset.cat = row.cat; el.dataset.key = row.key;
-      el.dataset.find = `${title} ${row.name} ${row.sub}`.toLowerCase();
+      el.dataset.find = `${title} ${row.name} ${row.sub ?? ''}`.toLowerCase();
       const cv = document.createElement('canvas'); cv.width = cv.height = 64;
-      const g = cv.getContext('2d')!; g.translate(32, 32); g.scale(0.8, 0.8); row.draw(g); el.appendChild(cv);
+      const g = cv.getContext('2d')!; g.translate(32, 32); drawItemIcon(g, row.cat, row.key); el.appendChild(cv);
       const t = document.createElement('div'); t.className = 'n'; t.textContent = row.name;
       if (row.sub) { const sm = document.createElement('small'); sm.textContent = row.sub; t.appendChild(sm); }
       el.appendChild(t);
@@ -527,27 +528,16 @@ function buildInventory() {
     if (hand.cat === 'sign' || hand.cat === 'sfloat') { hand = { cat: signsFloat ? 'sfloat' : 'sign', key: hand.key }; markActive(); }
   };
   paint();
-  section('Знаци', SIGNS.map((s) => ({ cat: 'sign' as const, key: s.type, name: s.name, sub: s.code ?? 'код за потврда', draw: (g) => drawSign(g, s.type) })), seg);
-  section('Семафори', LIGHT_ITEMS.map((l) => ({ cat: 'light' as const, key: l.key, name: l.name.replace('Семафор: ', '').replace('Семафор со свој столб', 'Со свој столб').replace(/^./, (c) => c.toUpperCase()), sub: '', draw: (g: CanvasRenderingContext2D) => {
-    g.fillStyle = '#8a8f96'; g.fillRect(-2, -28, 4, 56);
-    g.fillStyle = '#3a3d42'; g.fillRect(-9, -26, 18, 52);
-    [['#ff453a', -14], ['#ffd60a', 0], ['#30d158', 14]].forEach(([c, y]) => { g.fillStyle = c as string; g.beginPath(); g.arc(0, y as number, 5, 0, 7); g.fill(); });
-  } })));
-  section('Ознаки на коловоз', MARKS.map((m) => ({ cat: 'mark' as const, key: m.key, name: m.name, sub: m.code ?? '', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#fff'; if (m.key === 'dashed') { for (let y = -30; y < 30; y += 16) g.fillRect(-3, y, 6, 10); } else if (m.key === 'double') { g.fillRect(-8, -30, 5, 60); g.fillRect(3, -30, 5, 60); } else if (m.kind === 'zebra') { for (let x = -30; x < 30; x += 12) g.fillRect(x, -22, 6, 44); } else if (m.key === 'stop') g.fillRect(-30, -4, 60, 8); else g.fillRect(-3, -30, 6, 60); } })));
-  section('Стрелки и симболи', TEMPLATES.map((t) => ({ cat: 'tpl' as const, key: t.key, name: t.name.replace('Стрелка: ', '').replace(/^./, (c) => c.toUpperCase()), sub: '', draw: (g: CanvasRenderingContext2D) => {
-    g.strokeStyle = t.material === 'm_line_yellow' ? '#ffd60a' : '#fff'; g.fillStyle = g.strokeStyle; g.lineWidth = 4; g.lineJoin = 'round';
-    if (t.key === 'give_way_triangle') { g.beginPath(); g.moveTo(-14, -9); g.lineTo(14, -9); g.lineTo(0, 16); g.closePath(); g.stroke(); return; }
-    if (t.key === 'bus_stop') { g.lineWidth = 3; g.strokeRect(-26, -16, 52, 32); g.font = 'bold 16px Arial'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('BUS', 0, 1); return; }
-    // the arrow itself, drawn from its own strokes (y up in the world is up on the tile)
-    g.lineWidth = 4; g.lineCap = 'round';
-    for (const st of t.strokes) { g.beginPath(); st.forEach(([x, y], i) => (i ? g.lineTo(x * 16, -y * 16 + 3) : g.moveTo(x * 16, -y * 16 + 3))); g.stroke(); }
-  } })));
-  section('Столбчиња', POLE_ITEMS.map((p) => ({ cat: 'pole' as const, key: p.key, name: p.name, sub: '0,2 × 0,2 м', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a8f96'; g.fillRect(-16, -16, 32, 32); g.fillStyle = '#5d6168'; g.fillRect(-16, -16, 32, 4); } })));
+  section('Знаци', SIGNS.map((s) => ({ cat: 'sign' as const, key: s.type, name: s.name, sub: s.code ?? '' })), seg);
+  section('Семафори', LIGHT_ITEMS.map((l) => ({ cat: 'light' as const, key: l.key, name: l.name })));
+  section('Линии на коловоз', MARKS.map((m) => ({ cat: 'mark' as const, key: m.key, name: m.name, sub: m.code ?? '' })));
+  section('Стрелки и симболи', TEMPLATES.map((t) => ({ cat: 'tpl' as const, key: t.key, name: t.name })));
+  section('Столбчиња', POLE_ITEMS.map((p) => ({ cat: 'pole' as const, key: p.key, name: p.name, sub: '0,2 × 0,2 м' })));
   section('Дрвја и светилки', [
-    ...TREES.map((t) => ({ cat: 'tree' as const, key: t.key, name: t.name, sub: '', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#6b4e2e'; g.fillRect(-2, 0, 4, 22); g.fillStyle = '#34c759'; g.beginPath(); g.arc(0, -6, 16, 0, 7); g.fill(); } })),
-    ...LAMPS.map((l) => ({ cat: 'lamp' as const, key: l.key, name: l.name, sub: '', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a8f96'; g.fillRect(-1.5, -26, 3, 50); g.fillRect(-1.5, -26, 16, 3); g.fillStyle = '#ffe9a8'; g.fillRect(12, -24, 6, 4); } })),
+    ...TREES.map((t) => ({ cat: 'tree' as const, key: t.key, name: t.name })),
+    ...LAMPS.map((l) => ({ cat: 'lamp' as const, key: l.key, name: l.name })),
   ]);
-  section('Алатки', [{ cat: 'axe' as const, key: 'axe', name: 'Секира', sub: 'K · брише само твои ставки', draw: (g: CanvasRenderingContext2D) => { g.fillStyle = '#8a6a48'; g.fillRect(-2, -26, 4, 44); g.fillStyle = '#ff453a'; g.beginPath(); g.moveTo(2, -26); g.lineTo(18, -20); g.lineTo(18, -6); g.lineTo(2, -10); g.closePath(); g.fill(); } }]);
+  section('Алатки', [{ cat: 'axe' as const, key: 'axe', name: 'Секира', sub: 'K · брише само твои ставки' }]);
   const empty = document.createElement('p'); empty.className = 'inv-empty'; empty.textContent = 'Нема такви ставки'; empty.hidden = true; inv.appendChild(empty);
   markActive();
 }
@@ -675,16 +665,10 @@ function select(id: number | null) {
   document.getElementById('ins-title')!.textContent = title;
   document.getElementById('ins-code')!.textContent = code;
   const signLike = r.cat === 'sign' || r.cat === 'light';
-  (document.getElementById('ins-facing')!.closest('.irow') as HTMLElement).style.display = signLike ? 'flex' : 'none';
+  (document.getElementById('ins-facing')!.closest('.irow') as HTMLElement).style.display = r.cat === 'mark' ? 'none' : 'flex';
   (document.getElementById('ins-verified')!.closest('.irow') as HTMLElement).style.display = signLike ? 'flex' : 'none';
   (document.getElementById('ins-width')!.closest('.irow') as HTMLElement).style.display = r.cat === 'mark' ? 'flex' : 'none';
-  const isPole = r.cat === 'pole';
-  for (const id of ['row-plen', 'row-pthick', 'row-pz']) (document.getElementById(id) as HTMLElement).style.display = 'none'; // poles are fixed 1 m blocks
-  if (isPole) {
-    (document.getElementById('ins-plen') as HTMLInputElement).value = String(r.len ?? POLE_L);
-    (document.getElementById('ins-pthick') as HTMLInputElement).value = String(r.thick ?? POLE_W);
-    (document.getElementById('ins-pz') as HTMLInputElement).value = String(r.z);
-  }
+  const isPole = r.cat === 'pole'; // pole blocks have a fixed size: only their turn can change
   const isLight = r.cat === 'light';
   (document.getElementById('row-timer') as HTMLElement).style.display = isLight ? 'flex' : 'none';
   (document.getElementById('row-offset') as HTMLElement).style.display = isLight ? 'flex' : 'none';
@@ -695,7 +679,7 @@ function select(id: number | null) {
     (document.getElementById('ins-off') as HTMLInputElement).value = String(r.offset);
   }
   (document.getElementById('ins-width') as HTMLInputElement).value = r.cat === 'mark' ? String(r.width) : '';
-  (document.getElementById('ins-facing') as HTMLInputElement).value = String(Math.round((signLike ? r.facing : isPole ? (r.yaw ?? 0) : 0) * 10) / 10);
+  (document.getElementById('ins-facing') as HTMLInputElement).value = String(Math.round((isPole ? (r.yaw ?? 0) : r.cat === 'mark' ? 0 : (r.facing ?? 0)) * 10) / 10);
   (document.getElementById('ins-verified') as HTMLInputElement).checked = r.verified;
   (document.getElementById('ins-note') as HTMLTextAreaElement).value = r.note;
 }
@@ -713,16 +697,6 @@ for (const [id, field] of [['ins-g', 'green'], ['ins-y', 'yellow'], ['ins-r', 'r
     const v = parseFloat((e.target as HTMLInputElement).value);
     if (!r || r.cat !== 'light' || !(v >= 0) || (field !== 'offset' && field !== 'yellow' && v <= 0)) return;
     r[field] = v; save();
-  });
-}
-// poles: length, thickness, centre height and turn (yaw) for fine control
-for (const [id, field] of [['ins-plen', 'len'], ['ins-pthick', 'thick'], ['ins-pz', 'z']] as const) {
-  document.getElementById(id)!.addEventListener('input', (e) => {
-    const r = recs.find((q) => q.id === selectedId);
-    const v = parseFloat((e.target as HTMLInputElement).value);
-    if (!r || r.cat !== 'pole' || !Number.isFinite(v)) return;
-    if ((field === 'len' || field === 'thick') && !(v >= 0.02)) return;
-    r[field] = v; rebuild(); save();
   });
 }
 document.getElementById('ins-width')!.addEventListener('input', (e) => {
@@ -856,7 +830,6 @@ document.getElementById('openProj')!.addEventListener('change', async (e) => {
   void persistNow();
   msg(`Отворено: ${file.name} · ${recs.length} ставки.`);
 });
-document.getElementById('surveyor')!.addEventListener('input', () => persistSoon());
 document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
 /** Saves the work to your account (admin: publishes it for everyone). Returns true when it is saved. */
 async function saveToAccount(): Promise<boolean> {
@@ -891,9 +864,19 @@ window.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.co
 function labelSave() {
   const b = document.getElementById('saveGame')!;
   b.textContent = 'Зачувај';
-  if (cloud.account()) cloud.me().then((r) => { b.textContent = r.admin ? 'Објави' : 'Зачувај'; b.title = r.admin ? 'Ја менува играта за сите играчи' : 'Зачувај на твојот профил (⌘S)'; }).catch(() => {});
+  const admin = (on: boolean) => {
+    document.querySelectorAll<HTMLElement>('.admin-only').forEach((el) => (el.hidden = !on));
+    document.querySelectorAll<HTMLElement>('.player-only').forEach((el) => (el.hidden = on));
+  };
+  admin(false);
+  if (cloud.account()) cloud.me().then((r) => {
+    b.textContent = r.admin ? 'Објави' : 'Зачувај';
+    b.title = r.admin ? 'Ја менува играта за сите играчи (⌘S)' : 'Зачувај на твојот профил (⌘S)';
+    admin(r.admin);
+  }).catch(() => {});
 }
 labelSave();
+initTips();
 
 // ---------- leaving: unsaved work asks first (buttons, the exit link, the back button, closing the tab) ----------
 const leaveDlg = document.getElementById('leaveDlg')!;
@@ -1045,7 +1028,6 @@ function applySession(s: Session, mergeVersions: boolean) {
   const incoming = Array.isArray(s.versions) ? (s.versions as Version[]) : [];
   const seen = new Set<number>();
   versionList = (mergeVersions ? [...versionList, ...incoming] : incoming).filter((v) => (seen.has(v.id) ? false : (seen.add(v.id), true)));
-  if (s.surveyor) surveyorInput.value = s.surveyor;
   undoStack = []; redoStack = [];
   select(null); rebuild(); refreshVersions();
   lastState = JSON.stringify({ recs, nextId });
@@ -1133,7 +1115,7 @@ function msg(text: string) {
 }
 function info(camera: THREE.PerspectiveCamera) {
   const it = hand;
-  const label = it.cat === 'pole' ? POLE_ITEMS.find((p) => p.key === it.key)!.name : it.cat === 'sign' ? SIGNS.find((s) => s.type === it.key)!.name : it.cat === 'sfloat' ? `${SIGNS.find((s) => s.type === it.key)!.name}, без столб` : it.cat === 'light' ? LIGHT_ITEMS.find((l) => l.key === it.key)!.name : it.cat === 'tree' ? TREES.find((t) => t.key === it.key)!.name : it.cat === 'lamp' ? 'Улична светилка' : it.cat === 'axe' ? 'Секира' : markDef(it.key).name;
+  const label = it.cat === 'pole' ? POLE_ITEMS.find((p) => p.key === it.key)!.name : it.cat === 'sign' ? SIGNS.find((s) => s.type === it.key)!.name : it.cat === 'sfloat' ? `${SIGNS.find((s) => s.type === it.key)!.name}, без столб` : it.cat === 'light' ? `Семафор ${LIGHT_ITEMS.find((l) => l.key === it.key)!.name.toLowerCase()}` : it.cat === 'tree' ? TREES.find((t) => t.key === it.key)!.name : it.cat === 'lamp' ? 'Улична светилка' : it.cat === 'axe' ? 'Секира' : markDef(it.key).name;
   const how = it.cat === 'axe' ? 'кликни на твоја ставка'
     : it.cat === 'tpl' ? 'кликни за да поставиш · Q / E сврти'
     : it.cat === 'mark' && MARKS.find((m) => m.key === it.key)!.poly ? (poly.length ? 'кликни следна точка · Enter заврши · X откажи' : 'кликни за почеток на линијата')
@@ -1155,7 +1137,6 @@ function setDrawer(open: boolean) {
   document.getElementById('bld')!.classList.toggle('drawer-open', open);
 }
 menuToggle.addEventListener('click', () => setDrawer(drawer.hidden));
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !drawer.hidden) setDrawer(false); });
 
 // ---------- controls and keys ----------
 // A clicked button or menu keeps keyboard focus, so Space would click it again. Clicks drop the focus,
@@ -1185,7 +1166,7 @@ document.addEventListener('pointerlockerror', () => msg('Прелистувач�
 // the top-bar label only shows the mode; switching is done with C (look and free) and Esc (free)
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas();
-  lookBtn.textContent = locked ? 'Гледање · C или Esc' : 'Слободен глушец · C';
+  lookBtn.textContent = locked ? 'Гледање · C' : 'Слободен глушец · C';
   lookBtn.classList.toggle('on', locked);
 });
 window.addEventListener('mousemove', (e) => {
@@ -1246,7 +1227,6 @@ window.addEventListener('mousedown', (e) => {
 (document.getElementById('snap') as HTMLSelectElement).addEventListener('change', (e) => (snap = parseFloat((e.target as HTMLSelectElement).value)));
 (document.getElementById('compassSel') as HTMLSelectElement).addEventListener('change', (e) => (compassStep = parseFloat((e.target as HTMLSelectElement).value)));
 (document.getElementById('speedSel') as HTMLSelectElement).addEventListener('change', (e) => (moveSpeed = parseFloat((e.target as HTMLSelectElement).value)));
-document.getElementById('surveyor')!.addEventListener('change', save);
 document.getElementById('undoBtn')!.addEventListener('click', undo);
 document.getElementById('redoBtn')!.addEventListener('click', redo);
 

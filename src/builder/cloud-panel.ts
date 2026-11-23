@@ -30,7 +30,6 @@ export function initCloudPanel(o: Options) {
     $('gateUser').textContent = a?.username ?? '';
     $('gateAvatar').textContent = initial;
     ($('startBtn') as HTMLButtonElement).disabled = !a; // no building without a sign-in
-    ($('gateOpen') as HTMLButtonElement).disabled = !a;
     // the "more" panel
     $('cWho').textContent = a?.username ?? 'Не си најавен';
     $('cAvatar').textContent = initial;
@@ -45,7 +44,6 @@ export function initCloudPanel(o: Options) {
 
   // signing in or up: the shared form (rules first, one request at a time, messages inside the form)
   form = mountAuthForm($('authBoxB'), () => { who(); o.onSignedIn?.(); });
-  $('gateOpen').addEventListener('click', () => $('openProj').click());
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); version = 0; who(); o.msg('Одјавен си'); });
   $('cLogout').addEventListener('click', () => { cloud.setAccount(null); location.reload(); }); // signed out: back to the start sheet
 

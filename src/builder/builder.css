@@ -5,8 +5,11 @@
 #bld { position: fixed; inset: 0; z-index: 20; pointer-events: none; font-size: 13px; }
 #bld > header, #bld > aside, #hud > * { pointer-events: auto; }
 #bld aside { position: fixed; border-radius: var(--r); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); }
-#bld ::-webkit-scrollbar { width: 6px; }
-#bld ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+/* scrollbars stay inside the rounded panels: thin, with the track kept clear of the corners */
+#bld * { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.18) transparent; }
+#bld ::-webkit-scrollbar { width: 10px; height: 0; }
+#bld ::-webkit-scrollbar-track { background: transparent; margin: 14px 0; }
+#bld ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 5px; border: 3px solid transparent; background-clip: padding-box; }
 
 /* ---------- toolbar ---------- */
 #top { position: fixed; top: 12px; left: 12px; right: 12px; height: 52px; padding: 0 8px 0 6px; display: flex; align-items: center; gap: 4px;
@@ -22,16 +25,18 @@
 .spacer { flex: 1; }
 .tb-chip { font-size: 12px; color: var(--text-2); padding: 5px 10px; border-radius: 999px; background: var(--fill); margin-right: 6px; }
 .tb-chip.on { background: var(--blue); color: #fff; }
-.tb-status { font-size: 12px; color: var(--text-2); margin-right: 6px; white-space: nowrap; }
+.tb-status { font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.tb-info { margin: 0 8px 0 6px; }
 .tb-status.dirty::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ff9f0a; margin-right: 6px; vertical-align: 1px; }
 .tb-status.bad { color: var(--red); }
 #saveGame { margin-left: 4px; }
 
 /* ---------- library ---------- */
-#lib { top: 76px; left: 12px; bottom: 12px; width: 272px; display: flex; flex-direction: column; overflow: hidden; }
+#lib { top: 76px; left: 12px; bottom: 12px; width: 272px; overscroll-behavior: contain; display: flex; flex-direction: column; overflow: hidden; }
 .lib-search { margin: 10px; width: auto; height: 34px; font-size: 13px; background: var(--fill); }
 #inv { flex: 1; overflow-y: auto; padding: 0 6px 10px; }
-.inv-sec { display: flex; align-items: center; justify-content: space-between; margin: 14px 8px 6px; }
+.inv-sec { display: flex; align-items: center; gap: 8px; margin: 14px 8px 6px; }
+.inv-sec .seg { margin-left: auto; }
 .inv-sec:first-child { margin-top: 2px; }
 .inv-sec .label { margin: 0; }
 .inv-sec .seg { width: 156px; }
@@ -48,7 +53,7 @@
 .inv-empty { padding: 20px; text-align: center; color: var(--text-3); }
 
 /* ---------- inspector ---------- */
-#side { top: 76px; right: 12px; width: 288px; max-height: calc(100vh - 88px); overflow-y: auto; padding: 16px; display: none; }
+#side { top: 76px; right: 12px; width: 288px; max-height: calc(100% - 88px); overflow-x: hidden; overflow-y: auto; padding: 16px; display: none; }
 #side.show { display: block; }
 #bld.drawer-open #side { display: none; }
 .ins-head { margin-bottom: 10px; }
@@ -68,7 +73,7 @@
 .switch:checked::after { transform: translateX(16px); }
 
 /* ---------- the "more" panel ---------- */
-#drawer { top: 76px; right: 12px; bottom: 12px; width: 320px; overflow-y: auto; padding: 16px 12px 20px; animation: slide 0.3s var(--ease); }
+#drawer { top: 76px; right: 12px; bottom: 12px; width: 320px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 16px 12px 20px; animation: slide 0.3s var(--ease); }
 @keyframes slide { from { transform: translateX(10px); } }
 #drawer section + section { margin-top: 22px; }
 #drawer .label { margin-left: 12px; }
