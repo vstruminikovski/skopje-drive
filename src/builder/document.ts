@@ -232,7 +232,10 @@ export function initDocument(o: Options): DocApi {
     if (publishing && !(await confirmPublish())) return false;
     const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() };
     try {
-      const base = doc.kind === 'work' && doc.work === work ? doc.latest : 0;
+      // the version we build on: the one this document shows, or the newest one on the server when it is another document
+      const base = doc.kind === 'work' && doc.work === work
+        ? doc.latest
+        : await cloud.loadWorkspace(work).then((w) => w.latest).catch(() => 0);
       const r = await cloud.saveWorkspace(work, data, base, { mode, label });
       Object.assign(doc, { kind: 'work', work, owner: doc.owner || m.username, version: r.version, latest: r.version, file: '' });
       await reloadList();
@@ -241,7 +244,7 @@ export function initDocument(o: Options): DocApi {
       o.msg(publishing ? `Објавено за сите · верзија ${r.version}` : mode === 'new' ? `Зачувана е верзија ${r.version}${dropped}` : `Зачувано · верзија ${r.version}`);
       return true;
     } catch (e) {
-      if (e instanceof cloud.CloudError && e.status === 409) o.msg('Некој зачувал во меѓувреме. Отвори ја најновата верзија и обиди се повторно.');
+      if (e instanceof cloud.CloudError && e.status === 409) o.msg('Некој друг зачувал нова верзија. Отвори ја најновата (Верзии) и повтори ја промената.');
       else fail(e);
       return false;
     }
