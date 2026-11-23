@@ -38,10 +38,10 @@ const SURVEY_URL = `${BASE}survey/prviot_krug.geojson`.replace(/\/+/g, '/');
 // The rest are placed as the game draws them, but not exported until their code is confirmed.
 interface SignItem { type: string; code: string | null; wiki: string; name: string; exportable: boolean }
 const SIGNS: SignItem[] = [
-  { type: 'give_way', code: 'II-1', wiki: '201', name: 'Уступи предност', exportable: true },
+  { type: 'give_way', code: 'II-1', wiki: '201', name: 'Отстапи предност', exportable: true },
   { type: 'noentry', code: 'II-4', wiki: '205', name: 'Забрането влегување', exportable: true },
   { type: 'one_way', code: 'III-2', wiki: '305', name: 'Еднонасочна улица', exportable: true },
-  { type: 'priorityroad', code: 'III-3', wiki: '306', name: 'Приоритетен пат', exportable: true },
+  { type: 'priorityroad', code: 'III-3', wiki: '306', name: 'Пат со првенство', exportable: true },
   { type: 'speed_50', code: null, wiki: '235-50', name: 'Ограничување 50 km/h', exportable: false },
   { type: 'speed_30', code: null, wiki: 'not on list', name: 'Ограничување 30 km/h', exportable: false },
   { type: 'arrow_right', code: null, wiki: '245.4', name: 'Задолжително надесно', exportable: false },
@@ -58,7 +58,7 @@ const TEMPLATES: { key: string; name: string; width: number; strokes: [number, n
   { key: 'arrow_uturn', name: 'Пресврт', width: 0.5, strokes: [[[0, -2], [0, 0.8], [-0.7, 1.3], [-0.7, 0.4]], [[-1.1, 0.7], [-0.7, 0.2], [-0.3, 0.7]]] },
   // European bus stop: yellow box with the word BUS painted inside (letters 1 m tall, 0.5 m wide). Sizes vary by country: check on site.
   // give-way triangle: a white outline, apex towards the traffic. Drivers wait here, before the stop line, at the pedestrian crossing
-  { key: 'give_way_triangle', name: 'Триаголник за уступување', width: 0.12, strokes: [[[-0.5, -0.433], [0.5, -0.433], [0, 0.433], [-0.5, -0.433]]] },
+  { key: 'give_way_triangle', name: 'Триаголник за отстапување', width: 0.12, strokes: [[[-0.5, -0.433], [0.5, -0.433], [0, 0.433], [-0.5, -0.433]]] },
   { key: 'bus_stop', name: 'Автобуска стојалка', width: 0.12, material: 'm_line_yellow', strokes: [
     [[-1.5, -1], [1.5, -1], [1.5, 1], [-1.5, 1], [-1.5, -1]],
     // B
@@ -75,7 +75,7 @@ const MARKS: MarkItem[] = [
   { key: 'solid', name: 'Полна линија', kind: 'marking', material: 'm_line_white', width: 0.12, code: null, poly: true },
   { key: 'dashed', name: 'Испрекината линија', kind: 'marking', material: 'm_line_white_discontinue', width: 0.12, code: null, poly: true },
   { key: 'double', name: 'Двојна полна линија', kind: 'marking', material: 'm_line_white', width: 0.12, code: null, poly: true },
-  { key: 'stop', name: 'Линија за застанување', kind: 'marking', material: 'm_line_white', width: 0.5, code: 'V-1', poly: false },
+  { key: 'stop', name: 'Линија за запирање', kind: 'marking', material: 'm_line_white', width: 0.5, code: 'V-1', poly: false },
   { key: 'zebra', name: 'Пешачки премин', kind: 'zebra', material: 'italy_road_markings_zebra', width: 3, code: 'V-4', poly: false },
 ];
 // Trees and street lamps: the game's own asset types (taken from the map export).
@@ -84,7 +84,7 @@ const TREES = [
   { key: 'mapng_tree_tree_oak_large_a', name: 'Даб, голем' },
   { key: 'mapng_tree_tree_beech_large_c', name: 'Бука, голема' },
   { key: 'mapng_tree_tree_aspen_small_a', name: 'Трепетлика, мала' },
-  { key: 'holm_oak_city_small', name: 'Градски храст' },
+  { key: 'holm_oak_city_small', name: 'Зимзелен даб' },
 ];
 const LAMPS = [{ key: 'eca_lamppost', name: 'Улична светилка' }];
 // Pole block: a 0.3 m square block, stacked or set sideways against another block (builder only, for later)
@@ -487,7 +487,7 @@ let signsFloat = false;
 const TIPS: Record<string, string> = {
   'Знаци': 'Сообраќајни знаци. „Со столб“ стои на земја; „Без столб“ се лепи на столбче-коцка или семафор.',
   'Семафори': '„На столбче-коцка“: насочи кон коцка и кликни. „Со свој столб“: стави каде било. Времињата ги менуваш кога ќе го избереш.',
-  'Линии на коловоз': 'Полна, испрекината и двојна линија се цртаат точка по точка, Enter завршува. Застанувањето и пешачкиот имаат почеток и крај.',
+  'Линии на коловоз': 'Полна, испрекината и двојна линија се цртаат точка по точка, Enter завршува. Линијата за запирање и пешачкиот премин имаат почеток и крај.',
   'Стрелки и симболи': 'Се ставаат со еден клик. Q и E ги вртат пред поставување.',
   'Столбчиња': 'Коцки од 0,2 м. Кликни на земјата или на страна од коцка за да надоградиш. На нив се лепат знаци и семафори.',
   'Дрвја и светилки': 'Кликни за да поставиш. Q и E вртат пред поставување.',
@@ -496,7 +496,6 @@ const TIPS: Record<string, string> = {
 function buildInventory() {
   const inv = document.getElementById('inv')!;
   inv.innerHTML = '';
-  let n = 0;
   type Row = { cat: Cat; key: string; name: string; sub?: string };
   const section = (title: string, rows: Row[], extra?: HTMLElement) => {
     const h = document.createElement('div'); h.className = 'inv-sec';
@@ -512,8 +511,6 @@ function buildInventory() {
       const t = document.createElement('div'); t.className = 'n'; t.textContent = row.name;
       if (row.sub) { const sm = document.createElement('small'); sm.textContent = row.sub; t.appendChild(sm); }
       el.appendChild(t);
-      n++;
-      if (n <= 9) { const k = document.createElement('kbd'); k.textContent = String(n); el.appendChild(k); }
       el.onclick = () => { hand = { cat: row.cat === 'sign' && signsFloat ? 'sfloat' : row.cat, key: row.key }; pending = null; markActive(); };
       inv.appendChild(el);
     }
@@ -528,16 +525,16 @@ function buildInventory() {
     if (hand.cat === 'sign' || hand.cat === 'sfloat') { hand = { cat: signsFloat ? 'sfloat' : 'sign', key: hand.key }; markActive(); }
   };
   paint();
-  section('Знаци', SIGNS.map((s) => ({ cat: 'sign' as const, key: s.type, name: s.name, sub: s.code ?? '' })), seg);
+  section('Знаци', SIGNS.map((s) => ({ cat: 'sign' as const, key: s.type, name: s.name })), seg);
   section('Семафори', LIGHT_ITEMS.map((l) => ({ cat: 'light' as const, key: l.key, name: l.name })));
-  section('Линии на коловоз', MARKS.map((m) => ({ cat: 'mark' as const, key: m.key, name: m.name, sub: m.code ?? '' })));
+  section('Линии на коловоз', MARKS.map((m) => ({ cat: 'mark' as const, key: m.key, name: m.name })));
   section('Стрелки и симболи', TEMPLATES.map((t) => ({ cat: 'tpl' as const, key: t.key, name: t.name })));
-  section('Столбчиња', POLE_ITEMS.map((p) => ({ cat: 'pole' as const, key: p.key, name: p.name, sub: '0,2 × 0,2 м' })));
+  section('Столбчиња', POLE_ITEMS.map((p) => ({ cat: 'pole' as const, key: p.key, name: p.name })));
   section('Дрвја и светилки', [
     ...TREES.map((t) => ({ cat: 'tree' as const, key: t.key, name: t.name })),
     ...LAMPS.map((l) => ({ cat: 'lamp' as const, key: l.key, name: l.name })),
   ]);
-  section('Алатки', [{ cat: 'axe' as const, key: 'axe', name: 'Секира', sub: 'K · брише само твои ставки' }]);
+  section('Алатки', [{ cat: 'axe' as const, key: 'axe', name: 'Секира' }]);
   const empty = document.createElement('p'); empty.className = 'inv-empty'; empty.textContent = 'Нема такви ставки'; empty.hidden = true; inv.appendChild(empty);
   markActive();
 }
@@ -661,9 +658,7 @@ function select(id: number | null) {
   side.classList.add('show');
   const sign = r.cat === 'sign' ? SIGNS.find((s) => s.type === r.type) : null;
   const title = r.cat === 'sign' ? sign!.name : r.cat === 'light' ? 'Семафор' : r.cat === 'pole' ? 'Столбче-коцка' : r.cat === 'prop' ? (r.kind === 'tree' ? (TREES.find((t) => t.key === r.type)?.name ?? 'Дрво') : 'Улична светилка') : markDef(r.key).name;
-  const code = r.cat === 'sign' ? (sign!.code ?? 'код за потврда') : r.cat === 'light' ? 'VI-4.1' : r.cat === 'pole' ? '0,2 × 0,2 м' : r.cat === 'prop' ? '' : (markDef(r.key).code ?? '');
   document.getElementById('ins-title')!.textContent = title;
-  document.getElementById('ins-code')!.textContent = code;
   const signLike = r.cat === 'sign' || r.cat === 'light';
   (document.getElementById('ins-facing')!.closest('.irow') as HTMLElement).style.display = r.cat === 'mark' ? 'none' : 'flex';
   (document.getElementById('ins-verified')!.closest('.irow') as HTMLElement).style.display = signLike ? 'flex' : 'none';
@@ -1191,8 +1186,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   keys.add(e.code);
-  if (/^Digit[1-9]$/.test(e.code)) { const it = ITEMS[parseInt(e.code.slice(5), 10) - 1]; if (it) { hand = it.cat === 'sign' && signsFloat ? { cat: 'sfloat', key: it.key } : it; pending = null; markActive(); } }
-  else if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }
+  if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }
   else if (e.code === 'KeyK') { const it = ITEMS.find((q) => q.cat === 'axe')!; hand = it; markActive(); msg('Секира: насочи кон твоја ставка и кликни'); }
   else if (e.code === 'KeyC') { if (locked) document.exitPointerLock(); else lockView(); } // C: mouse look on / free
   else if (e.code === 'Enter') { if (poly.length) finishPoly(); }
@@ -1341,7 +1335,7 @@ function updateMarkers(camera: THREE.PerspectiveCamera) {
 }
 
 // test hook for the browser check (no effect on use)
-(window as unknown as Record<string, unknown>).__bld = {
+if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bld = {
   get recs() { return recs; },
   hand(cat: 'sign' | 'light' | 'mark', key: string) { hand = { cat, key }; pending = null; markActive(); },
   view(x: number, y: number, yawDeg: number, pitchDeg: number, h?: number) { pos.set(x, h ?? ((ctx ? ctx.heightAt(x, y) : 0) + 1.7), -y); yaw = (yawDeg * Math.PI) / 180; pitch = (pitchDeg * Math.PI) / 180; },

@@ -41,15 +41,14 @@
       <aside id="side" class="glass">
         <div class="ins-head">
           <h3 id="ins-title">Ништо не е избрано</h3>
-          <span id="ins-code"></span>
         </div>
         <div class="irow"><span>Насока<button class="info" type="button" data-tip="Во која насока гледа ставката, во степени. Брзо: [ и ] вртат за 1°.">i</button></span><span class="unit"><input type="number" id="ins-facing" class="field num" min="0" max="359.9" step="1">°</span></div>
         <div class="irow"><span>Ширина</span><span class="unit"><input type="number" id="ins-width" class="field num" min="0.02" step="0.01">м</span></div>
         <div class="irow" id="row-timer"><span>Зелено · жолто · црвено<button class="info" type="button" data-tip="Колку секунди свети секое светло на семафорот.">i</button></span><span class="unit"><input type="number" id="ins-g" class="field num sm" min="1" step="1"><input type="number" id="ins-y" class="field num sm" min="0" step="0.5"><input type="number" id="ins-r" class="field num sm" min="1" step="1">с</span></div>
         <div class="irow" id="row-offset"><span>Почеток<button class="info" type="button" data-tip="Ја поместува смената на светлата, за соседните семафори да не светат исто.">i</button></span><span class="unit"><input type="number" id="ins-off" class="field num" min="0" step="1">с</span></div>
-        <label class="irow"><span>Проверено на терен<button class="info" type="button" data-tip="Означи кога си ја проверил ставката на самото место во Скопје.">i</button></span><input type="checkbox" id="ins-verified" class="switch"></label>
-        <textarea id="ins-note" class="field ins-note" rows="2" placeholder="Белешка"></textarea>
-        <button id="delBtn" class="btn btn-danger ins-del">Избриши <kbd>Del</kbd></button>
+        <label class="irow admin-only" hidden><span>Проверено на терен<button class="info" type="button" data-tip="Означи кога си ја проверил ставката на самото место во Скопје.">i</button></span><input type="checkbox" id="ins-verified" class="switch"></label>
+        <textarea id="ins-note" class="field ins-note admin-only" hidden rows="2" placeholder="Белешка"></textarea>
+        <button id="delBtn" class="btn btn-danger ins-del">Избриши</button>
       </aside>
 
       <!-- everything else, in one place -->
@@ -66,6 +65,8 @@
             <button id="openProjBtn" class="row"><span class="row-main">Отвори проект…</span></button>
             <button id="saveProj" class="row"><span class="row-main">Сними проект на компјутерот</span></button>
             <button id="loadGame" class="row player-only"><span class="row-main">Почни од објавената игра</span></button>
+            <button id="exportBtn" class="row admin-only" hidden><span class="row-main">Извези за мапата</span></button>
+            <button id="modBtn" class="row admin-only" hidden><span class="row-main">Извези основна игра</span></button>
           </div>
           <input type="file" id="openProj" accept=".json,application/json" hidden>
         </section>
@@ -101,7 +102,6 @@
             <dt>Space · Shift</dt><dd>горе · долу</dd>
             <dt>V</dt><dd>одење или летање</dd>
             <dt>C</dt><dd>гледање со глушецот</dd>
-            <dt>1 – 9</dt><dd>избери ставка</dd>
             <dt>Клик · десен клик</dt><dd>постави · избриши</dd>
             <dt>Q · E</dt><dd>сврти пред поставување</dd>
             <dt>[ · ]</dt><dd>сврти избрано</dd>
@@ -112,10 +112,8 @@
           </dl>
         </section>
         <section>
-          <span class="label">Напредно<button class="info" type="button" data-tip="Извозите се за администраторот: податоци за мапата и основната игра. Бришењето остава резерва во Верзии.">i</button></span>
+          <span class="label">Бришење<button class="info" type="button" data-tip="Ги брише сите ставки што си ги поставил. Резерва останува во Верзии, па можеш да ги вратиш.">i</button></span>
           <div class="list">
-            <button id="exportBtn" class="row admin-only" hidden><span class="row-main">Извези за мапата (GeoJSON)</span></button>
-            <button id="modBtn" class="row admin-only" hidden><span class="row-main">Извези основна игра (default.json)</span></button>
             <button id="clearBtn" class="row danger"><span class="row-main">Избриши ги сите мои ставки</span></button>
           </div>
         </section>
