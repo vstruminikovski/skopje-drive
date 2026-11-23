@@ -5,7 +5,10 @@ const API = ((import.meta.env.VITE_API as string | undefined) ?? '').replace(/\/
 const ACCOUNT_KEY = 'skopje.account';
 
 export interface Account { username: string; token: string }
-export interface Workspace { name: string; owner: string; members: string[]; version: number; savedAt: string; savedBy: string; data: unknown }
+/** One saved version of a work. A work keeps its newest 5. */
+export interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number }
+/** A work as the server gives it: `data` is the version asked for (the newest by default), `latest` the newest number. */
+export interface Workspace { name: string; owner: string; members: string[]; latest: number; version: number; savedAt: string; savedBy: string; data: unknown; versions: VersionMeta[] }
 
 export class CloudError extends Error {
   constructor(message: string, public status: number) { super(message); }
@@ -45,11 +48,13 @@ export function register(username: string, password: string, turnstile?: string)
 export function login(username: string, password: string, turnstile?: string) {
   return call<{ username: string; token: string }>('/api/login', { method: 'POST', body: JSON.stringify({ username, password, turnstile }) });
 }
-export function loadWorkspace(name: string) {
-  return call<Workspace>(`/api/ws/${encodeURIComponent(name)}`, { headers: auth() });
+/** Opens a work. Without `version` it gives the newest version. */
+export function loadWorkspace(name: string, version?: number) {
+  const q = version ? `?v=${version}` : '';
+  return call<Workspace>(`/api/ws/${encodeURIComponent(name)}${q}`, { headers: auth() });
 }
 export function saveWorkspace(name: string, data: unknown, baseVersion: number) {
-  return call<{ name: string; version: number; savedAt: string }>(`/api/ws/${encodeURIComponent(name)}`, {
+  return call<{ name: string; version: number; savedAt: string; dropped?: number }>(`/api/ws/${encodeURIComponent(name)}`, {
     method: 'PUT', headers: auth(), body: JSON.stringify({ data, baseVersion }),
   });
 }

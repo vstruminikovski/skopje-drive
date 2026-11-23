@@ -142,7 +142,10 @@ async function login(env: Env, req: Request): Promise<Response> {
 async function getWorkspace(env: Env, req: Request, name: string): Promise<Response> {
   // the published map is what everyone plays; every other work is open only to its owner and members
   const user = await userFromToken(env, req);
-  const r = await callDo(env.WORKSPACES, name, '/get', { user, public: name === 'published' });
+  const v = new URL(req.url).searchParams.get('v');
+  const version = v === null ? 0 : Number(v);
+  if (v !== null && (!Number.isInteger(version) || version < 1)) throw new HttpError(400, 'Невалидна верзија.');
+  const r = await callDo(env.WORKSPACES, name, '/get', { user, public: name === 'published', version });
   if (r.status === 403) throw new HttpError(401, user ? 'Немаш пристап до оваа работа.' : 'Најави се за да ја отвориш оваа работа.');
   if (r.status !== 200) throw new HttpError(404, 'Нема таква работа.');
   return json(env, { name, ...r.data });
@@ -242,7 +245,11 @@ export class Account extends DurableObject {
   }
 }
 
-interface WsRec { owner: string; members: string[]; version: number; savedAt: string; savedBy: string; data: unknown }
+/** Each work keeps its newest 5 versions. The versions list is small; each version's items are kept under "v<n>". */
+const MAX_VERSIONS = 5;
+interface VersionMeta { version: number; savedAt: string; savedBy: string; count: number }
+interface WsRec { owner: string; members: string[]; version: number; versions: VersionMeta[] }
+const itemCount = (data: unknown) => (data && Array.isArray((data as { items?: unknown[] }).items) ? (data as { items: unknown[] }).items.length : 0);
 
 export class Workspace extends DurableObject {
   async fetch(req: Request): Promise<Response> {
@@ -250,44 +257,60 @@ export class Workspace extends DurableObject {
     const body = (await req.json()) as any;
     return this.ctx.blockConcurrencyWhile(async () => {
       const reply = (status: number, data: unknown = {}) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
-      const ws = await this.ctx.storage.get<WsRec>('ws');
+      const st = this.ctx.storage;
+      let ws = await st.get<WsRec & { data?: unknown; savedAt?: string; savedBy?: string }>('ws');
+      // a work saved before versions existed: its one version becomes version 1 of the list
+      if (ws && 'data' in ws) {
+        const { data, savedAt = new Date().toISOString(), savedBy = ws.owner, ...rest } = ws;
+        await st.put(`v${rest.version}`, data);
+        ws = { ...rest, versions: [{ version: rest.version, savedAt, savedBy, count: itemCount(data) }] };
+        await st.put('ws', ws);
+      }
       if (path === '/get') {
         if (!ws) return reply(404);
         const allowed = body.public || body.user === ws.owner || ws.members.includes(body.user);
-        return allowed ? reply(200, ws) : reply(403);
+        if (!allowed) return reply(403);
+        const shown = body.version ? Number(body.version) : ws.version;
+        const meta = ws.versions.find((x) => x.version === shown);
+        if (!meta) return reply(404);
+        const data = await st.get(`v${shown}`);
+        return reply(200, { owner: ws.owner, members: ws.members, latest: ws.version, version: shown, savedAt: meta.savedAt, savedBy: meta.savedBy, data, versions: ws.versions });
       }
       if (path === '/put') {
         const user: string = body.user;
+        const now = body.savedAt;
+        if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         if (!ws) {
           // a new workspace takes your own username as its name; admins may use any name (e.g. player)
-          if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
           if (user !== body.name && !body.admins.includes(user)) return reply(403, { error: 'Новата работа се создава со твоето корисничко име.' });
           if (body.baseVersion !== 0) return reply(409, { version: 0 });
-          const rec: WsRec = { owner: user, members: [], version: 1, savedAt: body.savedAt, savedBy: user, data: body.data };
-          await this.ctx.storage.put('ws', rec);
-          return reply(200, { version: 1, savedAt: rec.savedAt });
+          await st.put('v1', body.data);
+          const rec: WsRec = { owner: user, members: [], version: 1, versions: [{ version: 1, savedAt: now, savedBy: user, count: itemCount(body.data) }] };
+          await st.put('ws', rec);
+          return reply(200, { version: 1, savedAt: now });
         }
-        // the published map is what everyone plays: only an admin can change it
-        if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         if (ws.owner !== user && !ws.members.includes(user)) return reply(403, { error: 'Немаш пристап до оваа работа.' });
         if (body.baseVersion !== ws.version) return reply(409, { version: ws.version });
-        const next: WsRec = { ...ws, version: ws.version + 1, savedAt: body.savedAt, savedBy: user, data: body.data };
-        await this.ctx.storage.put('ws', next);
-        return reply(200, { version: next.version, savedAt: next.savedAt });
+        const next = ws.version + 1;
+        await st.put(`v${next}`, body.data);
+        const versions = [...ws.versions, { version: next, savedAt: now, savedBy: user, count: itemCount(body.data) }];
+        let dropped = 0;
+        while (versions.length > MAX_VERSIONS) { const old = versions.shift()!; await st.delete(`v${old.version}`); dropped++; }
+        await st.put('ws', { ...ws, version: next, versions });
+        return reply(200, { version: next, savedAt: now, dropped });
       }
       if (path === '/invite') {
         if (!ws) return reply(404);
         if (ws.owner !== body.user) return reply(403);
-        await this.ctx.storage.put('invite', { hash: body.hash, expires: body.expires });
+        await st.put('invite', { hash: body.hash, expires: body.expires });
         return reply(200);
       }
       if (path === '/join') {
         if (!ws) return reply(404);
-        const inv = await this.ctx.storage.get<{ hash: string; expires: number }>('invite');
+        const inv = await st.get<{ hash: string; expires: number }>('invite');
         if (!inv || inv.hash !== body.hash || inv.expires < Date.now()) return reply(403);
         if (ws.owner !== body.user && !ws.members.includes(body.user)) {
-          ws.members.push(body.user);
-          await this.ctx.storage.put('ws', ws);
+          await st.put('ws', { ...ws, members: [...ws.members, body.user] });
         }
         return reply(200, { members: ws.members });
       }

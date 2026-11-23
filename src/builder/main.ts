@@ -18,7 +18,7 @@ import { kvDel } from '../shared/db';
 import { clock } from '../shared/dates';
 import { drawItemIcon } from './icons';
 import { infoButton, initTips } from '../shared/tips';
-import { makeFloating, rememberPanes } from './floating';
+import { makeFloating } from './floating';
 
 // ---------- desktop only ----------
 // A mouse-and-keyboard screen at least 900 px wide. Phones and touch tablets never get the builder.
@@ -490,7 +490,7 @@ let signsFloat = false;
 const TIPS: Record<string, string> = {
   'Знаци': 'Сообраќајни знаци. „Со столб“ стои на земја; „Без столб“ се лепи на столбче-коцка или семафор.',
   'Семафори': '„На столбче-коцка“: насочи кон коцка и кликни. „Со свој столб“: стави каде било. Времињата ги менуваш кога ќе го избереш.',
-  'Линии на коловоз': 'Полна, испрекината и двојна линија се цртаат точка по точка, Enter завршува. Линијата за запирање и пешачкиот премин имаат почеток и крај.',
+  'Линии на коловоз': 'Полна, испрекината и двојна линија: 1. кликни на почетната точка, 2. кликни на секоја следна точка, 3. притисни Enter за да ја завршиш. Backspace брише последната точка. Линијата за запирање и пешачкиот премин: кликни на почетокот и на крајот.',
   'Стрелки и симболи': 'Се ставаат со еден клик. Q и E ги вртат пред поставување.',
   'Столбчиња': 'Коцки од 0,2 м. Кликни на земјата или на страна од коцка за да надоградиш. На нив се лепат знаци и семафори.',
   'Дрвја и светилки': 'Кликни за да поставиш. Q и E вртат пред поставување.',
@@ -829,28 +829,26 @@ document.getElementById('openProj')!.addEventListener('change', async (e) => {
   msg(`Отворено: ${file.name} · ${recs.length} ставки.`);
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) void persistNow(); });
-/** Saves the work to your account (admin: publishes it for everyone). Returns true when it is saved. */
+/** Saves a new version of the open work (admin on the published map: publishes it for everyone). Returns true when saved. */
 async function saveToAccount(): Promise<boolean> {
   const a = cloud.account();
   if (!a) { msg('Најави се за да зачуваш.'); return false; }
   let admin = false;
   try { admin = (await cloud.me()).admin; } catch { /* the server checks again on save */ }
-  // your game lives on your account (any device); the admin's game is the published one everyone plays
-  const target = admin ? 'published' : a.username;
-  if (admin && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return false;
+  const publishing = cloudApi.work() === 'published';
+  if (admin && publishing && !confirm(`Ова ќе ја промени играта за сите играчи. Да ги објавам ${recs.length} ставки?`)) return false;
   try {
     await persistNow();
-    const current = await cloud.loadWorkspace(target).catch(() => null);
-    const data = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: a.username, items: JSON.parse(JSON.stringify(recs)) };
-    await cloud.saveWorkspace(target, data, current?.version ?? 0);
+    const r = await cloudApi.save(JSON.parse(JSON.stringify(recs)) as Rec[]);
     unsaved = false;
     onAccount = true;
     setStatus();
-    msg(admin ? `Објавено за сите · ${recs.length} ставки` : `Зачувано на профилот · ${recs.length} ставки`);
+    const dropped = r.dropped ? ` · најстарата верзија (${r.dropped}) е избришана, лимит 5` : '';
+    msg(publishing ? `Објавено за сите · верзија ${r.version}${dropped}` : `Зачувана верзија ${r.version} · ${recs.length} ставки${dropped}`);
     return true;
   } catch (e) {
     if (e instanceof cloud.CloudError && e.status === 401) msg('Најави се повторно за да зачуваш.');
-    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој зачувал во меѓувреме. Вчитај ја најновата верзија и обиди се повторно.');
+    else if (e instanceof cloud.CloudError && e.status === 409) msg('Некој зачувал во меѓувреме. Отвори ја најновата верзија и обиди се повторно.');
     else msg(e instanceof cloud.CloudError ? e.message : 'Не успеав да зачувам.');
     return false;
   }
@@ -955,18 +953,8 @@ async function loadAccountGame() {
   if (!a || accountLoaded || emergencyRestored) return;
   if (!ctx || !restored) { pendingAccountLoad = true; return; }
   accountLoaded = true;
-  let admin = false;
-  try { admin = (await cloud.me()).admin; } catch { /* not reachable: keep what is open */ }
-  const w = await cloud.loadWorkspace(admin ? 'published' : a.username).catch(() => null);
-  const f = w?.data as { items?: Rec[] } | null;
-  if (!w || !f || !Array.isArray(f.items)) return; // nothing saved yet: start from what the game shows
-  backupBeforeReplace('вчитување од профилот');
-  applySession({ format: 'krug-builder-session', version: 1, savedAt: w.savedAt, surveyor: a.username, nextId: 1, recs: f.items, versions: [] }, true);
+  await cloudApi.open();
   unsaved = false;
-  onAccount = true;
-  setStatus();
-  void persistNow();
-  msg(`Твојата игра е отворена · ${recs.length} ставки`);
 }
 let pendingAccountLoad = false;
 function save() {
@@ -1116,13 +1104,13 @@ function info(camera: THREE.PerspectiveCamera) {
   const label = it.cat === 'pole' ? POLE_ITEMS.find((p) => p.key === it.key)!.name : it.cat === 'sign' ? SIGNS.find((s) => s.type === it.key)!.name : it.cat === 'sfloat' ? `${SIGNS.find((s) => s.type === it.key)!.name}, без столб` : it.cat === 'light' ? `Семафор ${LIGHT_ITEMS.find((l) => l.key === it.key)!.name.toLowerCase()}` : it.cat === 'tree' ? TREES.find((t) => t.key === it.key)!.name : it.cat === 'lamp' ? 'Улична светилка' : it.cat === 'axe' ? 'Секира' : markDef(it.key).name;
   const how = it.cat === 'axe' ? 'кликни на твоја ставка'
     : it.cat === 'tpl' ? 'кликни за да поставиш · Q / E сврти'
-    : it.cat === 'mark' && MARKS.find((m) => m.key === it.key)!.poly ? (poly.length ? 'кликни следна точка · Enter заврши · X откажи' : 'кликни за почеток на линијата')
-    : it.cat === 'mark' ? (pending ? 'кликни крајна точка · X откажи' : 'кликни почетна точка')
+    : it.cat === 'mark' && MARKS.find((m) => m.key === it.key)!.poly ? (poly.length ? '2. Кликни на следната точка. Повтори за секоја точка. 3. Притисни Enter за да ја завршиш линијата. Backspace брише последната точка. X ја откажува.' : '1. Кликни на почетната точка на линијата.')
+    : it.cat === 'mark' ? (pending ? '2. Кликни на крајната точка. X ја откажува линијата.' : '1. Кликни на почетната точка.')
     : it.cat === 'pole' || it.cat === 'tree' || it.cat === 'lamp' ? 'кликни за да поставиш · Q / E сврти'
     : 'кликни за да поставиш';
   document.getElementById('snapChip')!.setAttribute('aria-hidden', String(!aim || it.cat === 'axe' || it.cat === 'pole'));
   const el = document.getElementById('info')!;
-  const html = `<b>${label}</b> · ${aim ? how : 'насочи кон земјата'}`;
+  const html = `<b>${label}</b>${aim ? `<span class="hint-steps">${how}</span>` : ' · насочи кон земјата'}`;
   if (el.innerHTML !== html) el.innerHTML = html;
   void camera;
 }
@@ -1130,7 +1118,6 @@ function info(camera: THREE.PerspectiveCamera) {
 // ---------- floating windows ----------
 makeFloating(document.getElementById('lib')!);
 makeFloating(document.getElementById('panel')!);
-rememberPanes(document.getElementById('panel')!);
 
 // ---------- movement controls: shown while you move, the wheel scrolls or the mouse is over them ----------
 const moveHud = document.getElementById('moveHud')!;
@@ -1407,7 +1394,7 @@ if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__bld = 
 };
 
 // the cloud panel: shared workspaces with their own logins
-initCloudPanel({
+const cloudApi = initCloudPanel({
   onSignedIn: () => { labelSave(); void loadAccountGame(); },
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
   getSurveyor: () => surveyor(),

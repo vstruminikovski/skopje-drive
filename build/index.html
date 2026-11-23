@@ -55,13 +55,27 @@
             <button id="delBtn" class="btn btn-danger ins-del">Избриши</button>
           </section>
 
+          <details class="pane" id="cWork" data-pane="shared" open hidden>
+            <summary>Заедничка работа<button class="info" type="button" data-tip="Работата се вика како твоето корисничко име. Зачувај нова верзија: до 5 верзии. Отвори верзија: избери ја од листата. Создај код: испрати го на другиот корисник, а тој го внесува овде.">i</button></summary>
+            <div class="list pad">
+              <div class="work-head"><span class="field-label">Работа</span><b id="cWorkName">—</b><small id="cWorkWho"></small></div>
+              <label class="field-label" for="cVersion">Верзија (најмногу 5)</label>
+              <select id="cVersion" class="field"></select>
+              <button id="cSaveVer" class="btn btn-primary btn-full">Зачувај нова верзија</button>
+              <label class="field-label">Код за другиот корисник</label>
+              <div class="btn-row"><button id="cLinkBtn" class="btn">Создај код</button><button id="cCopy" class="btn">Копирај</button></div>
+              <div class="code-box"><span id="cLink" class="code-text"></span></div>
+              <label class="field-label" for="cCode">Внеси код од другиот корисник</label>
+              <div class="btn-row"><input id="cCode" class="field" placeholder="ABCD-EFGH-JKLM-..." autocomplete="off" spellcheck="false"><button id="cJoin" class="btn">Отвори</button></div>
+            </div>
+          </details>
           <details class="pane" data-pane="profile" open>
             <summary>Профил<button class="info" type="button" data-tip="„Зачувај“ ја става твојата игра на профилот. Ја отвораш од кој било компјутер со „Вчитај моја игра“.">i</button></summary>
             <div class="list">
               <div class="row"><span class="avatar" id="cAvatar"></span><span class="row-main"><span class="row-title" id="cWho"></span><span class="row-sub" id="cRole">Профил</span></span><button id="cLogout" class="btn btn-plain">Одјави се</button></div>
             </div>
           </details>
-          <details class="pane" data-pane="files">
+          <details class="pane" data-pane="files" open>
             <summary>Датотека<button class="info" type="button" data-tip="Резервна копија како датотека на твојот компјутер. Можеш да ја отвориш подоцна или на друг компјутер.">i</button></summary>
             <div class="list">
               <button id="openProjBtn" class="row"><span class="row-main">Отвори проект…</span></button>
@@ -72,29 +86,20 @@
             </div>
             <input type="file" id="openProj" accept=".json,application/json" hidden>
           </details>
-          <details class="pane" data-pane="versions">
-            <summary>Верзии<button class="info" type="button" data-tip="Снимки од работата во овој прелистувач. „Нова“ прави снимка, „Врати“ ја враќа. Резерва се прави сама на секои 10 минути и пред секое вчитување.">i</button></summary>
+          <details class="pane" data-pane="versions" open>
+            <summary>Резерви на овој компјутер<button class="info" type="button" data-tip="Резерви што ги чува овој компјутер: една на секои 10 минути и една пред секое вчитување. Не се на профилот.">i</button></summary>
             <div class="list pad">
               <select id="verSel" class="field"></select>
               <div class="btn-row"><button id="saveVer" class="btn">Нова</button><button id="loadVer" class="btn">Врати</button><button id="delVer" class="btn btn-danger">Избриши</button></div>
             </div>
           </details>
-          <details class="pane" id="cWork" data-pane="shared" hidden>
-            <summary>Заедничка работа<button class="info" type="button" data-tip="Создај код за твојата работа и испрати го. Другиот корисник го внесува кодот овде и ја вчитува работата. Нов код го поништува стариот.">i</button></summary>
-            <div class="list pad">
-              <div class="btn-row"><input id="cName" class="field" placeholder="Име на работата"><button id="cLoad" class="btn">Вчитај</button><button id="cSave" class="btn">Зачувај</button></div>
-              <div class="btn-row"><button id="cLinkBtn" class="btn">Создај код</button><button id="cCopy" class="btn">Копирај</button></div>
-              <div class="code-box"><small id="cLink" class="code-text"></small></div>
-              <div class="btn-row"><input id="cCode" class="field" placeholder="Внеси код од другиот корисник" autocomplete="off" spellcheck="false"><button id="cJoin" class="btn">Отвори</button></div>
-            </div>
-          </details>
-          <details class="pane" data-pane="view">
+          <details class="pane" data-pane="view" open>
             <summary>Приказ<button class="info" type="button" data-tip="Остра слика изгледа подобро, но е побавна на послаби компјутери.">i</button></summary>
             <div class="list">
               <label class="row set"><span class="row-main">Квалитет на сликата</span><select id="qualitySel" class="field"><option value="1" selected>брза</option><option value="1.5">средна</option><option value="2">остра</option></select></label>
             </div>
           </details>
-          <details class="pane" data-pane="keys">
+          <details class="pane" data-pane="keys" open>
             <summary>Кратенки<button class="info" type="button" data-tip="Тастатурата во градителот. C го вклучува и исклучува гледањето со глушецот.">i</button></summary>
             <dl class="keys">
               <dt>W A S D</dt><dd>движење</dd>
@@ -110,7 +115,7 @@
               <dt>⌘Z · ⇧⌘Z</dt><dd>врати · повтори</dd>
             </dl>
           </details>
-          <details class="pane" data-pane="danger">
+          <details class="pane" data-pane="danger" open>
             <summary>Бришење<button class="info" type="button" data-tip="Ги брише сите ставки што си ги поставил. Резерва останува во Верзии, па можеш да ги вратиш.">i</button></summary>
             <div class="list">
               <button id="clearBtn" class="row danger"><span class="row-main">Избриши ги сите мои ставки</span></button>
