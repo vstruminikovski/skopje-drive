@@ -46,7 +46,7 @@ export function login(username: string, password: string, turnstile?: string) {
   return call<{ username: string; token: string }>('/api/login', { method: 'POST', body: JSON.stringify({ username, password, turnstile }) });
 }
 export function loadWorkspace(name: string) {
-  return call<Workspace>(`/api/ws/${encodeURIComponent(name)}`);
+  return call<Workspace>(`/api/ws/${encodeURIComponent(name)}`, { headers: auth() });
 }
 export function saveWorkspace(name: string, data: unknown, baseVersion: number) {
   return call<{ name: string; version: number; savedAt: string }>(`/api/ws/${encodeURIComponent(name)}`, {

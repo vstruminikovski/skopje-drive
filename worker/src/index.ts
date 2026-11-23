@@ -2,7 +2,7 @@
 //   Account   one object per username: the password hash and failed-login lockout
 //   Workspace one object per workspace name: its saves run one at a time, so a version check is exact
 //   Limiter   one object per (hashed) client address: caps signups and sign-ins per minute
-// Reading a workspace is public, so anyone with a link can play it. Only the owner and members can save.
+// The published map is public. Every other workspace is open only to its owner and members (signed in), and only they can save.
 import { DurableObject } from 'cloudflare:workers';
 
 export interface Env {
@@ -139,8 +139,11 @@ async function login(env: Env, req: Request): Promise<Response> {
   return json(env, { username, token: await issueToken(env, username) });
 }
 
-async function getWorkspace(env: Env, name: string): Promise<Response> {
-  const r = await callDo(env.WORKSPACES, name, '/get');
+async function getWorkspace(env: Env, req: Request, name: string): Promise<Response> {
+  // the published map is what everyone plays; every other work is open only to its owner and members
+  const user = await userFromToken(env, req);
+  const r = await callDo(env.WORKSPACES, name, '/get', { user, public: name === 'published' });
+  if (r.status === 403) throw new HttpError(401, user ? 'Немаш пристап до оваа работа.' : 'Најави се за да ја отвориш оваа работа.');
   if (r.status !== 200) throw new HttpError(404, 'Нема таква работа.');
   return json(env, { name, ...r.data });
 }
@@ -214,7 +217,11 @@ export class Workspace extends DurableObject {
     return this.ctx.blockConcurrencyWhile(async () => {
       const reply = (status: number, data: unknown = {}) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
       const ws = await this.ctx.storage.get<WsRec>('ws');
-      if (path === '/get') return ws ? reply(200, ws) : reply(404);
+      if (path === '/get') {
+        if (!ws) return reply(404);
+        const allowed = body.public || body.user === ws.owner || ws.members.includes(body.user);
+        return allowed ? reply(200, ws) : reply(403);
+      }
       if (path === '/put') {
         const user: string = body.user;
         if (!ws) {
@@ -277,7 +284,7 @@ export default {
       }
       if (parts[1] === 'ws' && parts.length === 3) {
         const name = parts[2].toLowerCase();
-        if (req.method === 'GET') return await getWorkspace(env, name);
+        if (req.method === 'GET') return await getWorkspace(env, req, name);
         if (req.method === 'PUT') return await saveWorkspace(env, req, name);
       }
       if (parts[1] === 'ws' && parts.length === 4 && parts[3] === 'share' && req.method === 'POST') {
