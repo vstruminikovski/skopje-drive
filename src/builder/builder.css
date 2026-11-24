@@ -355,3 +355,10 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 #top > .tb-seg:last-child .tb-avatar { margin-left: 6px; }
 /* the document's name comes first; the save status is the one that shortens */
 #top > .tb-seg:first-child .tb-doc { flex: 0 0 auto; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+/* the C button is one box: no piece around it, no key box inside it */
+#top > .tb-seg:nth-child(3) { padding: 0; background: none !important; border: 0 !important; box-shadow: none; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+#top .look-btn { height: 32px; padding: 0 14px; gap: 6px; background: var(--mat); -webkit-backdrop-filter: saturate(170%) blur(22px); backdrop-filter: saturate(170%) blur(22px); border: 0.5px solid var(--mat-line); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); }
+#top .look-btn:hover { background: rgba(80, 80, 86, 0.6); }
+#top .look-btn kbd { width: auto; height: auto; padding: 0; border-radius: 0; background: none; color: var(--text); font: 700 13px var(--font); }
+#top .look-btn.on { background: var(--blue); }
+#top .look-btn.on kbd { color: #fff; }
