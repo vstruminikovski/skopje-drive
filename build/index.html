@@ -34,24 +34,25 @@
         <button id="openBtn" class="btn" type="button" title="Отвори документ од пријател со неговиот код">Отвори со код</button>
         <button id="shareBtn" class="btn" type="button" title="Сподели со пријател (код или линк)">Сподели</button>
       </header>
-      <!-- the File menu: saving, opening, sharing, backups -->
+      <!-- the document menu: everyday actions first; files and exports at the bottom, under Advanced -->
       <div id="fileMenu" class="menu glass" role="menu" hidden>
         <div class="menu-who" id="menuWho"></div>
         <button type="button" role="menuitem" data-act="rename">Преименувај документ…</button>
-        <button type="button" role="menuitem" data-act="export">Извези документ…</button>
-        <button type="button" role="menuitem" data-act="import">Увези документ…</button>
         <div class="menu-sep"></div>
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
         <button type="button" role="menuitem" data-act="code">Отвори со код од пријател…</button>
-        <div class="menu-sep"></div>
-        <button type="button" role="menuitem" data-act="exportGeo">Извези карта (GeoJSON)</button>
-        <button type="button" role="menuitem" data-act="exportMod">Извези основна игра (default.json)</button>
-        <div class="menu-sep"></div>
+        <div class="menu-sep admin-only" hidden></div>
         <button type="button" role="menuitem" data-act="deploy" class="admin-only" hidden>Деплој во живата игра…</button>
         <div class="menu-sep"></div>
         <button type="button" role="menuitem" data-act="clear" class="danger">Избриши ги сите ставки</button>
-        <div class="menu-sep"></div>
         <button type="button" role="menuitem" data-act="logout">Одјави се</button>
+        <div class="menu-adv" role="group" aria-labelledby="menuAdvTitle">
+          <div class="menu-head" id="menuAdvTitle">Напредни функции</div>
+          <button type="button" role="menuitem" data-act="export">Извези документ…</button>
+          <button type="button" role="menuitem" data-act="import">Увези документ…</button>
+          <button type="button" role="menuitem" data-act="exportGeo">Извези карта <small>GeoJSON</small></button>
+          <button type="button" role="menuitem" data-act="exportMod">Извези основна игра <small>default.json</small></button>
+        </div>
       </div>
 
       <!-- floating window: library -->
