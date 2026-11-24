@@ -2,7 +2,7 @@
 // Where each window sits, whether it is collapsed and which sections are open are remembered on this computer.
 
 const MARGIN = 8;
-const TOP = 46; // below the toolbar
+const TOP = 72; // below the toolbar
 
 function load<T>(key: string): T | null {
   try { const v = localStorage.getItem(key); return v ? (JSON.parse(v) as T) : null; } catch { return null; }
