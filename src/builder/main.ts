@@ -804,8 +804,6 @@ function labelSave() {
   admin(false);
   if (cloud.account()) cloud.me().then((r) => {
     admin(r.admin);
-    const d = document.querySelector<HTMLElement>('[data-act=deploy]');
-    if (d) d.textContent = r.admin ? 'Деплој во живата игра…' : 'Деплој во мојата игра…';
   }).catch(() => {});
 }
 labelSave();
@@ -1104,7 +1102,7 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyY' || e.shiftKey) redo(); else undo();
     return;
   }
-  // Cmd+S (blocked) is not a movement key: it must not stay "held" (macOS does not report the release while Cmd is down)
+  // Cmd+S is not a movement key: it must not stay "held" (macOS does not report the release while Cmd is down)
   const shortcut = (e.metaKey || e.ctrlKey) && ['KeyS', 'KeyZ', 'KeyY'].includes(e.code);
   if (!shortcut) keys.add(e.code);
   if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }

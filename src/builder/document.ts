@@ -303,16 +303,10 @@ export function initDocument(o: Options): DocApi {
   }
 
   // ---------- the live game (administrator) ----------
-  /** Your own game: every change already reaches the server (autosave), this sends what is pending now. */
-  async function deployMine(): Promise<void> {
-    if (!cur) return;
-    const ok = await flush();
-    o.msg(ok ? `Играта е ажурирана · ${o.getItems().length} ставки` : 'Нема врска · промената ќе се испрати кога ќе има врска');
-  }
   async function deployLive(): Promise<void> {
     const m = await whoAmI();
     if (!m) { o.msg('Најави се прво.'); return; }
-    if (!m.admin) { await deployMine(); return; }
+    if (!m.admin) return; // only the administrator has Deploy; everyone's documents reach their games by themselves
     // the administrator's deploy is the live game for everyone (anyone else's documents are already their games)
     const n = o.getItems().length;
     const i = await choose('Деплој во живата игра?', `Ќе се пратат ${n} ставки од „${cur?.title ?? ''}“ во живата игра за сите играчи. По 5 секунди се објавува; дотогаш можеш да откажеш.`, ['Продолжи', 'Откажи']);
@@ -394,7 +388,7 @@ export function initDocument(o: Options): DocApi {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (!['rename', 'export', 'import', 'share', 'code', 'deploy', 'deployMine', 'logout'].includes(act!)) return; // the builder handles the rest
+    if (!['rename', 'export', 'import', 'share', 'code', 'deploy', 'logout'].includes(act!)) return; // the builder handles the rest
     closeMenu();
     if (act === 'rename') await rename();
     else if (act === 'export') exportFile();
@@ -402,14 +396,9 @@ export function initDocument(o: Options): DocApi {
     else if (act === 'share') openShare();
     else if (act === 'code') $('openDlg').hidden = false;
     else if (act === 'deploy') await deployLive();
-    else if (act === 'deployMine') await deployMine();
     else if (act === 'logout') { await flush(); cloud.setAccount(null); location.reload(); }
   });
-  // there is no save shortcut: every change saves by itself. Cmd+S and Shift+Cmd+S only keep the browser
-  // from saving the page as a file, and send a waiting change at once.
-  window.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') { e.preventDefault(); void flush(); }
-  });
+  // there is no save shortcut: every change saves by itself (Cmd+S is the browser's own)
   // a change waiting to be sent: try once more when the page is hidden or closed
   document.addEventListener('visibilitychange', () => { if (document.hidden) void flush(); });
 
