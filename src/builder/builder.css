@@ -251,3 +251,15 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 /* the toolbar is three floating pieces: the map shows (and takes clicks) in the empty space between them */
 #bld > #top { padding: 0; background: none; box-shadow: none; pointer-events: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .tb-seg { display: flex; align-items: center; gap: 4px; height: 100%; padding: 0 8px 0 6px; border-radius: var(--r); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35); pointer-events: auto; }
+
+/* proportions: both windows and both side pieces of the toolbar share one width, the C button is a small pill */
+:root { --side-w: 300px; }
+#lib, #panel { width: var(--side-w); }
+#top > .tb-seg:first-child, #top > .tb-seg:last-child { flex: none; width: var(--side-w); box-sizing: border-box; min-width: 0; }
+#top > .tb-seg:last-child { justify-content: flex-end; padding: 0 8px; }
+#top > .tb-seg:first-child .tb-doc { flex: 1 1 auto; min-width: 0; }
+#top > .tb-seg:last-child .btn { padding: 0 11px; font-size: 13px; height: 32px; }
+#top .tb-pair { margin-left: 4px; }
+#top .look-btn { height: 32px; gap: 8px; padding: 0 12px 0 4px; font-size: 13px; }
+#top .look-btn kbd { width: 24px; height: 24px; font-size: 13px; border-radius: 7px; }
+#top > .tb-seg:nth-child(3) { padding: 0 6px; }
