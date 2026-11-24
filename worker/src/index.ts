@@ -184,7 +184,8 @@ async function listDocs(env: Env, req: Request): Promise<Response> {
   if (!user) throw new HttpError(401, 'Најави се.');
   const names = [user, `${user}-2`, `${user}-3`];
   const docs = await Promise.all(names.map(async (name, i) => {
-    const r = await callDo(env.WORKSPACES, name, '/meta', { user });
+    // one damaged document must not hide the other two
+    const r = await callDo(env.WORKSPACES, name, '/meta', { user }).catch(() => ({ status: 500, data: {} }));
     return r.status === 200 ? { n: i + 1, name, exists: true, ...r.data } : { n: i + 1, name, exists: false, title: '', savedAt: '', count: 0 };
   }));
   return json(env, { docs });
@@ -293,10 +294,12 @@ export class Workspace extends DurableObject {
           data = await st.get(`v${ws.version}`);
           for (const v of ws.versions) await st.delete(`v${v.version}`);
         }
-        ws = { owner: ws.owner, members: ws.members ?? [], savedAt: ws.savedAt ?? new Date().toISOString(), savedBy: ws.savedBy ?? ws.owner, backups: [] } as WsRec;
-        await st.put('data', data);
+        const parts = await writeData(data, 0);
+        ws = { owner: ws.owner, members: ws.members ?? [], savedAt: ws.savedAt ?? new Date().toISOString(), savedBy: ws.savedBy ?? ws.owner, backups: [], title: ws.title, count: itemCount(data), parts } as WsRec;
         await st.put('ws', ws);
       }
+      // older records may lack these lists
+      if (ws) { ws.members ??= []; ws.backups ??= []; }
       if (path === '/get') {
         if (!ws) return reply(404);
         const allowed = body.public || body.user === ws.owner || ws.members.includes(body.user);
@@ -311,7 +314,12 @@ export class Workspace extends DurableObject {
         // for the document list: what the document is called, when it was saved, how many items
         if (!ws) return reply(404);
         if (body.user !== ws.owner && !ws.members.includes(body.user)) return reply(403);
-        return reply(200, { title: ws.title ?? '', savedAt: ws.savedAt, savedBy: ws.savedBy, count: ws.count ?? 0 });
+        // a document saved before the count was kept: count its items once and remember it
+        if (typeof ws.count !== 'number') {
+          ws.count = itemCount(await readData(ws as WsRec).catch(() => null));
+          await st.put('ws', ws);
+        }
+        return reply(200, { title: ws.title ?? '', savedAt: ws.savedAt, savedBy: ws.savedBy, count: ws.count });
       }
       if (path === '/put') {
         // Save writes the saved version. A backup keeps a copy next to it (the newest 5), and the saved version stays as it is.

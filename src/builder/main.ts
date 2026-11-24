@@ -850,10 +850,10 @@ let docKey = '';
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
 
 /** A change to the items: a new named step in the history, saved by itself. */
-function save() {
+function save(named?: string) {
   const cur = JSON.stringify({ recs, nextId });
   if (lastState && cur !== lastState) {
-    const label = labelFor((JSON.parse(lastState) as { recs: Rec[] }).recs, recs);
+    const label = named ?? labelFor((JSON.parse(lastState) as { recs: Rec[] }).recs, recs);
     steps = steps.slice(0, histAt + 1); // a change after an undo drops the steps that were undone
     steps.push({ json: cur, label });
     if (steps.length > HISTORY_MAX) steps.shift();
@@ -904,6 +904,13 @@ function setItems(list: Rec[], key: string) {
   if (mem && mem.steps[mem.histAt]?.json === lastState) { steps = mem.steps; histAt = mem.histAt; }
   else { steps = [{ json: lastState, label: 'Отворено' }]; histAt = 0; }
   updateHistoryButtons();
+}
+/** Replaces the open document's items as one step of its history, so Undo (⌘Z) brings the old ones back. */
+function replaceItems(list: Rec[], label: string) {
+  recs = cleanRecs(clone(list));
+  nextId = Math.max(1, ...recs.map((q) => q.id + 1));
+  select(null); rebuild();
+  save(label);
 }
 /** Shows a step of the steps: the items become that state. */
 function applyState(json: string) {
@@ -1266,5 +1273,6 @@ docApi = initDocument({
   onSignedIn: () => { labelSave(); startDocs(); },
   getItems: () => JSON.parse(JSON.stringify(recs)) as Rec[],
   setItems: (items, key) => setItems(items as Rec[], key),
+  replaceItems: (items, label) => replaceItems(items as Rec[], label),
   msg,
 });

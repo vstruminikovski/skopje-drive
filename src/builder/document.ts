@@ -15,6 +15,8 @@ interface Options {
   getItems: () => UserItem[];
   /** Shows a document's items. `key` names the document, so its history of actions comes back with it. */
   setItems: (items: UserItem[], key: string) => void;
+  /** Replaces the open document's items as one step of its history (Undo brings them back). */
+  replaceItems: (items: UserItem[], label: string) => void;
   msg: (text: string) => void;
   onSignedIn?: () => void;
 }
@@ -248,9 +250,28 @@ export function initDocument(o: Options): DocApi {
     const items = d?.format === 'krug-builder-session' && Array.isArray(d.recs) ? d.recs : d?.format === 'mapng-mod' && Array.isArray(d.items) ? d.items : null;
     if (!items) { o.msg('Датотеката не е проект ниту извоз.'); return; }
     if (o.getItems().length && (await choose('Увези датотека', `Ставките во „${cur.title}“ ќе се заменат со ${items.length} ставки од „${file.name}“. Врати (⌘Z) ги враќа.`, ['Увези', 'Откажи'])) !== 0) return;
-    o.setItems(items, cur.name);
-    changed();
+    o.replaceItems(items, 'Увезено');
     o.msg(`Увезено: ${file.name}`);
+  }
+
+  /** The starting world: the live game everyone plays. Its items come into the open document as the base to build on. */
+  async function startingWorld() {
+    if (!cur) return;
+    let items: UserItem[];
+    try {
+      const w = await cloud.loadWorkspace('published');
+      const d = w.data as { format?: string; items?: unknown };
+      if (d?.format !== 'mapng-mod' || !Array.isArray(d.items)) { o.msg('Живата игра уште нема ставки.'); return; }
+      items = d.items as UserItem[];
+    } catch {
+      o.msg('Живата игра не може да се вчита. Провери ја врската.'); return;
+    }
+    const text = o.getItems().length
+      ? `Ставките во „${cur.title}“ ќе се заменат со ${items.length} ставки од живата игра. Врати (⌘Z) ги враќа.`
+      : `Во „${cur.title}“ ќе се внесат ${items.length} ставки од живата игра. Потоа можеш да ги менуваш или бришеш.`;
+    if ((await choose('Почетен свет', text, ['Внеси', 'Откажи'])) !== 0) return;
+    o.replaceItems(items, 'Почетен свет');
+    o.msg(`Почетен свет · ${items.length} ставки`);
   }
 
   // ---------- share and codes ----------
@@ -333,6 +354,7 @@ export function initDocument(o: Options): DocApi {
 
   // ---------- wiring ----------
   $('openBtn').addEventListener('click', () => { $('openDlg').hidden = false; });
+  $('baseBtn').addEventListener('click', () => void startingWorld());
   $('shareBtn').addEventListener('click', openShare);
   $('gateCode').addEventListener('click', () => { $('gate').style.display = 'none'; $('openDlg').hidden = false; });
   $('openClose').addEventListener('click', () => { $('openDlg').hidden = true; });

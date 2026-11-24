@@ -14,6 +14,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 
 function play(opts: { ws?: string | null; items?: ItemsFile | null }) {
   closeSignin();
+  $('pickGame').hidden = true;
   $('pick').hidden = true;
   $('loading').hidden = false;
   $('menuBtn').hidden = false;
