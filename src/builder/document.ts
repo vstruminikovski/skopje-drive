@@ -246,10 +246,10 @@ export function initDocument(o: Options): DocApi {
   async function importFile(file: File) {
     if (!cur) return;
     let d: any;
-    try { d = JSON.parse(await file.text()); } catch { o.msg('Датотеката не е исправна.'); return; }
+    try { d = JSON.parse(await file.text()); } catch { o.msg('Документот не е исправен.'); return; }
     const items = d?.format === 'krug-builder-session' && Array.isArray(d.recs) ? d.recs : d?.format === 'mapng-mod' && Array.isArray(d.items) ? d.items : null;
-    if (!items) { o.msg('Датотеката не е проект ниту извоз.'); return; }
-    if (o.getItems().length && (await choose('Увези датотека', `Ставките во „${cur.title}“ ќе се заменат со ${items.length} ставки од „${file.name}“. Врати (⌘Z) ги враќа.`, ['Увези', 'Откажи'])) !== 0) return;
+    if (!items) { o.msg('Ова не е извезен документ.'); return; }
+    if (o.getItems().length && (await choose('Увези документ', `Ставките во „${cur.title}“ ќе се заменат со ${items.length} ставки од „${file.name}“. Врати (⌘Z) ги враќа.`, ['Увези', 'Откажи'])) !== 0) return;
     o.replaceItems(items, 'Увезено');
     o.msg(`Увезено: ${file.name}`);
   }
@@ -405,9 +405,10 @@ export function initDocument(o: Options): DocApi {
     else if (act === 'deployMine') await deployMine();
     else if (act === 'logout') { await flush(); cloud.setAccount(null); location.reload(); }
   });
-  // Cmd+S sends the change now (it is saved anyway)
+  // there is no save shortcut: every change saves by itself. Cmd+S and Shift+Cmd+S only keep the browser
+  // from saving the page as a file, and send a waiting change at once.
   window.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.code === 'KeyS') { e.preventDefault(); void flush().then((ok) => o.msg(ok ? 'Зачувано' : 'Нема врска · зачувано на овој компјутер')); }
+    if ((e.metaKey || e.ctrlKey) && e.code === 'KeyS') { e.preventDefault(); void flush(); }
   });
   // a change waiting to be sent: try once more when the page is hidden or closed
   document.addEventListener('visibilitychange', () => { if (document.hidden) void flush(); });

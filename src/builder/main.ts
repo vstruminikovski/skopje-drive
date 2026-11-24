@@ -1104,8 +1104,8 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyY' || e.shiftKey) redo(); else undo();
     return;
   }
-  // a save or open shortcut is not a movement key: it must not stay "held" (macOS does not report the release while Cmd is down)
-  const shortcut = (e.metaKey || e.ctrlKey) && ['KeyS', 'KeyO', 'KeyZ', 'KeyY'].includes(e.code);
+  // Cmd+S (blocked) is not a movement key: it must not stay "held" (macOS does not report the release while Cmd is down)
+  const shortcut = (e.metaKey || e.ctrlKey) && ['KeyS', 'KeyZ', 'KeyY'].includes(e.code);
   if (!shortcut) keys.add(e.code);
   if (e.code === 'KeyX') { pending = null; poly = []; msg('Линијата е откажана'); }
   else if (e.code === 'KeyK') { const it = ITEMS.find((q) => q.cat === 'axe')!; hand = it; markActive(); msg('Секира: насочи кон твоја ставка и кликни'); }

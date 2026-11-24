@@ -20,8 +20,8 @@
       <!-- toolbar -->
       <header id="top" class="glass">
         <a class="tb-back" data-go="home" href="#" title="Назад кон почетната страница" aria-label="Назад">‹</a>
-        <button id="fileBtn" class="doc-btn" type="button" aria-haspopup="menu" aria-expanded="false" title="Датотека: зачувај, отвори, сподели">
-          <span class="doc-label">Датотека</span><span id="docName">Градител</span><span class="doc-chev" aria-hidden="true">▾</span>
+        <button id="fileBtn" class="doc-btn" type="button" aria-haspopup="menu" aria-expanded="false" title="Документ: преименувај, извези, увези, сподели">
+          <span class="doc-label">Документ</span><span id="docName">Градител</span><span class="doc-chev" aria-hidden="true">▾</span>
         </button>
         <span id="saveStatus" class="tb-status"></span>
         <span class="tb-div"></span>
@@ -31,15 +31,15 @@
         <button id="lookBtn" class="look-btn" type="button" aria-pressed="false" title="Гледај со глушецот и поставувај со нишанот (C)"><kbd>C</kbd><span id="lookLabel">Гледај</span></button>
         <span class="spacer"></span>
         <button id="baseBtn" class="btn" type="button" title="Почетен свет: живата игра за сите. Нејзините ставки се внесуваат во овој документ како основа; потоа ги менуваш или бришеш. Врати (⌘Z) ги враќа.">Почетен свет</button>
-        <button id="openBtn" class="btn" type="button" title="Отвори: твоја работа, код од пријател или датотека (⌘O)">Отвори со код</button>
+        <button id="openBtn" class="btn" type="button" title="Отвори документ од пријател со неговиот код">Отвори со код</button>
         <button id="shareBtn" class="btn" type="button" title="Сподели со пријател (код или линк)">Сподели</button>
       </header>
       <!-- the File menu: saving, opening, sharing, backups -->
       <div id="fileMenu" class="menu glass" role="menu" hidden>
         <div class="menu-who" id="menuWho"></div>
         <button type="button" role="menuitem" data-act="rename">Преименувај документ…</button>
-        <button type="button" role="menuitem" data-act="export">Извези датотека…</button>
-        <button type="button" role="menuitem" data-act="import">Увези датотека…</button>
+        <button type="button" role="menuitem" data-act="export">Извези документ…</button>
+        <button type="button" role="menuitem" data-act="import">Увези документ…</button>
         <div class="menu-sep"></div>
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
         <button type="button" role="menuitem" data-act="code">Отвори со код од пријател…</button>
