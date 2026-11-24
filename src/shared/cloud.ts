@@ -75,6 +75,10 @@ export function createCode(name: string) {
 export function joinWithCode(code: string) {
   return call<{ name: string }>('/api/join', { method: 'POST', headers: auth(), body: JSON.stringify({ code }) });
 }
+/** Changes the signed-in user's password; the current one must be right. */
+export function changePassword(current: string, next: string) {
+  return call<{ ok: boolean }>('/api/password', { method: 'POST', headers: auth(), body: JSON.stringify({ current, next }) });
+}
 export function me() {
   return call<{ username: string; admin: boolean }>('/api/me', { headers: auth() });
 }

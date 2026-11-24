@@ -123,6 +123,26 @@ async function register(env: Env, req: Request): Promise<Response> {
   return json(env, { username, token: await issueToken(env, username) }, 201);
 }
 
+/** A signed-in user changes their password: the current one is checked first (the same lockout as sign-in). */
+async function changePassword(env: Env, req: Request): Promise<Response> {
+  const user = await userFromToken(env, req);
+  if (!user) throw new HttpError(401, 'Најави се.');
+  await underLimit(env, req, 'signin', Number(env.SIGNINS_PER_MIN ?? 60));
+  const body = await readBody(req);
+  const current = String(body.current ?? '');
+  const next = String(body.next ?? '');
+  if (next.length < 8 || next.length > 200) throw new HttpError(400, 'Новата лозинка мора да има 8 до 200 знаци.');
+  const salt = await callDo(env.ACCOUNTS, user, '/salt');
+  if (salt.status !== 200) throw new HttpError(401, 'Најави се.');
+  const r = await callDo(env.ACCOUNTS, user, '/verify', { hash: await passwordHash(env, current, salt.data.salt) });
+  if (r.status === 429) throw new HttpError(429, `Премногу погрешни обиди. Пробај по ${LOCK_MINUTES} минути.`);
+  if (r.status !== 200) throw new HttpError(403, 'Сегашната лозинка не е точна.');
+  const newSalt = b64(crypto.getRandomValues(new Uint8Array(16)));
+  const set = await callDo(env.ACCOUNTS, user, '/set-password', { salt: newSalt, hash: await passwordHash(env, next, newSalt) });
+  if (set.status !== 200) throw new HttpError(500, 'Не успеав да ја сменам лозинката.');
+  return json(env, { ok: true });
+}
+
 async function login(env: Env, req: Request): Promise<Response> {
   await underLimit(env, req, 'signin', Number(env.SIGNINS_PER_MIN ?? 60));
   const body = await readBody(req);
@@ -249,6 +269,11 @@ export class Account extends DurableObject {
           return reply(401);
         }
         if (rec.fails || rec.lockedUntil) { rec.fails = 0; rec.lockedUntil = 0; await this.ctx.storage.put('user', rec); }
+        return reply(200);
+      }
+      if (path === '/set-password') {
+        if (!rec) return reply(404);
+        await this.ctx.storage.put('user', { ...rec, salt: body.salt, hash: body.hash, fails: 0, lockedUntil: 0 });
         return reply(200);
       }
       return reply(404);
@@ -392,6 +417,7 @@ export default {
       if (parts[0] !== 'api') throw new HttpError(404, 'Не постои.');
       if (req.method === 'POST' && parts.length === 2 && parts[1] === 'register') return await register(env, req);
       if (req.method === 'POST' && parts.length === 2 && parts[1] === 'login') return await login(env, req);
+      if (req.method === 'POST' && parts.length === 2 && parts[1] === 'password') return await changePassword(env, req);
       if (req.method === 'GET' && parts.length === 2 && parts[1] === 'me') {
         const user = await userFromToken(env, req);
         if (!user) throw new HttpError(401, 'Најави се.');

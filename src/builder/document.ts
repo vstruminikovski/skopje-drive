@@ -125,10 +125,12 @@ export function initDocument(o: Options): DocApi {
     const rows: { name: string; title: string; sub: string }[] = docs.map((d) => ({
       name: d.name,
       title: titleOf(d),
-      sub: d.exists ? `${d.count} ставки · ${shortDate(d.savedAt)}` : 'празен',
+      sub: d.exists ? `${d.count} ${d.count === 1 ? 'ставка' : 'ставки'} · ${shortDate(d.savedAt)}` : 'празен',
     }));
     if (cur && !docs.some((d) => d.name === cur!.name)) rows.push({ name: cur.name, title: cur.title, sub: `споделен од ${cur.owner}` });
     for (const r of rows) {
+      const row = document.createElement('div');
+      row.className = 'doc-row';
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'ver-row';
@@ -137,7 +139,37 @@ export function initDocument(o: Options): DocApi {
       const s = document.createElement('small'); s.className = 'ver-sub'; s.textContent = r.sub;
       b.append(t, s);
       b.addEventListener('click', () => void open(r.name));
-      list.appendChild(b);
+      // rename right in the row: the name becomes a field (Enter keeps it, Esc leaves it as it was)
+      const pen = document.createElement('button');
+      pen.type = 'button';
+      pen.className = 'doc-pen';
+      pen.textContent = '✎';
+      pen.title = 'Преименувај';
+      pen.setAttribute('aria-label', `Преименувај „${r.title}“`);
+      pen.addEventListener('click', () => {
+        const f = document.createElement('input');
+        f.className = 'doc-name-field';
+        f.value = r.title;
+        f.maxLength = 60;
+        f.setAttribute('aria-label', 'Ново име на документот');
+        let done = false;
+        const finish = (keep: boolean) => {
+          if (done) return;
+          done = true;
+          const v = f.value.trim();
+          if (keep && v && v !== r.title) void rename(r.name, v); else renderDocs();
+        };
+        f.addEventListener('keydown', (e) => {
+          e.stopPropagation();
+          if (e.key === 'Enter') finish(true);
+          else if (e.key === 'Escape') finish(false);
+        });
+        f.addEventListener('blur', () => finish(true));
+        row.replaceChildren(f);
+        f.focus(); f.select();
+      });
+      row.append(b, pen);
+      list.appendChild(row);
     }
   }
   async function refreshList() {
@@ -221,16 +253,26 @@ export function initDocument(o: Options): DocApi {
   }
 
   // ---------- rename, export, import ----------
-  async function rename() {
-    if (!cur) return;
-    const t = prompt('Име на документот', cur.title);
-    if (!t || !t.trim()) return;
-    cur.title = t.trim().slice(0, 60);
-    const d = docs.find((x) => x.name === cur!.name);
-    if (d) d.title = cur.title;
-    dirty = true;
+  /** Gives a document a new name. The open one is saved as usual; another one is saved with its items as they are. */
+  async function rename(name: string, title: string) {
+    title = title.slice(0, 60);
+    const d = docs.find((x) => x.name === name);
+    if (cur?.name === name) {
+      cur.title = title;
+      if (d) d.title = title;
+      dirty = true;
+      renderDocs();
+      await flush();
+      return;
+    }
+    try {
+      let data: unknown = { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: [] };
+      try { data = (await cloud.loadWorkspace(name)).data ?? data; } catch (e) { if (!(e instanceof cloud.CloudError && e.status === 404)) throw e; }
+      await cloud.saveWorkspace(name, data, title);
+      if (d) { d.title = title; d.exists = true; d.savedAt = new Date().toISOString(); }
+      o.msg(`Преименувано · ${title}`);
+    } catch (e) { fail(e); }
     renderDocs();
-    await flush();
   }
   /** Export: the only "save as". The open document as a file on this computer. */
   function exportFile() {
@@ -331,7 +373,9 @@ export function initDocument(o: Options): DocApi {
     $('gateAvatar').textContent = initial;
     ($('startBtn') as HTMLButtonElement).disabled = !a;
     ($('gateCode') as HTMLButtonElement).disabled = !a;
-    $('menuWho').textContent = a ? `Најавен си како ${a.username}${me?.admin ? ' · админ' : ''}` : '';
+    $('menuWho').textContent = a ? `${a.username}${me?.admin ? ' · админ' : ''}` : '';
+    $('acctBtn').hidden = !a;
+    $('acctBtn').textContent = initial.toUpperCase();
   }
   async function start() {
     const a = cloud.account();
@@ -386,15 +430,50 @@ export function initDocument(o: Options): DocApi {
     const b = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
     if (!b) return;
     const act = b.dataset.act;
-    if (!['rename', 'export', 'import', 'share', 'code', 'deploy', 'logout'].includes(act!)) return; // the builder handles the rest
+    if (!['export', 'import', 'share', 'code', 'deploy'].includes(act!)) return; // the builder handles the rest
     closeMenu();
-    if (act === 'rename') await rename();
-    else if (act === 'export') exportFile();
+    if (act === 'export') exportFile();
     else if (act === 'import') $('openFileInput').click();
     else if (act === 'share') openShare();
     else if (act === 'code') $('openDlg').hidden = false;
     else if (act === 'deploy') await deployLive();
-    else if (act === 'logout') { await flush(); cloud.setAccount(null); location.reload(); }
+  });
+
+  // the account menu: change password, sign out
+  const acct = $('acctMenu');
+  const acctBtn = $('acctBtn');
+  const closeAcct = () => { acct.hidden = true; acctBtn.setAttribute('aria-expanded', 'false'); };
+  acctBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeMenu();
+    const show = acct.hidden;
+    acct.hidden = !show;
+    acctBtn.setAttribute('aria-expanded', String(show));
+  });
+  document.addEventListener('click', (e) => { if (!acct.hidden && !acct.contains(e.target as Node)) closeAcct(); });
+  fileBtn.addEventListener('click', closeAcct);
+  $('acctLogout').addEventListener('click', async () => { closeAcct(); await flush(); cloud.setAccount(null); location.reload(); });
+  const pwDlg = $('pwDlg');
+  const closePw = () => { pwDlg.hidden = true; ($('pwForm') as HTMLFormElement).reset(); $('pwNote').textContent = ''; };
+  $('acctPw').addEventListener('click', () => { closeAcct(); pwDlg.hidden = false; $('pwCur').focus(); });
+  $('pwClose').addEventListener('click', closePw);
+  pwDlg.addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) closePw(); });
+  pwDlg.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Escape') closePw(); });
+  $('pwForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const cur = ($('pwCur') as HTMLInputElement).value;
+    const next = ($('pwNew') as HTMLInputElement).value;
+    if (next.length < 8) { $('pwNote').textContent = 'Новата лозинка мора да има најмалку 8 знаци.'; return; }
+    ($('pwSave') as HTMLButtonElement).disabled = true;
+    try {
+      await cloud.changePassword(cur, next);
+      closePw();
+      o.msg('Лозинката е сменета');
+    } catch (err) {
+      $('pwNote').textContent = err instanceof Error ? err.message : 'Не успеав да ја сменам лозинката.';
+    } finally {
+      ($('pwSave') as HTMLButtonElement).disabled = false;
+    }
   });
   // there is no save shortcut: every change saves by itself (Cmd+S is the browser's own)
   // a change waiting to be sent: try once more when the page is hidden or closed

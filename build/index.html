@@ -20,9 +20,8 @@
       <!-- toolbar -->
       <header id="top" class="glass">
         <a class="tb-back" data-go="home" href="#" title="Назад кон почетната страница" aria-label="Назад">‹</a>
-        <button id="fileBtn" class="doc-btn" type="button" aria-haspopup="menu" aria-expanded="false" title="Документ: преименувај, извези, увези, сподели">
-          <span class="doc-label">Документ</span><span id="docName">Градител</span><span class="doc-chev" aria-hidden="true">▾</span>
-        </button>
+        <button id="fileBtn" class="tb-icon tb-burger" type="button" aria-haspopup="menu" aria-expanded="false" title="Мени" aria-label="Мени"><svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><path d="M1 1h16M1 7h16M1 13h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+        <span id="docName" class="tb-doc">Градител</span>
         <span id="saveStatus" class="tb-status"></span>
         <span class="tb-div"></span>
         <button id="undoBtn" class="tb-icon" title="Врати (⌘Z)" aria-label="Врати" disabled>↶</button>
@@ -38,18 +37,14 @@
           <button id="clearBtn" class="btn btn-danger" type="button">Избриши ги сите</button>
           <button class="info" type="button" data-tip="Ги брише сите ставки во овој документ: знаци, семафори, линии и модели. Мапата останува. Врати (⌘Z) ги враќа." aria-label="Што прави Избриши ги сите">i</button>
         </span>
+        <button id="acctBtn" class="tb-avatar" type="button" aria-haspopup="menu" aria-expanded="false" title="Профил" aria-label="Профил" hidden></button>
       </header>
       <!-- the document menu: everyday actions first; files and exports at the bottom, under Advanced -->
       <div id="fileMenu" class="menu glass" role="menu" hidden>
-        <div class="menu-who" id="menuWho"></div>
-        <button type="button" role="menuitem" data-act="rename">Преименувај документ…</button>
-        <div class="menu-sep"></div>
         <button type="button" role="menuitem" data-act="share">Сподели со пријател…</button>
         <button type="button" role="menuitem" data-act="code">Отвори со код од пријател…</button>
         <div class="menu-sep admin-only" hidden></div>
         <button type="button" role="menuitem" data-act="deploy" class="admin-only" hidden>Деплој во живата игра…</button>
-        <div class="menu-sep"></div>
-        <button type="button" role="menuitem" data-act="logout">Одјави се</button>
         <div class="menu-adv" role="group" aria-labelledby="menuAdvTitle">
           <div class="menu-head" id="menuAdvTitle">Напредни функции</div>
           <button type="button" role="menuitem" data-act="export">Извези документ…</button>
@@ -176,6 +171,30 @@
             <input type="file" id="openFileInput" accept=".json,application/json" hidden>
             <button id="openClose" class="btn btn-lg btn-plain" type="button">Откажи</button>
           </div>
+        </div>
+      </div>
+
+      <!-- the account menu: from the round picture at the right of the toolbar -->
+      <div id="acctMenu" class="menu menu-right glass" role="menu" hidden>
+        <div class="menu-who" id="menuWho"></div>
+        <div class="menu-sep"></div>
+        <button type="button" role="menuitem" id="acctPw">Промени лозинка…</button>
+        <button type="button" role="menuitem" id="acctLogout">Одјави се</button>
+      </div>
+
+      <!-- change password -->
+      <div id="pwDlg" class="scrim" hidden>
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+          <h2 id="pwTitle">Промени лозинка</h2>
+          <form id="pwForm" class="stack">
+            <label class="field-label" for="pwCur">Сегашна лозинка</label>
+            <input id="pwCur" class="field" type="password" autocomplete="current-password" required>
+            <label class="field-label" for="pwNew">Нова лозинка</label>
+            <input id="pwNew" class="field" type="password" autocomplete="new-password" minlength="8" maxlength="200" required placeholder="најмалку 8 знаци">
+            <p id="pwNote" class="foot" role="status"></p>
+            <button id="pwSave" class="btn btn-lg btn-primary" type="submit">Зачувај</button>
+            <button id="pwClose" class="btn btn-lg btn-plain" type="button">Откажи</button>
+          </form>
         </div>
       </div>
 
