@@ -10,7 +10,7 @@ export interface Account { username: string; token: string }
 export interface BackupMeta { id: string; savedAt: string; savedBy: string; count: number }
 /** A work: its one saved version (`data`), and its backups. */
 export interface Workspace { name: string; owner: string; members: string[]; savedAt: string; savedBy: string; data: unknown; backups: BackupMeta[]; title?: string }
-/** One of your three documents in the list (it may not exist yet). */
+/** One of your two documents in the list (it may not exist yet). */
 export interface DocMeta { n: number; name: string; exists: boolean; title: string; savedAt: string; count: number }
 export class CloudError extends Error {
   constructor(message: string, public status: number) { super(message); }
@@ -61,7 +61,7 @@ export function saveWorkspace(name: string, data: unknown, title?: string) {
     method: 'PUT', headers: auth(), body: JSON.stringify({ data, title }),
   });
 }
-/** Your three documents. */
+/** Your two documents. */
 export function listDocs() {
   return call<{ docs: DocMeta[] }>('/api/docs', { headers: auth() });
 }

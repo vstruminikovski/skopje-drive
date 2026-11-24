@@ -1,5 +1,5 @@
 // Documents, like a drawing app:
-// - Your three documents live on the server under your account, so they open on any computer after you sign in.
+// - Your two documents live on the server under your account, so they open on any computer after you sign in.
 // - Every change is saved by itself: first to this browser (right away), then to the server (a moment later).
 //   If the connection drops, the change waits in this browser and is sent when it can be.
 // - Export is the only "save as": a file on this computer. Import opens a file into the open document.
@@ -313,16 +313,14 @@ export function initDocument(o: Options): DocApi {
     const m = await whoAmI();
     if (!m) { o.msg('Најави се прво.'); return; }
     if (!m.admin) { await deployMine(); return; }
-    // the administrator's deploy is the live game for everyone; anyone else deploys to their own game
-    const target = m.admin ? 'published' : `${m.username}-game`;
-    const where = m.admin ? 'живата игра за сите играчи' : 'твојата игра (ја играш на почетната страница, по најава)';
+    // the administrator's deploy is the live game for everyone (anyone else's documents are already their games)
     const n = o.getItems().length;
-    const i = await choose(m.admin ? 'Деплој во живата игра?' : 'Деплој во мојата игра?', `Ќе се пратат ${n} ставки од „${cur?.title ?? ''}“ во ${where}. По 5 секунди се објавува; дотогаш можеш да откажеш.`, ['Продолжи', 'Откажи']);
+    const i = await choose('Деплој во живата игра?', `Ќе се пратат ${n} ставки од „${cur?.title ?? ''}“ во живата игра за сите играчи. По 5 секунди се објавува; дотогаш можеш да откажеш.`, ['Продолжи', 'Откажи']);
     if (i !== 0) return;
-    if (!(await countdown(5, m.admin ? 'Деплој во живата игра' : 'Деплој во мојата игра', 'Деплојот почнува за неколку секунди. Откажи за да останеш.', 'Деплој'))) { o.msg('Деплојот е откажан'); return; }
+    if (!(await countdown(5, 'Деплој во живата игра', 'Деплојот почнува за неколку секунди. Откажи за да останеш.', 'Деплој'))) { o.msg('Деплојот е откажан'); return; }
     try {
-      await cloud.saveWorkspace(target, { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() }, m.admin ? 'Жива игра' : 'Моја игра');
-      o.msg(m.admin ? `Деплојувано за сите играчи · ${n} ставки` : `Деплојувано во твојата игра · ${n} ставки`);
+      await cloud.saveWorkspace('published', { format: 'mapng-mod', version: 2, savedAt: new Date().toISOString(), surveyor: surveyor(), items: o.getItems() }, 'Жива игра');
+      o.msg(`Деплојувано за сите играчи · ${n} ставки`);
     } catch (e) { fail(e); }
   }
 
@@ -347,7 +345,9 @@ export function initDocument(o: Options): DocApi {
     await whoAmI();
     await refreshList();
     const last = (() => { try { return JSON.parse(localStorage.getItem(LAST_KEY) ?? 'null') as { user: string; name: string } | null; } catch { return null; } })();
-    await open(last && last.user === a.username ? last.name : a.username);
+    // a third document no longer exists: a computer that had it open starts with the first one
+    const name = last && last.user === a.username && last.name !== `${a.username}-3` ? last.name : a.username;
+    await open(name);
   }
   form = mountAuthForm($('authBoxB'), () => { who(); void whoAmI().then(who); o.onSignedIn?.(); });
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); me = null; who(); o.msg('Одјавен си'); });

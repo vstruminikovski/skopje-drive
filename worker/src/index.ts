@@ -178,11 +178,11 @@ function newCode(): string {
 const normalizeCode = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 /** The owner makes a code for one work. A new code replaces the old one. */
-/** Your three documents: <username>, <username>-2, <username>-3 (each may not exist yet). */
+/** Your two documents: <username> and <username>-2 (each may not exist yet). They are also your games. */
 async function listDocs(env: Env, req: Request): Promise<Response> {
   const user = await userFromToken(env, req);
   if (!user) throw new HttpError(401, 'Најави се.');
-  const names = [user, `${user}-2`, `${user}-3`];
+  const names = [user, `${user}-2`];
   const docs = await Promise.all(names.map(async (name, i) => {
     // one damaged document must not hide the other two
     const r = await callDo(env.WORKSPACES, name, '/meta', { user }).catch(() => ({ status: 500, data: {} }));
@@ -328,10 +328,9 @@ export class Workspace extends DurableObject {
         if (body.name === 'published' && !body.admins.includes(user)) return reply(403, { error: 'Само администраторот може да ја објави играта за сите.' });
         const title = typeof body.title === 'string' ? body.title.trim().slice(0, 60) : undefined;
         if (!ws) {
-          // your three documents are named after you: <username>, <username>-2, <username>-3 (the same for everyone);
+          // your two documents are named after you: <username> and <username>-2 (the same for everyone);
           // the published game is the administrator's Deploy
-          // and <username>-game is the game you deploy for yourself
-          const own = body.name === user || body.name === `${user}-2` || body.name === `${user}-3` || body.name === `${user}-game`;
+          const own = body.name === user || body.name === `${user}-2`;
           if (!own && !(body.name === 'published' && body.admins.includes(user))) return reply(403, { error: 'Новиот документ се создава со твоето корисничко име.' });
           const parts = await writeData(body.data, 0);
           await st.put('ws', { owner: user, members: [], savedAt: now, savedBy: user, backups: [], title, count: itemCount(body.data), parts } as WsRec);
