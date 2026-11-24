@@ -226,3 +226,7 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 .menu button { min-height: 36px; font-size: 14px; }
 .doc-label { font-weight: 600; color: var(--text-2); }
 #docName { font-weight: 500; color: var(--text-2); }
+
+/* a toolbar button with its info "i" beside it */
+.tb-pair { display: inline-flex; align-items: center; margin-left: 6px; }
+.tb-pair .info { margin-left: 5px; }

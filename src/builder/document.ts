@@ -347,9 +347,7 @@ export function initDocument(o: Options): DocApi {
   $('gateLogout').addEventListener('click', () => { cloud.setAccount(null); me = null; who(); o.msg('Одјавен си'); });
 
   // ---------- wiring ----------
-  $('openBtn').addEventListener('click', () => { $('openDlg').hidden = false; });
   $('baseBtn').addEventListener('click', () => void startingWorld());
-  $('shareBtn').addEventListener('click', openShare);
   $('gateCode').addEventListener('click', () => { $('gate').style.display = 'none'; $('openDlg').hidden = false; });
   $('openClose').addEventListener('click', () => { $('openDlg').hidden = true; });
   $('openDlg').addEventListener('mousedown', (e) => { if (e.target === e.currentTarget) $('openDlg').hidden = true; });

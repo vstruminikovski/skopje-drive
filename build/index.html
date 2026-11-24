@@ -30,9 +30,14 @@
         <span class="spacer"></span>
         <button id="lookBtn" class="look-btn" type="button" aria-pressed="false" title="Гледај со глушецот и поставувај со нишанот (C)"><kbd>C</kbd><span id="lookLabel">Гледај</span></button>
         <span class="spacer"></span>
-        <button id="baseBtn" class="btn" type="button" title="Почетен свет: живата игра за сите. Нејзините ставки се внесуваат во овој документ како основа; потоа ги менуваш или бришеш. Врати (⌘Z) ги враќа.">Почетен свет</button>
-        <button id="openBtn" class="btn" type="button" title="Отвори документ од пријател со неговиот код">Отвори со код</button>
-        <button id="shareBtn" class="btn" type="button" title="Сподели со пријател (код или линк)">Сподели</button>
+        <span class="tb-pair">
+          <button id="baseBtn" class="btn" type="button">Почетен свет</button>
+          <button class="info" type="button" data-tip="Ги внесува ставките од живата игра во овој документ, како основа за градење. Потоа ги менуваш или бришеш. Врати (⌘Z) ги враќа." aria-label="Што прави Почетен свет">i</button>
+        </span>
+        <span class="tb-pair">
+          <button id="clearBtn" class="btn btn-danger" type="button">Избриши ги сите</button>
+          <button class="info" type="button" data-tip="Ги брише сите ставки во овој документ: знаци, семафори, линии и модели. Мапата останува. Врати (⌘Z) ги враќа." aria-label="Што прави Избриши ги сите">i</button>
+        </span>
       </header>
       <!-- the document menu: everyday actions first; files and exports at the bottom, under Advanced -->
       <div id="fileMenu" class="menu glass" role="menu" hidden>
@@ -44,7 +49,6 @@
         <div class="menu-sep admin-only" hidden></div>
         <button type="button" role="menuitem" data-act="deploy" class="admin-only" hidden>Деплој во живата игра…</button>
         <div class="menu-sep"></div>
-        <button type="button" role="menuitem" data-act="clear" class="danger">Избриши ги сите ставки</button>
         <button type="button" role="menuitem" data-act="logout">Одјави се</button>
         <div class="menu-adv" role="group" aria-labelledby="menuAdvTitle">
           <div class="menu-head" id="menuAdvTitle">Напредни функции</div>

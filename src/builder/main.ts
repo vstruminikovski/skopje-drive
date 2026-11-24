@@ -783,18 +783,15 @@ document.querySelectorAll<HTMLElement>('#fileMenu [data-act]').forEach((b) => b.
   const act = b.dataset.act;
   if (act === 'exportGeo') { closeFileMenu(); exportMap(); }
   else if (act === 'exportMod') { closeFileMenu(); exportGame(); }
-  else if (act === 'clear') {
-    closeFileMenu();
-    if (!recs.length) return;
-    // one question is enough: the history of actions brings everything back (Врати / ⌘Z)
-    void (async () => {
-      const i = await docApi!.choose('Избриши ги сите ставки?', 'Ова празни ја целата карта: сите модели, знаци, семафори и линии. Врати (⌘Z) или Историјата ги враќа.', ['Избриши', 'Откажи']);
-      if (i !== 0) return;
-      recs = []; select(null); rebuild(); save();
-      msg('Сите ставки се избришани · Врати (⌘Z) ги враќа');
-    })();
-  }
 }));
+// Delete all (toolbar): one question is enough, the history of actions brings everything back (Врати / ⌘Z)
+document.getElementById('clearBtn')!.addEventListener('click', async () => {
+  if (!recs.length) { msg('Документот е веќе празен'); return; }
+  const i = await docApi!.choose('Избриши ги сите ставки?', 'Ова празни ја целата карта: сите модели, знаци, семафори и линии. Врати (⌘Z) или Историјата ги враќа.', ['Избриши', 'Откажи']);
+  if (i !== 0) return;
+  recs = []; select(null); rebuild(); save();
+  msg('Сите ставки се избришани · Врати (⌘Z) ги враќа');
+});
 /** The one thing only the administrator has: Deploy to the live game. */
 function labelSave() {
   const admin = (on: boolean) => {
