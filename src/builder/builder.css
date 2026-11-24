@@ -263,3 +263,6 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 #top .look-btn { height: 32px; gap: 8px; padding: 0 12px 0 4px; font-size: 13px; }
 #top .look-btn kbd { width: 24px; height: 24px; font-size: 13px; border-radius: 7px; }
 #top > .tb-seg:nth-child(3) { padding: 0 6px; }
+
+/* the toolbar pieces and both windows: lighter, more see-through glass, so the map shows through what cannot be hidden */
+#bld .tb-seg.glass, #bld .fw.glass { background: rgba(44, 44, 48, 0.42); -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px); border-color: rgba(255, 255, 255, 0.12); }
