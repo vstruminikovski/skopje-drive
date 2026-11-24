@@ -321,3 +321,37 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 #bld .field:focus { background-color: rgba(255, 255, 255, 0.1); }
 #bld .btn-primary { background: #fff; color: #000; }
 #bld .btn-primary:hover { background: #e5e5ea; }
+/* toolbar buttons at macOS toolbar size, with room to spare so no label can spill out of its piece */
+#top .tb-seg .btn { flex: none; height: 24px; padding: 0 9px; border-radius: 6px; font: 500 12px/1 var(--font); white-space: nowrap; background: rgba(255, 255, 255, 0.1); }
+#top .tb-seg .btn:hover { background: rgba(255, 255, 255, 0.18); }
+#top .tb-seg .btn-danger { color: #ff6961; }
+#top .tb-pair { flex: none; gap: 0; margin-left: 6px; }
+#top .tb-pair .info { margin-left: 4px; }
+#top .tb-avatar { width: 24px; height: 24px; font-size: 11px; margin-left: 8px; }
+#top .look-btn { height: 28px; font-size: 12px; padding: 0 11px 0 3px; }
+#top .look-btn kbd { width: 22px; height: 22px; font-size: 12px; border-radius: 6px; }
+/* narrow windows: the side pieces give up their fixed width rather than run into the C button */
+/* every desktop size: what sits in the middle (the C hint, the bottom tools) stays between the two windows */
+#bld { --mid-w: calc(100vw - 2 * (var(--side-w) + 24px)); }
+#coach { max-width: min(460px, var(--mid-w)); }
+#hud { width: min(720px, var(--mid-w)); min-width: 0; }
+.hud-row { flex-wrap: wrap; row-gap: 6px; }
+#moveHud { max-width: 100%; flex-wrap: wrap; justify-content: center; row-gap: 4px; }
+#info { max-width: 100%; }
+@media (max-height: 640px) { #coach { display: none !important; } }
+
+/* one side width for both windows and both toolbar sides: wide enough for the right-hand buttons, narrower on small screens */
+:root { --side-w: 340px; }
+@media (max-width: 1180px) { :root { --side-w: 280px; } }
+/* the right piece is never cut: it is at least the side width and grows if its buttons need more */
+#top > .tb-seg:last-child { width: auto; min-width: var(--side-w); overflow: visible; }
+/* the left piece keeps its width; a long save status ends with … instead of pushing out */
+#top > .tb-seg:first-child { overflow: hidden; }
+#top > .tb-seg:first-child .tb-doc { flex: 0 1 auto; min-width: 24px; max-width: none; }
+#top > .tb-seg:first-child .tb-status { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#top > .tb-seg:first-child > :not(.tb-doc):not(.tb-status) { flex: none; }
+#top > .tb-seg:last-child { padding: 0 6px; }
+#top > .tb-seg:last-child .tb-pair { margin-left: 4px; }
+#top > .tb-seg:last-child .tb-avatar { margin-left: 6px; }
+/* the document's name comes first; the save status is the one that shortens */
+#top > .tb-seg:first-child .tb-doc { flex: 0 0 auto; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
