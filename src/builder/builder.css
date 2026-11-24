@@ -266,3 +266,58 @@ body:not(.looking) #crosshair { opacity: 0.35; }
 
 /* the toolbar pieces and both windows: lighter, more see-through glass, so the map shows through what cannot be hidden */
 #bld .tb-seg.glass, #bld .fw.glass { background: rgba(44, 44, 48, 0.42); -webkit-backdrop-filter: saturate(160%) blur(18px); backdrop-filter: saturate(160%) blur(18px); border-color: rgba(255, 255, 255, 0.12); }
+
+/* ---------- macOS proportions and materials ----------
+   Sidebar and inspector: one width, full height; body text 13 px, section titles 11 px, rows about 28 px.
+   Every surface (bars, windows, menus, dialogs) is the same translucent material with a blur behind it. */
+#bld { --mat: rgba(46, 46, 50, 0.5); --mat-line: rgba(255, 255, 255, 0.12); }
+#bld .glass, #bld .sheet, .tip.glass {
+  background: var(--mat, rgba(46, 46, 50, 0.5));
+  -webkit-backdrop-filter: saturate(170%) blur(22px); backdrop-filter: saturate(170%) blur(22px);
+  border: 0.5px solid var(--mat-line, rgba(255, 255, 255, 0.12));
+}
+#bld .scrim { background: rgba(0, 0, 0, 0.18); }
+#lib, #panel { height: calc(100% - 88px); }
+#lib.min, #panel.min { height: auto; }
+#bld .fw { border-radius: 12px; font-size: 13px; }
+#bld .fw-head { height: 30px; padding: 0 4px 0 12px; }
+#bld .fw-title { font-size: 11px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-3); }
+#bld .fw-min { width: 20px; height: 20px; font-size: 13px; }
+#bld .lib-search { height: 26px; margin: 8px 10px; font-size: 13px; border-radius: 7px; }
+#bld .inv-sec { margin: 12px 8px 4px; }
+#bld .inv-sec .label, #bld .label { font-size: 11px; }
+#bld .item { gap: 8px; padding: 3px 6px; border-radius: 6px; }
+#bld .item canvas { width: 22px; height: 22px; border-radius: 5px; }
+#bld .item .n { font-size: 13px; }
+#bld .pane > summary { height: 28px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-3); }
+#bld .pane > summary:hover { color: var(--text-2); }
+#bld .pane > :not(summary) { margin-bottom: 8px; }
+#panel .list > .row { min-height: 28px; padding: 5px 10px; font-size: 13px; }
+#bld .ver-row { padding: 5px 10px; border-radius: 6px; }
+#bld .ver-title { font-size: 13px; }
+#bld .ver-sub { font-size: 11px; }
+#bld .irow { min-height: 28px; font-size: 13px; }
+#bld .field.num, #panel .row.set .field, #panel .list.pad .field { height: 22px; font-size: 12px; border-radius: 5px; }
+#bld .btn-row .btn, #bld #side .btn { height: 24px; font-size: 12px; border-radius: 6px; }
+#bld .keys { font-size: 11px; gap: 4px 12px; padding: 10px; }
+/* menus: macOS menu metrics */
+#bld .menu { padding: 5px; border-radius: 10px; min-width: 240px; }
+#bld .menu button { min-height: 24px; height: 24px; padding: 0 9px; border-radius: 5px; font-size: 13px; }
+#bld .menu .menu-adv button { height: 22px; min-height: 22px; }
+#bld .menu-sep { margin: 5px 9px; }
+#bld .menu-head, #bld .menu-who { font-size: 11px; }
+/* dialogs: narrower, 13 px text */
+#bld .sheet { width: min(360px, 100%); padding: 20px; border-radius: 12px; }
+#bld .sheet h2 { font-size: 15px; }
+#bld .sheet p, #bld .sheet .foot { font-size: 12px; }
+#bld .sheet .btn-lg { height: 30px; font-size: 13px; border-radius: 7px; }
+#bld .sheet .field { height: 28px; font-size: 13px; }
+/* inside the glass: no solid dark boxes, only light tints of the same material */
+#bld { --fill: rgba(255, 255, 255, 0.06); --fill-2: rgba(255, 255, 255, 0.12); }
+#bld .btn:hover, #bld .look-btn:hover { background: rgba(255, 255, 255, 0.18); }
+#bld .seg button[aria-selected='true'] { background: rgba(255, 255, 255, 0.22); }
+#bld .sheet-x:hover { background: rgba(255, 255, 255, 0.18); }
+#bld .list, #panel .list, #bld .keys, #bld .field, #bld .seg { background-color: rgba(255, 255, 255, 0.06); }
+#bld .field:focus { background-color: rgba(255, 255, 255, 0.1); }
+#bld .btn-primary { background: #fff; color: #000; }
+#bld .btn-primary:hover { background: #e5e5ea; }
